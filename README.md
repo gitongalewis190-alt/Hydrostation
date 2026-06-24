@@ -20,13 +20,14 @@ That's it — no code, no terminal, no deployment pipeline. Repeat for each of y
 - **Social Links** — links and visibility toggles for Facebook, Instagram, X, TikTok, YouTube, LinkedIn, WhatsApp.
 - **Products** — unlimited products, drag-to-reorder, optional photo *or* a YouTube video link per product (shown in place of the photo).
 - **Packages** — bundled plans/subscriptions with bullet features (up to 20).
+- **Cart & Checkout** — visitors can add products/packages to a cart (floating cart button, badge count, slide-in drawer with quantity steppers), then check out by sending an itemized order over **WhatsApp** or by **tapping to call** directly — no payment processing, just a fast way for customers to reach you with their order. These appear automatically once you've set a phone number and/or WhatsApp link.
 - **Gallery** — photo gallery with lightbox (up to 12 images).
 - **Testimonials** — customer quotes with name/photo.
 - **About** — your story and team.
 - **Drawer** — the short highlights shown when someone taps (not long-presses) the menu icon.
 - **Appearance** — switch between 3 page layouts (Classic, Split Showcase, Bold Editorial), toggle section visibility, edit your call-to-action button, toggle the floating WhatsApp button, set a footer tagline.
 - **Integrations** — optional: paste a Firebase project config to also save every contact-form submission in real time to a Firestore `orders` collection. Leave this off and submissions go out by email as usual.
-- **Password** — set/change your admin password. Forgotten passwords can't be recovered; use Data → Reset to start over.
+- **Password** — set/change your admin password (with a show/hide eye toggle on every password field, on both the login screen and here). Forgotten passwords can't be recovered; use Data → Reset to start over.
 - **Data** — export your full site content as a JSON backup, import it back in, or reset to the default demo content.
 
 ## Notes on storage

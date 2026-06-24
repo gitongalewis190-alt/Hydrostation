@@ -176,6 +176,10 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .product-card p{font-size:14px;}
 .pc-meta{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;}
 .pc-price{font-family:var(--font-mono);font-weight:700;color:var(--accent);font-size:16px;}
+.pc-actions{display:flex;gap:8px;margin-top:10px;}
+.pc-actions .btn-block{flex:1;}
+.cart-add-btn{width:44px;height:44px;min-width:44px;border-radius:12px;background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .2s var(--spring),background .2s var(--ease);}
+.cart-add-btn:hover{transform:translateY(-2px);background:var(--glass-bg-strong,var(--glass-bg));}
 .pc-stock{font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;background:#ECFDF5;color:#059669;text-transform:uppercase;letter-spacing:.04em;}
 .pc-stock.out{background:#FEF2F2;color:#DC2626;}
 
@@ -247,6 +251,28 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .whatsapp-float:hover{transform:scale(1.08) translateY(-2px);}
 .whatsapp-float svg{width:28px;height:28px;}
 
+/* ============ CART FLOAT + DRAWER ============ */
+.cart-float{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(11,110,122,.4);z-index:400;transition:transform .25s var(--spring);border:none;cursor:pointer;}
+.cart-float:hover{transform:scale(1.08) translateY(-2px);}
+.cart-float svg{width:26px;height:26px;}
+.cart-badge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:10px;background:#F87171;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;}
+.cart-drawer .quick-drawer-panel{left:auto;right:0;border-right:none;border-left:1px solid var(--glass-border);transform:translateX(100%);}
+.cart-item-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--glass-border);}
+.cart-item-row img,.cart-item-row .cart-item-noimg{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--bg-soft);}
+.cart-item-main{flex:1;min-width:0;}
+.cart-item-main strong{display:block;font-size:14px;}
+.cart-item-main span{font-size:12px;color:var(--text-soft);}
+.qty-stepper{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.qty-stepper button{width:26px;height:26px;border-radius:8px;background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--text);display:flex;align-items:center;justify-content:center;}
+.qty-stepper span{min-width:16px;text-align:center;font-size:13px;}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;font-size:16px;margin:14px 0;font-weight:700;}
+#cart-summary .btn-block{margin-top:8px;}
+@media (max-width:480px){
+  .whatsapp-float,.cart-float{width:50px;height:50px;bottom:16px;}
+  .whatsapp-float{left:16px;}
+  .cart-float{right:16px;}
+}
+
 /* ============ QUICK DRAWER ============ */
 .quick-drawer{position:fixed;inset:0;z-index:1000;}
 .quick-drawer-scrim{position:absolute;inset:0;background:rgba(7,18,20,.45);}
@@ -267,6 +293,14 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .modal-actions{display:flex;gap:10px;margin-top:6px;}
 .modal-actions .btn{flex:1;}
 .error-text{color:#F87171;font-size:13px;margin-top:10px;}
+.pw-field{position:relative;}
+.pw-field input{padding-right:42px;}
+.modal-panel .pw-field input{margin-bottom:0;}
+.pw-field{margin-bottom:14px;}
+.a-field .pw-field{margin-bottom:0;}
+.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);border-radius:6px;background:transparent;border:none;cursor:pointer;}
+.pw-eye:hover{color:#fff;background:rgba(255,255,255,.08);}
+.pw-eye svg{width:18px;height:18px;display:block;}
 
 /* ============ ADMIN DASHBOARD ============ */
 .admin-dashboard{position:fixed;inset:0;z-index:3000;background:var(--admin-bg);color:#fff;display:flex;}
@@ -524,6 +558,28 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
   <button class="whatsapp-float" id="whatsapp-float" hidden aria-label="Chat on WhatsApp">
     <svg viewBox="0 0 32 32" fill="currentColor"><path d="M16.02 3C9.4 3 4.04 8.36 4.04 14.98c0 2.36.7 4.55 1.9 6.4L4 29l7.83-1.9a12.9 12.9 0 0 0 4.2.7c6.62 0 11.98-5.36 11.98-11.98C27.99 8.36 22.64 3 16.02 3Zm0 21.78c-1.5 0-2.93-.4-4.18-1.1l-.3-.17-4.43 1.08 1.13-4.3-.2-.32a9.7 9.7 0 0 1-1.5-5.2c0-5.4 4.4-9.78 9.5-9.78 5.07 0 9.46 4.38 9.46 9.78 0 5.4-4.4 10.01-9.48 10.01Zm5.4-7.32c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.61.15-.15.34-.4.5-.6.17-.2.22-.34.34-.57.12-.22.06-.42-.04-.57-.1-.15-.55-1.33-.76-1.82-.2-.48-.4-.42-.56-.42-.15 0-.42 0-.65.02-.22.02-.59.1-.84.4-.26.3-.99 1.03-.99 2.4 0 1.36 1 2.7 1.15 2.9.15.2 1.93 2.96 4.7 4.04 2.76 1.08 2.76.72 3.26.67.5-.05 1.75-.7 2-1.4.25-.7.25-1.3.17-1.42-.07-.13-.28-.2-.58-.35Z"/></svg>
   </button>
+
+  <button class="cart-float" id="cart-float" aria-label="View cart" type="button" style="position:relative;">
+    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L20.5 8H6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="cart-badge" id="cart-badge" hidden>0</span>
+  </button>
+</div>
+
+<div class="quick-drawer cart-drawer" id="cart-drawer" hidden>
+  <div class="quick-drawer-scrim" id="cart-drawer-scrim"></div>
+  <div class="quick-drawer-panel">
+    <button class="icon-btn" id="cart-drawer-close" style="float:right;" aria-label="Close cart" type="button">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+    </button>
+    <h3>Your Order</h3>
+    <div id="cart-items"></div>
+    <div id="cart-empty" class="admin-empty" hidden>Your cart is empty.</div>
+    <div id="cart-summary" hidden>
+      <div class="cart-total-row"><span>Total</span><strong id="cart-total-text"></strong></div>
+      <a class="btn btn-primary btn-block" id="cart-checkout-wa" target="_blank" rel="noopener" hidden>Order via WhatsApp</a>
+      <a class="btn btn-ghost btn-block" id="cart-checkout-call" hidden>Call to Order</a>
+    </div>
+  </div>
 </div>
 
 <div class="quick-drawer" id="quick-drawer" hidden>
@@ -541,7 +597,10 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
   <div class="modal-panel">
     <h3>Admin Access</h3>
     <p class="hint">Enter the admin password to continue.</p>
-    <input type="password" id="admin-password-input" placeholder="Password" autocomplete="off">
+    <div class="pw-field">
+      <input type="password" id="admin-password-input" placeholder="Password" autocomplete="off">
+      <button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button>
+    </div>
     <p class="error-text" id="admin-login-error" hidden>Incorrect password</p>
     <div class="modal-actions">
       <button class="btn btn-ghost" id="admin-login-cancel" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Cancel</button>
@@ -722,6 +781,50 @@ function commitNow(msg){
   if(msg!==false) toast(msg||'Saved');
 }
 
+/* ============ CART STATE ============ */
+const CART_KEY='hydrobiz_cart';
+let CART=loadCart();
+function loadCart(){
+  try{
+    const raw=localStorage.getItem(CART_KEY);
+    const parsed=raw?JSON.parse(raw):[];
+    return Array.isArray(parsed)?parsed:[];
+  }catch(e){ return []; }
+}
+function saveCart(){
+  try{ localStorage.setItem(CART_KEY,JSON.stringify(CART)); }
+  catch(e){ console.error('saveCart failed',e); }
+}
+function cartAdd(item){
+  const existing=CART.find(c=>c.id===item.id && c.type===item.type);
+  if(existing){ existing.qty+=1; }
+  else { CART.push(Object.assign({},item,{qty:1})); }
+  saveCart();
+  renderCart();
+  toast(item.name+' added to cart');
+}
+function cartSetQty(id,type,qty){
+  const it=CART.find(c=>c.id===id && c.type===type);
+  if(!it) return;
+  if(qty<=0){ CART=CART.filter(c=>c!==it); }
+  else { it.qty=qty; }
+  saveCart();
+  renderCart();
+}
+function cartRemove(id,type){
+  CART=CART.filter(c=>!(c.id===id && c.type===type));
+  saveCart();
+  renderCart();
+}
+function cartCount(){ return CART.reduce((n,c)=>n+c.qty,0); }
+function cartTotals(){
+  const totals={};
+  CART.forEach(c=>{ totals[c.currency]=(totals[c.currency]||0)+Number(c.price||0)*c.qty; });
+  return totals;
+}
+function formatMoney(currency,amount){ return (currency==='USD'?'$':'KES ')+Number(amount||0).toLocaleString(); }
+function formatTotals(totals){ return Object.entries(totals).map(([cur,amt])=>formatMoney(cur,amt)).join(' + ')||formatMoney('KES',0); }
+
 /* ============ ICONS ============ */
 const ICONS={
   home:'<path d="M4 11.5 12 4l8 7.5M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -742,7 +845,12 @@ const ICONS={
   drag:'<circle cx="9" cy="6" r="1.3"/><circle cx="9" cy="12" r="1.3"/><circle cx="9" cy="18" r="1.3"/><circle cx="15" cy="6" r="1.3"/><circle cx="15" cy="12" r="1.3"/><circle cx="15" cy="18" r="1.3"/>',
   check:'<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>',
   layout:'<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M9 9.5V20" stroke-linecap="round"/>',
-  cloud:'<path d="M7 18a4.5 4.5 0 0 1-.6-8.96A5.5 5.5 0 0 1 17.4 10.1 4 4 0 0 1 17 18H7Z" stroke-linejoin="round"/>'
+  cloud:'<path d="M7 18a4.5 4.5 0 0 1-.6-8.96A5.5 5.5 0 0 1 17.4 10.1 4 4 0 0 1 17 18H7Z" stroke-linejoin="round"/>',
+  cart:'<circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L20.5 8H6" stroke-linecap="round" stroke-linejoin="round"/>',
+  phone:'<path d="M6.5 4h3l1.5 4-2 1.5a11 11 0 0 0 5.5 5.5l1.5-2 4 1.5v3a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 5 7.6 1.5 1.5 0 0 1 6.5 4Z" stroke-linejoin="round"/>',
+  eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" stroke-linejoin="round"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff:'<path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.4 5.1A11 11 0 0 1 12 4.8c6 0 9.5 6.5 9.5 6.5a14 14 0 0 1-2.6 3.4M6.1 6.1A14.6 14.6 0 0 0 2.5 12S6 18.5 12 18.5a9.9 9.9 0 0 0 3.4-.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  minus:'<path d="M5 12h14" stroke-linecap="round"/>'
 };
 function icon(name,size=18){ return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="currentColor" stroke-width="1.7">'+(ICONS[name]||'')+'</svg>'; }
 const SOCIAL_ICONS={
@@ -869,7 +977,10 @@ function renderProducts(){
     +'<div class="pc-body"><h3>'+escapeHTML(p.name)+'</h3><p>'+escapeHTML(p.description)+'</p>'
     +'<div class="pc-meta"><span class="pc-price mono">'+(p.currency==='KES'?'KES ':'$')+Number(p.price||0).toLocaleString()+'</span>'
     +'<span class="pc-stock'+(p.in_stock?'':' out')+'">'+(p.in_stock?'Available':'Out of Stock')+'</span></div>'
-    +'<a class="btn btn-primary btn-block" style="margin-top:10px;" href="'+escapeHTML(CONFIG.appearance.cta_anchor||'#contact')+'">'+(p.in_stock?'Enquire':'Notify Me')+'</a>'
+    +'<div class="pc-actions">'
+    +'<a class="btn btn-primary btn-block" href="'+escapeHTML(CONFIG.appearance.cta_anchor||'#contact')+'">'+(p.in_stock?'Enquire':'Notify Me')+'</a>'
+    +(p.in_stock?'<button class="cart-add-btn" type="button" data-cart-add="'+p.id+'" aria-label="Add '+escapeHTML(p.name)+' to cart">'+icon('cart',20)+'</button>':'')
+    +'</div>'
     +'</div></div>'
     );
   }).join('');
@@ -888,7 +999,10 @@ function renderPackages(){
     +'<h3>'+escapeHTML(k.name)+'</h3><p>'+escapeHTML(k.description)+'</p>'
     +'<div class="package-price mono">'+(k.currency==='USD'?'$':'KES ')+Number(k.price||0).toLocaleString()+'</div>'
     +'<ul class="package-includes">'+(k.includes||[]).map(i=>'<li>'+icon('check',16)+'<span>'+escapeHTML(i)+'</span></li>').join('')+'</ul>'
-    +'<a class="btn btn-primary btn-block" style="margin-top:auto;" href="'+escapeHTML(k.cta_href||'#contact')+'">'+escapeHTML(k.cta_label||'Choose Plan')+'</a>'
+    +'<div class="pc-actions" style="margin-top:auto;">'
+    +'<a class="btn btn-primary btn-block" href="'+escapeHTML(k.cta_href||'#contact')+'">'+escapeHTML(k.cta_label||'Choose Plan')+'</a>'
+    +'<button class="cart-add-btn" type="button" data-cart-add="'+k.id+'" aria-label="Add '+escapeHTML(k.name)+' to cart">'+icon('cart',20)+'</button>'
+    +'</div>'
     +'</div>'
   )).join('');
   enhanceTilt(grid);
@@ -1089,10 +1203,23 @@ async function attemptAdminLogin(){
     input.value=''; input.focus();
   }
 }
+function bindPasswordEyeToggles(root){
+  root.querySelectorAll('[data-pw-toggle]').forEach(btn=>{
+    btn.innerHTML=icon('eye',18);
+    const input=btn.previousElementSibling;
+    btn.addEventListener('click',()=>{
+      const showing=input.type==='text';
+      input.type=showing?'password':'text';
+      btn.innerHTML=icon(showing?'eye':'eyeOff',18);
+      btn.setAttribute('aria-label',showing?'Show password':'Hide password');
+    });
+  });
+}
 function initAdminLogin(){
   document.getElementById('admin-login-submit').addEventListener('click',attemptAdminLogin);
   document.getElementById('admin-login-cancel').addEventListener('click',closeAdminLogin);
   document.getElementById('admin-password-input').addEventListener('keydown',e=>{ if(e.key==='Enter') attemptAdminLogin(); });
+  bindPasswordEyeToggles(document.getElementById('admin-login-modal'));
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){
       if(!document.getElementById('admin-login-modal').hidden) closeAdminLogin();
@@ -1272,7 +1399,7 @@ function panelProducts(){
       '<div class="list-row" draggable="true" data-id="'+p.id+'">'+icon('drag',16)
       +(p.image_b64?'<img src="'+p.image_b64+'" alt="">':'')
       +'<div class="lr-main"><strong>'+escapeHTML(p.name)+'</strong><span>'+(p.currency==='USD'?'$':'KES ')+Number(p.price||0).toLocaleString()+(p.in_stock?'':' • Out of stock')+'</span></div>'
-      +'<div class="lr-actions"><button class="icon-btn" data-edit="'+p.id+'" style="color:#fff;">'+icon('edit',16)+'</button><button class="icon-btn" data-delete="'+p.id+'" style="color:#F87171;">'+icon('trash',16)+'</button></div></div>'
+      +'<div class="lr-actions"><button class="icon-btn" data-edit="'+p.id+'" style="color:#fff;" aria-label="Edit '+escapeHTML(p.name)+'">'+icon('edit',16)+'</button><button class="icon-btn" data-delete="'+p.id+'" style="color:#F87171;" aria-label="Delete '+escapeHTML(p.name)+'">'+icon('trash',16)+'</button></div></div>'
     )).join(''):'<div class="admin-empty">No products yet.</div>')
     +'</div></div>';
 }
@@ -1363,7 +1490,7 @@ function panelPackages(){
     +'<div class="a-field"><label>Description</label><textarea id="kf-desc">'+escapeHTML(editing?editing.description:'')+'</textarea></div>'
     +'<div class="a-field"><label>What\'s Included</label><div id="kf-includes" style="display:flex;flex-direction:column;gap:8px;">'
     +packageIncludesDraft.map((v,i)=>(
-      '<div class="bullet-row"><input value="'+escapeHTML(v)+'"><button class="icon-btn" data-remove-line="'+i+'" style="color:#F87171;">'+icon('trash',14)+'</button></div>'
+      '<div class="bullet-row"><input value="'+escapeHTML(v)+'"><button class="icon-btn" data-remove-line="'+i+'" style="color:#F87171;" aria-label="Remove line">'+icon('trash',14)+'</button></div>'
     )).join('')
     +'</div><button class="btn btn-sm btn-ghost" id="kf-add-line" style="margin-top:8px;background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">'+icon('plus',14)+' Add line</button></div>'
     +'<div class="a-row"><div class="a-field"><label>Price</label><input id="kf-price" type="number" min="0" value="'+(editing?editing.price:'')+'"></div>'
@@ -1376,7 +1503,7 @@ function panelPackages(){
     +'<div class="admin-card"><h4>Package List ('+CONFIG.packages.length+'/'+MAX_PACKAGES+')</h4>'
     +(CONFIG.packages.length?CONFIG.packages.map(k=>(
       '<div class="list-row"><div class="lr-main"><strong>'+escapeHTML(k.name)+'</strong><span>'+(k.currency==='USD'?'$':'KES ')+Number(k.price||0).toLocaleString()+'</span></div>'
-      +'<div class="lr-actions"><button class="icon-btn" data-edit-pkg="'+k.id+'" style="color:#fff;">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-pkg="'+k.id+'" style="color:#F87171;">'+icon('trash',16)+'</button></div></div>'
+      +'<div class="lr-actions"><button class="icon-btn" data-edit-pkg="'+k.id+'" style="color:#fff;" aria-label="Edit '+escapeHTML(k.name)+'">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-pkg="'+k.id+'" style="color:#F87171;" aria-label="Delete '+escapeHTML(k.name)+'">'+icon('trash',16)+'</button></div></div>'
     )).join(''):'<div class="admin-empty">No packages yet.</div>')
     +'</div></div>';
 }
@@ -1441,7 +1568,7 @@ function panelGallery(){
     +'<div class="admin-card"><h4>Images ('+CONFIG.gallery.length+'/'+MAX_GALLERY+')</h4>'
     +(atCap?'<div class="cap-note">Maximum of '+MAX_GALLERY+' images reached.</div>':'<input type="file" accept="image/*" id="gal-upload">')
     +'<div class="gallery-admin-grid" style="margin-top:14px;">'+CONFIG.gallery.map(g=>(
-      '<div class="g-item"><img src="'+g.image_b64+'" alt=""><button data-remove-gal="'+g.id+'">'+icon('trash',12)+'</button></div>'
+      '<div class="g-item"><img src="'+g.image_b64+'" alt=""><button data-remove-gal="'+g.id+'" aria-label="Remove image" type="button">'+icon('trash',12)+'</button></div>'
     )).join('')+'</div>'
     +(CONFIG.gallery.length?'':'<div class="admin-empty">No images yet.</div>')
     +'</div></div>';
@@ -1483,7 +1610,7 @@ function panelTestimonials(){
     +'<div class="admin-card"><h4>Testimonial List</h4>'
     +(CONFIG.testimonials.length?CONFIG.testimonials.map(t=>(
       '<div class="list-row"><div class="lr-main"><strong>'+escapeHTML(t.name)+'</strong><span>'+'★'.repeat(t.stars)+'</span></div>'
-      +'<div class="lr-actions"><button class="icon-btn" data-edit-test="'+t.id+'" style="color:#fff;">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-test="'+t.id+'" style="color:#F87171;">'+icon('trash',16)+'</button></div></div>'
+      +'<div class="lr-actions"><button class="icon-btn" data-edit-test="'+t.id+'" style="color:#fff;" aria-label="Edit testimonial from '+escapeHTML(t.name)+'">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-test="'+t.id+'" style="color:#F87171;" aria-label="Delete testimonial from '+escapeHTML(t.name)+'">'+icon('trash',16)+'</button></div></div>'
     )).join(''):'<div class="admin-empty">No testimonials yet.</div>')
     +'</div></div>';
 }
@@ -1539,7 +1666,7 @@ function panelAbout(){
     +'<div class="admin-card"><h4>Team List</h4>'
     +(CONFIG.about.team.length?CONFIG.about.team.map(m=>(
       '<div class="list-row">'+(m.photo_b64?'<img src="'+m.photo_b64+'" alt="">':'')+'<div class="lr-main"><strong>'+escapeHTML(m.name)+'</strong><span>'+escapeHTML(m.role)+'</span></div>'
-      +'<div class="lr-actions"><button class="icon-btn" data-edit-team="'+m.id+'" style="color:#fff;">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-team="'+m.id+'" style="color:#F87171;">'+icon('trash',16)+'</button></div></div>'
+      +'<div class="lr-actions"><button class="icon-btn" data-edit-team="'+m.id+'" style="color:#fff;" aria-label="Edit '+escapeHTML(m.name)+'">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-team="'+m.id+'" style="color:#F87171;" aria-label="Delete '+escapeHTML(m.name)+'">'+icon('trash',16)+'</button></div></div>'
     )).join(''):'<div class="admin-empty">No team members yet.</div>')
     +'</div></div>';
 }
@@ -1593,7 +1720,7 @@ function panelDrawer(){
     +'<div class="admin-card"><h4>Highlights ('+CONFIG.drawer.highlights.length+'/'+MAX_DRAWER+')</h4>'
     +(CONFIG.drawer.highlights.length?CONFIG.drawer.highlights.map(h=>(
       '<div class="list-row"><div class="lr-main"><strong>'+escapeHTML(h.title)+'</strong><span>'+escapeHTML(h.body)+'</span></div>'
-      +'<div class="lr-actions"><button class="icon-btn" data-edit-dr="'+h.id+'" style="color:#fff;">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-dr="'+h.id+'" style="color:#F87171;">'+icon('trash',16)+'</button></div></div>'
+      +'<div class="lr-actions"><button class="icon-btn" data-edit-dr="'+h.id+'" style="color:#fff;" aria-label="Edit '+escapeHTML(h.title)+'">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-dr="'+h.id+'" style="color:#F87171;" aria-label="Delete '+escapeHTML(h.title)+'">'+icon('trash',16)+'</button></div></div>'
     )).join(''):'<div class="admin-empty">No highlights yet.</div>')
     +'</div></div>';
 }
@@ -1690,9 +1817,9 @@ function panelPassword(){
   return '<div class="admin-panel-section">'
     +(hasPassword?'':'<div class="admin-card danger-zone"><h4>Admin Is Currently Unlocked</h4><p class="cap-note">No password has been set yet — anyone who long-presses the menu icon can open this dashboard. Set a password now to lock it down.</p></div>')
     +'<div class="admin-card"><h4>'+(hasPassword?'Change Admin Password':'Set Admin Password')+'</h4>'
-    +(hasPassword?'<div class="a-field"><label>Current Password</label><input type="password" id="pw-current" autocomplete="off"></div>':'')
-    +'<div class="a-field"><label>New Password</label><input type="password" id="pw-new" autocomplete="off"></div>'
-    +'<div class="a-field"><label>Confirm New Password</label><input type="password" id="pw-confirm" autocomplete="off"></div>'
+    +(hasPassword?'<div class="a-field"><label>Current Password</label><div class="pw-field"><input type="password" id="pw-current" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>':'')
+    +'<div class="a-field"><label>New Password</label><div class="pw-field"><input type="password" id="pw-new" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
+    +'<div class="a-field"><label>Confirm New Password</label><div class="pw-field"><input type="password" id="pw-confirm" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
     +'<button class="btn btn-primary" id="pw-save" type="button">'+(hasPassword?'Update Password':'Set Password')+'</button>'
     +'<p class="cap-note" style="margin-top:10px;">Forgotten passwords cannot be recovered &mdash; use Data &rarr; Reset to clear and start over.</p>'
     +'</div></div>';
@@ -1700,6 +1827,7 @@ function panelPassword(){
 function bindPasswordActions(){
   const btn=document.getElementById('pw-save');
   if(!btn) return;
+  bindPasswordEyeToggles(document.getElementById('admin-body'));
   btn.addEventListener('click',async ()=>{
     const next=document.getElementById('pw-new').value;
     const confirmVal=document.getElementById('pw-confirm').value;
@@ -1855,6 +1983,82 @@ function initLightbox(){
   });
 }
 
+/* ============ CART UI ============ */
+function renderCart(){
+  const itemsEl=document.getElementById('cart-items');
+  const emptyEl=document.getElementById('cart-empty');
+  const summaryEl=document.getElementById('cart-summary');
+  const badge=document.getElementById('cart-badge');
+  const count=cartCount();
+  badge.textContent=count;
+  badge.hidden=count===0;
+  if(!CART.length){
+    itemsEl.innerHTML='';
+    emptyEl.hidden=false;
+    summaryEl.hidden=true;
+    return;
+  }
+  emptyEl.hidden=true;
+  summaryEl.hidden=false;
+  itemsEl.innerHTML=CART.map(c=>(
+    '<div class="cart-item-row" data-id="'+c.id+'" data-type="'+c.type+'">'
+    +(c.image_b64?'<img src="'+c.image_b64+'" alt="">':'<div class="cart-item-noimg" style="width:44px;height:44px;border-radius:8px;background:var(--bg-soft);flex-shrink:0;"></div>')
+    +'<div class="cart-item-main"><strong>'+escapeHTML(c.name)+'</strong><span>'+formatMoney(c.currency,c.price)+'</span></div>'
+    +'<div class="qty-stepper"><button data-qty-dec type="button" aria-label="Decrease quantity">'+icon('minus',14)+'</button><span>'+c.qty+'</span><button data-qty-inc type="button" aria-label="Increase quantity">'+icon('plus',14)+'</button></div>'
+    +'<button class="icon-btn" data-remove type="button" aria-label="Remove '+escapeHTML(c.name)+'" style="color:#F87171;">'+icon('trash',15)+'</button>'
+    +'</div>'
+  )).join('');
+  const totals=cartTotals();
+  document.getElementById('cart-total-text').textContent=formatTotals(totals);
+  const waMsg='Hi '+CONFIG.identity.name+', I would like to order:\n'
+    +CART.map(c=>'- '+c.qty+'x '+c.name+' ('+formatMoney(c.currency,c.price)+' each)').join('\n')
+    +'\nTotal: '+formatTotals(totals);
+  const waBtn=document.getElementById('cart-checkout-wa');
+  const callBtn=document.getElementById('cart-checkout-call');
+  const phoneSrc=CONFIG.socials.whatsapp||CONFIG.identity.phone;
+  if(phoneSrc){ waBtn.href=waLink(phoneSrc,waMsg); waBtn.hidden=false; } else { waBtn.hidden=true; }
+  if(CONFIG.identity.phone){ callBtn.href='tel:'+String(CONFIG.identity.phone).replace(/[^\d+]/g,''); callBtn.hidden=false; } else { callBtn.hidden=true; }
+}
+function openCartDrawer(){
+  const d=document.getElementById('cart-drawer');
+  d.hidden=false;
+  requestAnimationFrame(()=>d.classList.add('open'));
+  document.body.classList.add('no-scroll');
+}
+function closeCartDrawer(){
+  const d=document.getElementById('cart-drawer');
+  d.classList.remove('open');
+  document.body.classList.remove('no-scroll');
+  setTimeout(()=>{ d.hidden=true; },400);
+}
+function initCart(){
+  document.getElementById('cart-float').addEventListener('click',openCartDrawer);
+  document.getElementById('cart-drawer-close').addEventListener('click',closeCartDrawer);
+  document.getElementById('cart-drawer-scrim').addEventListener('click',closeCartDrawer);
+  document.getElementById('cart-items').addEventListener('click',e=>{
+    const row=e.target.closest('.cart-item-row'); if(!row) return;
+    const id=row.dataset.id, type=row.dataset.type;
+    const item=CART.find(c=>c.id===id && c.type===type); if(!item) return;
+    if(e.target.closest('[data-qty-inc]')) cartSetQty(id,type,item.qty+1);
+    else if(e.target.closest('[data-qty-dec]')) cartSetQty(id,type,item.qty-1);
+    else if(e.target.closest('[data-remove]')) cartRemove(id,type);
+  });
+  document.getElementById('products-grid').addEventListener('click',e=>{
+    const btn=e.target.closest('[data-cart-add]'); if(!btn) return;
+    const p=CONFIG.products.find(x=>x.id===btn.dataset.cartAdd); if(!p) return;
+    cartAdd({id:p.id,type:'product',name:p.name,price:p.price,currency:p.currency,image_b64:p.image_b64});
+  });
+  document.getElementById('packages-grid').addEventListener('click',e=>{
+    const btn=e.target.closest('[data-cart-add]'); if(!btn) return;
+    const k=CONFIG.packages.find(x=>x.id===btn.dataset.cartAdd); if(!k) return;
+    cartAdd({id:k.id,type:'package',name:k.name,price:k.price,currency:k.currency,image_b64:''});
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && document.getElementById('cart-drawer').classList.contains('open')) closeCartDrawer();
+  });
+  renderCart();
+}
+
 /* ============ SELF TEST (?selftest=1) ============ */
 async function runSelfTests(){
   const results=[];
@@ -1917,6 +2121,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   initAdminLogin();
   initContactForm();
   initLightbox();
+  initCart();
   document.getElementById('admin-exit-btn').addEventListener('click',closeAdminDashboard);
   if(new URLSearchParams(location.search).get('selftest')==='1'){
     runSelfTests();
