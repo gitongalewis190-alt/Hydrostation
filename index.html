@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title id="page-title">HydroBiz | Pure Water, Delivered</title>
+<title id="page-title">Your Business Name</title>
 <meta name="description" content="Clean, reliable water and hydroponic products delivered to your door.">
 <link rel="icon" id="favicon-link" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1916,7 +1916,7 @@ function stopAdminIdleWatchdog(){
 function renderAdminSidebar(){
   const sidebar=document.getElementById('admin-sidebar');
   const unread=unreadNotificationsCount();
-  sidebar.innerHTML='<div class="as-brand">'+escapeHTML(CONFIG.identity.name)+' Admin</div>'
+  sidebar.innerHTML='<div class="as-brand">'+escapeHTML(CONFIG.identity.name||'Your Business Name')+' Admin</div>'
     +ADMIN_SECTIONS.map(s=>(
       '<button class="as-btn'+(s.key===adminActiveSection?' active':'')+'" data-section="'+s.key+'" type="button">'+icon(s.icon,17)+'<span>'+s.label+'</span>'
       +(s.key==='notifications'&&unread?'<span class="as-badge">'+unread+'</span>':'')
