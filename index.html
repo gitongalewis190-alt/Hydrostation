@@ -387,6 +387,7 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .as-btn svg{width:17px;height:17px;flex-shrink:0;}
 .as-btn:hover{background:rgba(255,255,255,.05);color:#fff;}
 .as-btn.active{background:rgba(35,181,200,.15);color:var(--accent-bright);}
+.as-badge{margin-left:auto;background:#F87171;color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 7px;line-height:1.5;flex-shrink:0;}
 .admin-main{flex:1;overflow-y:auto;}
 .admin-topbar{position:sticky;top:0;background:rgba(15,20,25,.85);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid var(--glass-border);z-index:5;}
 .admin-topbar h2{font-size:18px;}
@@ -1031,6 +1032,22 @@ function purgeExpiredTrash(){
   if(changed) saveConfig();
 }
 
+/* ============ NOTIFICATIONS STATE ============ */
+const MAX_NOTIFICATIONS=50;
+function pushNotification(message){
+  CONFIG.notifications.unshift({id:uid(),message,created_at:Date.now(),read:false});
+  if(CONFIG.notifications.length>MAX_NOTIFICATIONS) CONFIG.notifications.length=MAX_NOTIFICATIONS;
+}
+function unreadNotificationsCount(){ return CONFIG.notifications.filter(n=>!n.read).length; }
+function markAllNotificationsRead(){
+  CONFIG.notifications.forEach(n=>n.read=true);
+  saveConfig();
+}
+function clearAllNotifications(){
+  CONFIG.notifications=[];
+  saveConfig();
+}
+
 function cartCount(){ return CART.reduce((n,c)=>n+c.qty,0); }
 function cartTotals(){
   const totals={};
@@ -1070,7 +1087,8 @@ const ICONS={
   qrcode:'<rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.2"/><path d="M14.3 14.3h2.6v2.6h-2.6Zm3.9 0h2.3M14.3 20.5h2.3m1.6-3.9v2.3m0 1.6v2"/>',
   clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" stroke-linecap="round" stroke-linejoin="round"/>',
   restore:'<path d="M4 4v6h6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 14a8 8 0 1 0 2-8.5L4 9" stroke-linecap="round" stroke-linejoin="round"/>',
-  chart:'<path d="M3 21h18" stroke-linecap="round"/><path d="M6 21V12M11.5 21V6M17 21v-9" stroke-linecap="round" stroke-linejoin="round"/>'
+  chart:'<path d="M3 21h18" stroke-linecap="round"/><path d="M6 21V12M11.5 21V6M17 21v-9" stroke-linecap="round" stroke-linejoin="round"/>',
+  bell:'<path d="M6 10a6 6 0 1 1 12 0v4l1.7 3.2H4.3L6 14Z" stroke-linejoin="round"/><path d="M10 19.5a2 2 0 0 0 4 0" stroke-linecap="round"/>'
 };
 function icon(name,size=18){ return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="currentColor" stroke-width="1.7">'+(ICONS[name]||'')+'</svg>'; }
 const SOCIAL_ICONS={
@@ -1516,7 +1534,7 @@ function renderContact(){
 
   renderContactChannelPills();
 }
-const CONTACT_CHANNEL_LABELS={whatsapp:'WhatsApp',sms:'SMS',email:'Email'};
+const CONTACT_CHANNEL_LABELS={whatsapp:'WhatsApp',sms:'SMS',email:'Email',call:'Call'};
 let contactChannelChoice='';
 function availableContactChannels(){
   const channels=[];
@@ -1758,6 +1776,7 @@ const ADMIN_SECTIONS=[
   {key:'qrcode',label:'QR Code',icon:'qrcode'},
   {key:'orders',label:'Orders',icon:'cart'},
   {key:'analytics',label:'Analytics',icon:'chart'},
+  {key:'notifications',label:'Notifications',icon:'bell'},
   {key:'trash',label:'Trash',icon:'trash'},
   {key:'password',label:'Password',icon:'lock'},
   {key:'data',label:'Data',icon:'database'}
@@ -1818,14 +1837,21 @@ function stopAdminIdleWatchdog(){
 }
 function renderAdminSidebar(){
   const sidebar=document.getElementById('admin-sidebar');
+  const unread=unreadNotificationsCount();
   sidebar.innerHTML='<div class="as-brand">'+escapeHTML(CONFIG.identity.name)+' Admin</div>'
     +ADMIN_SECTIONS.map(s=>(
-      '<button class="as-btn'+(s.key===adminActiveSection?' active':'')+'" data-section="'+s.key+'" type="button">'+icon(s.icon,17)+'<span>'+s.label+'</span></button>'
+      '<button class="as-btn'+(s.key===adminActiveSection?' active':'')+'" data-section="'+s.key+'" type="button">'+icon(s.icon,17)+'<span>'+s.label+'</span>'
+      +(s.key==='notifications'&&unread?'<span class="as-badge">'+unread+'</span>':'')
+      +'</button>'
     )).join('');
   sidebar.querySelectorAll('.as-btn').forEach(b=>b.addEventListener('click',()=>selectAdminSection(b.dataset.section)));
 }
 function selectAdminSection(key){
   adminActiveSection=key;
+  if(key==='notifications' && unreadNotificationsCount()){
+    markAllNotificationsRead();
+    renderAdminSidebar();
+  }
   document.getElementById('admin-sidebar').querySelectorAll('.as-btn').forEach(b=>b.classList.toggle('active',b.dataset.section===key));
   const section=ADMIN_SECTIONS.find(s=>s.key===key);
   document.getElementById('admin-section-title').textContent=section?section.label:'';
@@ -2541,12 +2567,12 @@ function bindQRCodeActions(){
 const ADMIN_RENDERERS={
   identity:panelIdentity, socials:panelSocials, products:panelProducts, packages:panelPackages,
   gallery:panelGallery, testimonials:panelTestimonials, about:panelAbout, drawer:panelDrawer,
-  appearance:panelAppearance, qrcode:panelQRCode, orders:panelOrders, analytics:panelAnalytics, trash:panelTrash, password:panelPassword, data:panelData
+  appearance:panelAppearance, qrcode:panelQRCode, orders:panelOrders, analytics:panelAnalytics, notifications:panelNotifications, trash:panelTrash, password:panelPassword, data:panelData
 };
 const ADMIN_BINDERS={
   identity:bindIdentityActions, socials:()=>{}, products:bindProductsActions, packages:bindPackagesActions,
   gallery:bindGalleryActions, testimonials:bindTestimonialsActions, about:bindAboutActions, drawer:bindDrawerActions,
-  appearance:bindAppearanceActions, qrcode:bindQRCodeActions, orders:bindOrdersActions, analytics:bindAnalyticsActions, trash:bindTrashActions, password:bindPasswordActions, data:bindDataActions
+  appearance:bindAppearanceActions, qrcode:bindQRCodeActions, orders:bindOrdersActions, analytics:bindAnalyticsActions, notifications:bindNotificationsActions, trash:bindTrashActions, password:bindPasswordActions, data:bindDataActions
 };
 function bindAdminPanelActions(key){
   const fn=ADMIN_BINDERS[key];
@@ -2592,6 +2618,7 @@ function saveOrderRecord(record){
   if(CONFIG.orders.length>MAX_ORDERS){
     CONFIG.orders.splice(0,CONFIG.orders.length-MAX_ORDERS);
   }
+  pushNotification('New order from '+(order.name||'Unknown')+' via '+(CONTACT_CHANNEL_LABELS[order.channel]||order.channel||'message')+' ('+(order.source==='cart_checkout'?'Cart Checkout':'Contact Form')+')');
   saveConfig();
   return order;
 }
@@ -2764,6 +2791,31 @@ function bindAnalyticsActions(){
     analyticsPeriod=b.dataset.analyticsPeriod;
     rerenderAdminBody();
   }));
+}
+
+/* ============ ADMIN PANEL: Notifications ============ */
+function panelNotifications(){
+  const list=CONFIG.notifications;
+  return '<div class="admin-panel-section">'
+    +'<div class="admin-card"><h4>Notifications ('+list.length+')</h4>'
+    +'<p style="font-size:13px;color:rgba(255,255,255,.5);">New-order alerts from your cart checkout and contact form land here automatically.</p>'
+    +(list.length?'<button id="notif-clear-all" class="btn btn-ghost" type="button" style="margin-top:10px;">Clear All</button>':'')
+    +'</div>'
+    +'<div class="admin-card">'
+    +(list.length?list.map(n=>(
+      '<div class="list-row"><div class="lr-main"><strong'+(n.read?'':' style="color:var(--accent-bright);"')+'>'+escapeHTML(n.message)+'</strong>'
+      +'<span>'+escapeHTML(new Date(n.created_at).toLocaleString())+'</span></div></div>'
+    )).join(''):'<div class="admin-empty">No notifications yet.</div>')
+    +'</div></div>';
+}
+function bindNotificationsActions(){
+  const clearBtn=document.getElementById('notif-clear-all');
+  if(!clearBtn) return;
+  clearBtn.addEventListener('click',()=>{
+    if(!confirm('Clear all notifications? This cannot be undone.')) return;
+    clearAllNotifications();
+    rerenderAdminBody();
+  });
 }
 
 /* ============ ADMIN PANEL: Trash ============ */
@@ -2985,6 +3037,19 @@ async function runSelfTests(){
     CONFIG.testimonials=before;
     assert('soft-deleted item hidden from activeList() and restorable', hiddenWhenTrashed && visibleAfterRestore);
   }catch(e){ assert('soft-deleted item hidden from activeList() and restorable', false); }
+
+  try{
+    const before=CONFIG.notifications.slice();
+    CONFIG.notifications=[];
+    pushNotification('Self-test notification');
+    const pushedUnread=unreadNotificationsCount()===1;
+    markAllNotificationsRead();
+    const readClearsUnread=unreadNotificationsCount()===0;
+    clearAllNotifications();
+    const clearEmpties=CONFIG.notifications.length===0;
+    CONFIG.notifications=before;
+    assert('notification push/read/clear lifecycle works', pushedUnread && readClearsUnread && clearEmpties);
+  }catch(e){ assert('notification push/read/clear lifecycle works', false); }
 
   const pass=results.filter(r=>r.pass).length;
   console.log('%cHydroBiz self-test: '+pass+'/'+results.length+' passed','font-weight:bold;font-size:13px;');
