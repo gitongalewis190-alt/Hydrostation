@@ -301,6 +301,32 @@ input,textarea,select{font-family:inherit;font-size:15px;}
   .nav-cart-btn{width:36px;height:36px;}
 }
 
+/* ============ FAB GROUP (ORDER NOW / QR / LOCATION) ============ */
+.fab-group{position:fixed;bottom:24px;right:24px;z-index:400;display:flex;flex-direction:column;align-items:flex-end;gap:14px;opacity:0;transform:translateY(16px) scale(.94);pointer-events:none;transition:opacity .3s ease,transform .3s var(--spring);}
+.fab-group.visible{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
+.fab-menu{display:flex;flex-direction:column;align-items:flex-end;gap:10px;margin-bottom:4px;}
+.fab-item{display:flex;align-items:center;gap:10px;background:var(--admin-bg);color:#fff;border:none;border-radius:24px;padding:9px 8px 9px 16px;box-shadow:var(--shadow-lg);font-size:13.5px;font-weight:600;white-space:nowrap;opacity:0;transform:translateY(10px) scale(.9);pointer-events:none;transition:opacity .22s ease,transform .22s var(--spring);cursor:pointer;}
+.fab-item-icon{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;}
+.fab-item-icon svg{width:16px;height:16px;}
+.fab-menu.open .fab-item{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
+.fab-menu.open .fab-item:nth-child(1){transition-delay:.08s;}
+.fab-menu.open .fab-item:nth-child(2){transition-delay:.04s;}
+.fab-menu.open .fab-item:nth-child(3){transition-delay:0s;}
+.fab-main{width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(11,110,122,.4);transition:transform .3s var(--spring);flex-shrink:0;cursor:pointer;}
+.fab-main:hover{transform:scale(1.06) translateY(-2px);}
+.fab-main svg{transition:transform .3s var(--spring);}
+.fab-group.open .fab-main svg{transform:rotate(45deg);}
+@media (max-width:480px){
+  .fab-group{bottom:16px;right:16px;}
+  .fab-main{width:48px;height:48px;}
+  .fab-item{font-size:12.5px;padding:7px 7px 7px 13px;}
+  .fab-item-icon{width:25px;height:25px;}
+}
+.qr-panel{max-width:320px;position:relative;}
+.qr-image-wrap{background:#fff;border-radius:14px;padding:14px;display:inline-flex;margin:6px 0 14px;}
+.qr-image-wrap img{display:block;width:200px;height:200px;}
+.qr-url{font-size:12.5px;color:rgba(255,255,255,.55);word-break:break-all;margin-bottom:18px;}
+
 /* ============ QUICK DRAWER ============ */
 .quick-drawer{position:fixed;inset:0;z-index:1000;}
 .quick-drawer-scrim{position:absolute;inset:0;background:rgba(7,18,20,.45);}
@@ -601,6 +627,21 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
     <svg viewBox="0 0 32 32" fill="currentColor"><path d="M16.02 3C9.4 3 4.04 8.36 4.04 14.98c0 2.36.7 4.55 1.9 6.4L4 29l7.83-1.9a12.9 12.9 0 0 0 4.2.7c6.62 0 11.98-5.36 11.98-11.98C27.99 8.36 22.64 3 16.02 3Zm0 21.78c-1.5 0-2.93-.4-4.18-1.1l-.3-.17-4.43 1.08 1.13-4.3-.2-.32a9.7 9.7 0 0 1-1.5-5.2c0-5.4 4.4-9.78 9.5-9.78 5.07 0 9.46 4.38 9.46 9.78 0 5.4-4.4 10.01-9.48 10.01Zm5.4-7.32c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.61.15-.15.34-.4.5-.6.17-.2.22-.34.34-.57.12-.22.06-.42-.04-.57-.1-.15-.55-1.33-.76-1.82-.2-.48-.4-.42-.56-.42-.15 0-.42 0-.65.02-.22.02-.59.1-.84.4-.26.3-.99 1.03-.99 2.4 0 1.36 1 2.7 1.15 2.9.15.2 1.93 2.96 4.7 4.04 2.76 1.08 2.76.72 3.26.67.5-.05 1.75-.7 2-1.4.25-.7.25-1.3.17-1.42-.07-.13-.28-.2-.58-.35Z"/></svg>
   </button>
 
+  <div class="fab-group" id="fab-group">
+    <div class="fab-menu" id="fab-menu">
+      <button class="fab-item" id="fab-location" type="button" hidden>
+        <span class="fab-item-label">Location</span><span class="fab-item-icon"></span>
+      </button>
+      <button class="fab-item" id="fab-qr" type="button">
+        <span class="fab-item-label">QR Code</span><span class="fab-item-icon"></span>
+      </button>
+      <button class="fab-item" id="fab-order" type="button">
+        <span class="fab-item-label">Order Now</span><span class="fab-item-icon"></span>
+      </button>
+    </div>
+    <button class="fab-main" id="fab-main" type="button" aria-label="Quick actions" aria-expanded="false"></button>
+  </div>
+
 </div>
 
 <div class="quick-drawer cart-drawer" id="cart-drawer" hidden>
@@ -647,6 +688,22 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
   </div>
 </div>
 
+<div class="modal-overlay" id="qr-modal" hidden>
+  <div class="modal-panel qr-panel">
+    <button class="icon-btn" id="qr-modal-close" aria-label="Close" type="button" style="position:absolute;top:14px;right:14px;color:rgba(255,255,255,.6);">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+    </button>
+    <h3>Scan to Visit</h3>
+    <p class="hint">Point a phone camera at this code</p>
+    <div class="qr-image-wrap"><img id="qr-image" alt="QR code linking to this site" width="220" height="220"></div>
+    <p class="qr-url" id="qr-url-text"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="qr-copy-link" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Copy Link</button>
+      <a class="btn btn-primary" id="qr-download" download="qr-code.png" target="_blank" rel="noopener">Download</a>
+    </div>
+  </div>
+</div>
+
 <div class="admin-dashboard" id="admin-dashboard" hidden>
   <aside class="admin-sidebar" id="admin-sidebar">
     <div class="as-brand">HydroBiz Admin</div>
@@ -687,7 +744,7 @@ const DEFAULT_CONFIG={
     email:'', phone:'',
     hours:'',
     hero_headline:'', hero_sub:'',
-    hero_bg_mode:'gradient', hero_image_b64:'', maps_embed:'', maps_url:'', location_address:'', formspree_url:''
+    hero_bg_mode:'gradient', hero_image_b64:'', maps_embed:'', maps_url:'', location_address:'', lat:'', lng:'', formspree_url:''
   },
   socials:{
     facebook:'', instagram:'', twitter:'', tiktok:'', youtube:'', linkedin:'', whatsapp:'',
@@ -773,6 +830,12 @@ function toast(msg,isError){
 function waLink(phone,text){
   const digits=String(phone||'').replace(/[^\d]/g,'');
   return 'https://wa.me/'+digits+(text?('?text='+encodeURIComponent(text)):'');
+}
+function haversineKm(lat1,lon1,lat2,lon2){
+  const toRad=d=>d*Math.PI/180, R=6371;
+  const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
 function youtubeEmbedUrl(url){
   const m=String(url||'').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{6,})/);
@@ -892,7 +955,9 @@ const ICONS={
   phone:'<path d="M6.5 4h3l1.5 4-2 1.5a11 11 0 0 0 5.5 5.5l1.5-2 4 1.5v3a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 5 7.6 1.5 1.5 0 0 1 6.5 4Z" stroke-linejoin="round"/>',
   eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" stroke-linejoin="round"/><circle cx="12" cy="12" r="3"/>',
   eyeOff:'<path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.4 5.1A11 11 0 0 1 12 4.8c6 0 9.5 6.5 9.5 6.5a14 14 0 0 1-2.6 3.4M6.1 6.1A14.6 14.6 0 0 0 2.5 12S6 18.5 12 18.5a9.9 9.9 0 0 0 3.4-.6" stroke-linecap="round" stroke-linejoin="round"/>',
-  minus:'<path d="M5 12h14" stroke-linecap="round"/>'
+  minus:'<path d="M5 12h14" stroke-linecap="round"/>',
+  pin:'<path d="M12 21s7-7.6 7-12.5A7 7 0 0 0 5 8.5C5 13.4 12 21 12 21Z" stroke-linejoin="round"/><circle cx="12" cy="8.5" r="2.4"/>',
+  qrcode:'<rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.2"/><path d="M14.3 14.3h2.6v2.6h-2.6Zm3.9 0h2.3M14.3 20.5h2.3m1.6-3.9v2.3m0 1.6v2"/>'
 };
 function icon(name,size=18){ return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="currentColor" stroke-width="1.7">'+(ICONS[name]||'')+'</svg>'; }
 const SOCIAL_ICONS={
@@ -1083,6 +1148,92 @@ function initCatalogFilters(){
   });
 }
 
+/* ============ FAB GROUP: Order Now / QR / Location ============ */
+function initFabGroup(){
+  const group=document.getElementById('fab-group');
+  const main=document.getElementById('fab-main');
+  const menu=document.getElementById('fab-menu');
+  main.innerHTML=icon('plus',24);
+  document.querySelector('#fab-location .fab-item-icon').innerHTML=icon('pin',16);
+  document.querySelector('#fab-qr .fab-item-icon').innerHTML=icon('qrcode',16);
+  document.querySelector('#fab-order .fab-item-icon').innerHTML=icon('cart',16);
+
+  function closeFabMenu(){ group.classList.remove('open'); menu.classList.remove('open'); main.setAttribute('aria-expanded','false'); }
+
+  let scrollTicking=false;
+  function onScroll(){
+    if(scrollTicking) return;
+    scrollTicking=true;
+    requestAnimationFrame(()=>{
+      const past=window.scrollY>window.innerHeight*0.45;
+      group.classList.toggle('visible',past);
+      if(!past) closeFabMenu();
+      scrollTicking=false;
+    });
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+
+  main.addEventListener('click',()=>{
+    const open=!group.classList.contains('open');
+    group.classList.toggle('open',open);
+    menu.classList.toggle('open',open);
+    main.setAttribute('aria-expanded',open?'true':'false');
+  });
+
+  document.getElementById('fab-order').addEventListener('click',()=>{
+    closeFabMenu();
+    const target=document.getElementById('contact');
+    if(target) target.scrollIntoView({behavior:'smooth'});
+  });
+
+  document.getElementById('fab-qr').addEventListener('click',()=>{
+    closeFabMenu();
+    openQRModal();
+  });
+
+  document.getElementById('fab-location').addEventListener('click',()=>{
+    closeFabMenu();
+    const url=CONFIG.identity.maps_url || (CONFIG.identity.location_address ? 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(CONFIG.identity.location_address) : '');
+    const lat=parseFloat(CONFIG.identity.lat), lng=parseFloat(CONFIG.identity.lng);
+    if(!isNaN(lat) && !isNaN(lng) && navigator.geolocation){
+      toast('Finding your distance…');
+      const mapsWin=url?window.open('','_blank'):null;
+      navigator.geolocation.getCurrentPosition(
+        pos=>{
+          const km=haversineKm(pos.coords.latitude,pos.coords.longitude,lat,lng);
+          toast('You are '+(km<1?Math.round(km*1000)+' m':km.toFixed(1)+' km')+' from '+(CONFIG.identity.name||'us'));
+          if(mapsWin) mapsWin.location.href=url;
+        },
+        ()=>{ if(mapsWin) mapsWin.location.href=url; else toast('Location permission denied'); },
+        { timeout:8000 }
+      );
+    } else if(url){ window.open(url,'_blank'); }
+    else { toast('Location not set yet'); }
+  });
+
+  document.addEventListener('click',e=>{
+    if(group.classList.contains('open') && !group.contains(e.target)) closeFabMenu();
+  });
+
+  document.getElementById('qr-modal-close').addEventListener('click',closeQRModal);
+  document.getElementById('qr-modal').addEventListener('click',e=>{ if(e.target.id==='qr-modal') closeQRModal(); });
+  document.getElementById('qr-copy-link').addEventListener('click',async()=>{
+    const text=document.getElementById('qr-url-text').textContent;
+    try{ await navigator.clipboard.writeText(text); toast('Link copied'); }
+    catch(err){ toast('Could not copy link'); }
+  });
+}
+function openQRModal(){
+  const url=location.href.split('#')[0];
+  const apiUrl='https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data='+encodeURIComponent(url);
+  document.getElementById('qr-image').src=apiUrl;
+  document.getElementById('qr-url-text').textContent=url;
+  document.getElementById('qr-download').href=apiUrl;
+  document.getElementById('qr-modal').hidden=false;
+}
+function closeQRModal(){ document.getElementById('qr-modal').hidden=true; }
+
 /* ============ RENDER: packages ============ */
 function renderPackages(){
   const grid=document.getElementById('packages-grid');
@@ -1177,6 +1328,9 @@ function renderContact(){
     wa.hidden=false;
     wa.onclick=()=>window.open(waLink(CONFIG.socials.whatsapp,'Hi '+CONFIG.identity.name+', I would like to enquire.'),'_blank');
   } else { wa.hidden=true; }
+
+  const fabLocation=document.getElementById('fab-location');
+  if(fabLocation) fabLocation.hidden=!(CONFIG.identity.maps_url || CONFIG.identity.location_address);
 }
 
 function renderQuickDrawer(){
@@ -1321,6 +1475,7 @@ function initAdminLogin(){
       if(!document.getElementById('admin-login-modal').hidden) closeAdminLogin();
       if(document.getElementById('quick-drawer').classList.contains('open')) closeDrawer();
       if(!document.getElementById('lightbox-overlay').hidden) closeLightbox();
+      if(!document.getElementById('qr-modal').hidden) closeQRModal();
     }
   });
 }
@@ -1433,8 +1588,14 @@ function panelIdentity(){
     +'<div class="a-toggle"><span>Background Mode: '+(id.hero_bg_mode==='gradient'?'Teal Gradient':'White')+'</span>'
     +'<button class="btn btn-sm btn-ghost" data-action="toggle-hero-bg" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Switch</button></div>'
     +'</div>'
-    +'<div class="admin-card"><h4>Integrations</h4>'
+    +'<div class="admin-card"><h4>Location &amp; Maps</h4>'
+    +field('Street Address','identity.location_address',id.location_address)
+    +field('Google Maps Link (shown when visitors tap Location)','identity.maps_url',id.maps_url)
+    +'<div class="a-row">'+field('Latitude','identity.lat',id.lat)+field('Longitude','identity.lng',id.lng)+'</div>'
+    +'<div class="cap-note">Latitude/Longitude power the "distance to us" feature. Find them by right-clicking your location on Google Maps and copying the coordinates.</div>'
     +textareaField('Google Maps Embed (URL or full iframe code)','identity.maps_embed',id.maps_embed)
+    +'</div>'
+    +'<div class="admin-card"><h4>Integrations</h4>'
     +field('Formspree Endpoint URL (optional)','identity.formspree_url',id.formspree_url)
     +'</div></div>';
 }
@@ -2237,6 +2398,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   initLightbox();
   initCart();
   initCatalogFilters();
+  initFabGroup();
   document.getElementById('admin-exit-btn').addEventListener('click',closeAdminDashboard);
   if(new URLSearchParams(location.search).get('selftest')==='1'){
     runSelfTests();
