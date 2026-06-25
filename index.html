@@ -116,6 +116,7 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .social-icons svg{width:18px;height:18px;}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--admin-bg);color:#fff;padding:13px 20px;border-radius:10px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-lg);z-index:9999;transform:translateY(0);animation:toastIn .3s var(--spring);}
 .toast svg{width:16px;height:16px;color:var(--accent-bright);}
+.toast-action-btn{background:none;border:none;color:var(--accent-bright);font-weight:700;font-size:13.5px;text-decoration:underline;cursor:pointer;padding:0;margin-left:4px;}
 @keyframes toastIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 
 /* ============ PRELOADER ============ */
@@ -820,7 +821,6 @@ const DEFAULT_CONFIG={
     product_sort:'newest', theme:{}, qr_style:{fg:'',bg:'',quiet_zone:8}
   },
   orders:[],
-  trash:[],
   notifications:[],
   admin_security:{idle_timeout_min:5},
   password_hash:null
@@ -865,16 +865,22 @@ function setPath(obj,path,value){
   for(let i=0;i<keys.length-1;i++){ cur=cur[keys[i]]=cur[keys[i]]??{}; }
   cur[keys[keys.length-1]]=value;
 }
-function toast(msg,isError){
+function toast(msg,isError,action){
   const el=document.getElementById('toast');
   el.innerHTML=(isError
     ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#F87171" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/></svg>'
     : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>')
-    +'<span>'+escapeHTML(msg)+'</span>';
+    +'<span>'+escapeHTML(msg)+'</span>'
+    +(action?'<button type="button" id="toast-action-btn" class="toast-action-btn">'+escapeHTML(action.label)+'</button>':'');
   el.hidden=false;
   el.style.animation='none'; requestAnimationFrame(()=>{ el.style.animation='toastIn .3s var(--spring)'; });
   clearTimeout(toast._t);
-  toast._t=setTimeout(()=>{ el.hidden=true; },2400);
+  if(action){
+    document.getElementById('toast-action-btn').addEventListener('click',()=>{
+      clearTimeout(toast._t); el.hidden=true; action.onClick();
+    });
+  }
+  toast._t=setTimeout(()=>{ el.hidden=true; },action?5000:2400);
 }
 function waLink(phone,text){
   const digits=String(phone||'').replace(/[^\d]/g,'');
@@ -970,6 +976,61 @@ function cartRemove(id,type){
   saveCart();
   renderCart();
 }
+/* ============ TRASH (soft delete) ============
+   Manager entities are never hard-removed by the normal delete button — they're
+   stamped with deleted_at and hidden from public render + admin list views, then
+   either restored or purged forever from the Trash section. Anything still in
+   trash past TRASH_RETENTION_MS is auto-purged once on load. */
+const TRASH_RETENTION_MS=30*24*60*60*1000;
+const TRASH_TYPES=[
+  {path:'products',label:'Product',titleOf:p=>p.name,subOf:p=>formatMoney(p.currency,p.price)},
+  {path:'packages',label:'Package',titleOf:p=>p.name,subOf:p=>p.subtitle||''},
+  {path:'gallery',label:'Gallery Image',titleOf:()=>'Gallery Image',subOf:()=>'',imageOf:g=>g.image_b64},
+  {path:'testimonials',label:'Testimonial',titleOf:t=>t.name,subOf:t=>(t.quote||'').slice(0,60)},
+  {path:'about.team',label:'Team Member',titleOf:m=>m.name,subOf:m=>m.role||''},
+  {path:'drawer.highlights',label:'Quick-Menu Highlight',titleOf:h=>h.title,subOf:h=>(h.body||'').slice(0,60)}
+];
+function activeList(path){ return (getPath(CONFIG,path)||[]).filter(x=>!x.deleted_at); }
+function softDeleteItem(path,id,itemLabel){
+  const arr=getPath(CONFIG,path);
+  const item=arr&&arr.find(x=>x.id===id);
+  if(!item) return;
+  item.deleted_at=Date.now();
+  commitNow(false);
+  rerenderAdminBody(); renderAll();
+  toast((itemLabel||'Item')+' moved to trash',false,{label:'Undo',onClick:()=>{
+    delete item.deleted_at;
+    commitNow(false);
+    rerenderAdminBody(); renderAll();
+    toast('Restored');
+  }});
+}
+function restoreItem(path,id){
+  const arr=getPath(CONFIG,path);
+  const item=arr&&arr.find(x=>x.id===id);
+  if(!item) return;
+  delete item.deleted_at;
+  commitNow('Restored');
+  rerenderAdminBody(); renderAll();
+}
+function purgeForeverItem(path,id){
+  const arr=getPath(CONFIG,path);
+  if(!arr) return;
+  setPath(CONFIG,path,arr.filter(x=>x.id!==id));
+  commitNow('Deleted forever');
+  rerenderAdminBody();
+}
+function purgeExpiredTrash(){
+  let changed=false;
+  TRASH_TYPES.forEach(t=>{
+    const arr=getPath(CONFIG,t.path);
+    if(!Array.isArray(arr)) return;
+    const kept=arr.filter(x=>!x.deleted_at||(Date.now()-x.deleted_at)<TRASH_RETENTION_MS);
+    if(kept.length!==arr.length){ setPath(CONFIG,t.path,kept); changed=true; }
+  });
+  if(changed) saveConfig();
+}
+
 function cartCount(){ return CART.reduce((n,c)=>n+c.qty,0); }
 function cartTotals(){
   const totals={};
@@ -1007,7 +1068,8 @@ const ICONS={
   minus:'<path d="M5 12h14" stroke-linecap="round"/>',
   pin:'<path d="M12 21s7-7.6 7-12.5A7 7 0 0 0 5 8.5C5 13.4 12 21 12 21Z" stroke-linejoin="round"/><circle cx="12" cy="8.5" r="2.4"/>',
   qrcode:'<rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.2"/><path d="M14.3 14.3h2.6v2.6h-2.6Zm3.9 0h2.3M14.3 20.5h2.3m1.6-3.9v2.3m0 1.6v2"/>',
-  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" stroke-linecap="round" stroke-linejoin="round"/>'
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" stroke-linecap="round" stroke-linejoin="round"/>',
+  restore:'<path d="M4 4v6h6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 14a8 8 0 1 0 2-8.5L4 9" stroke-linecap="round" stroke-linejoin="round"/>'
 };
 function icon(name,size=18){ return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="currentColor" stroke-width="1.7">'+(ICONS[name]||'')+'</svg>'; }
 const SOCIAL_ICONS={
@@ -1151,11 +1213,11 @@ function renderHero(){
 let productSearchQuery='', productActiveCategory='all';
 function productCategory(p){ return (p.category||'').trim()||'General'; }
 function getProductCategories(){
-  const set=new Set(CONFIG.products.map(productCategory));
+  const set=new Set(activeList('products').map(productCategory));
   return ['all',...Array.from(set).sort()];
 }
 function sortedProducts(){
-  const arr=CONFIG.products.slice();
+  const arr=activeList('products');
   const sort=CONFIG.appearance.product_sort||'newest';
   if(sort==='newest') arr.sort((a,b)=>(b.created_at||0)-(a.created_at||0));
   else if(sort==='oldest') arr.sort((a,b)=>(a.created_at||0)-(b.created_at||0));
@@ -1176,7 +1238,7 @@ function renderCategoryTabs(){
   const wrap=document.getElementById('category-tabs');
   if(!wrap) return;
   const cats=getProductCategories();
-  if(!CONFIG.products.length || cats.length<2){ wrap.hidden=true; wrap.innerHTML=''; return; }
+  if(!activeList('products').length || cats.length<2){ wrap.hidden=true; wrap.innerHTML=''; return; }
   wrap.hidden=false;
   wrap.innerHTML=cats.map(c=>(
     '<button class="cat-tab'+(productActiveCategory===c?' active':'')+'" type="button" data-cat="'+escapeHTML(c)+'">'+(c==='all'?'All':escapeHTML(c))+'</button>'
@@ -1185,9 +1247,9 @@ function renderCategoryTabs(){
 function renderProducts(){
   renderCategoryTabs();
   const catalogBar=document.getElementById('catalog-bar');
-  if(catalogBar) catalogBar.hidden=!CONFIG.products.length || !CONFIG.appearance.sections_visible.products;
+  if(catalogBar) catalogBar.hidden=!activeList('products').length || !CONFIG.appearance.sections_visible.products;
   const grid=document.getElementById('products-grid');
-  if(!CONFIG.products.length){
+  if(!activeList('products').length){
     grid.innerHTML='<div class="empty-state">No products added yet. Visit the admin panel to add your catalogue.</div>';
     return;
   }
@@ -1352,11 +1414,12 @@ function printQRCode(imgUrl,caption){
 /* ============ RENDER: packages ============ */
 function renderPackages(){
   const grid=document.getElementById('packages-grid');
-  if(!CONFIG.packages.length){
+  const packages=activeList('packages');
+  if(!packages.length){
     grid.innerHTML='<div class="empty-state">No packages added yet. Visit the admin panel to create one.</div>';
     return;
   }
-  grid.innerHTML=CONFIG.packages.map(k=>(
+  grid.innerHTML=packages.map(k=>(
     '<div class="card package-card"><span class="package-sub">'+escapeHTML(k.subtitle||'')+'</span>'
     +'<h3>'+escapeHTML(k.name)+'</h3><p>'+escapeHTML(k.description)+'</p>'
     +'<div class="package-price mono">'+(k.currency==='USD'?'$':'KES ')+Number(k.price||0).toLocaleString()+'</div>'
@@ -1374,7 +1437,7 @@ function renderPackages(){
 function renderAbout(){
   document.getElementById('about-story-text').textContent=CONFIG.about.story;
   const team=document.getElementById('about-team');
-  team.innerHTML=(CONFIG.about.team||[]).map(m=>(
+  team.innerHTML=activeList('about.team').map(m=>(
     '<div class="team-member">'
     +(m.photo_b64?'<img class="team-photo" src="'+m.photo_b64+'" alt="'+escapeHTML(m.name)+'">':'<div class="team-photo"></div>')
     +'<h4>'+escapeHTML(m.name)+'</h4><span>'+escapeHTML(m.role)+'</span></div>'
@@ -1385,16 +1448,17 @@ function renderAbout(){
 let lightboxIndex=0;
 function renderGallery(){
   const grid=document.getElementById('gallery-grid');
-  if(!CONFIG.gallery.length){
+  const images=activeList('gallery');
+  if(!images.length){
     grid.innerHTML='<div class="empty-state">No gallery images yet.</div>';
     return;
   }
-  grid.innerHTML=CONFIG.gallery.map((g,i)=>'<img src="'+g.image_b64+'" alt="Gallery image '+(i+1)+'" data-i="'+i+'">').join('');
+  grid.innerHTML=images.map((g,i)=>'<img src="'+g.image_b64+'" alt="Gallery image '+(i+1)+'" data-i="'+i+'">').join('');
   grid.querySelectorAll('img').forEach(img=>img.addEventListener('click',()=>openLightbox(Number(img.dataset.i))));
 }
 function openLightbox(i){
   lightboxIndex=i;
-  document.getElementById('lightbox-img').src=CONFIG.gallery[i].image_b64;
+  document.getElementById('lightbox-img').src=activeList('gallery')[i].image_b64;
   document.getElementById('lightbox-overlay').hidden=false;
   document.body.classList.add('no-scroll');
 }
@@ -1403,19 +1467,21 @@ function closeLightbox(){
   document.body.classList.remove('no-scroll');
 }
 function stepLightbox(dir){
-  const n=CONFIG.gallery.length; if(!n) return;
+  const images=activeList('gallery');
+  const n=images.length; if(!n) return;
   lightboxIndex=(lightboxIndex+dir+n)%n;
-  document.getElementById('lightbox-img').src=CONFIG.gallery[lightboxIndex].image_b64;
+  document.getElementById('lightbox-img').src=images[lightboxIndex].image_b64;
 }
 
 /* ============ RENDER: testimonials ============ */
 function renderTestimonials(){
   const grid=document.getElementById('testimonials-grid');
-  if(!CONFIG.testimonials.length){
+  const testimonials=activeList('testimonials');
+  if(!testimonials.length){
     grid.innerHTML='<div class="empty-state">No testimonials yet.</div>';
     return;
   }
-  grid.innerHTML=CONFIG.testimonials.map(t=>(
+  grid.innerHTML=testimonials.map(t=>(
     '<div class="card testimonial-card"><div class="t-stars">'+Array.from({length:5},(_,i)=>'<span style="opacity:'+(i<t.stars?1:.25)+'">'+icon('star',15)+'</span>').join('')+'</div>'
     +'<p class="t-quote">“'+escapeHTML(t.quote)+'”</p>'
     +'<div><div class="t-name">'+escapeHTML(t.name)+'</div><div class="t-date">'+escapeHTML(t.date||'')+'</div></div></div>'
@@ -1435,7 +1501,7 @@ function renderContact(){
   mapWrap.innerHTML=src?'<iframe src="'+escapeHTML(src)+'" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>':'';
 
   const select=document.getElementById('cf-interest');
-  const opts=['General Enquiry'].concat(CONFIG.products.map(p=>p.name)).concat(CONFIG.packages.map(k=>k.name));
+  const opts=['General Enquiry'].concat(activeList('products').map(p=>p.name)).concat(activeList('packages').map(k=>k.name));
   select.innerHTML=opts.map(o=>'<option>'+escapeHTML(o)+'</option>').join('');
 
   const wa=document.getElementById('whatsapp-float');
@@ -1473,7 +1539,7 @@ function renderQuickDrawer(){
   const hoursBlock=CONFIG.identity.hours
     ? '<div class="qd-item qd-hours"><h4>'+icon('clock',15)+' Working Hours</h4><p class="hours-block">'+escapeHTML(CONFIG.identity.hours)+'</p></div>'
     : '';
-  const highlights=(CONFIG.drawer.highlights||[]).map(h=>(
+  const highlights=activeList('drawer.highlights').map(h=>(
     '<div class="qd-item"><h4>'+escapeHTML(h.title)+'</h4><p>'+escapeHTML(h.body)+'</p></div>'
   )).join('');
   content.innerHTML=hoursBlock+highlights || '<div class="qd-item"><p>Nothing here yet.</p></div>';
@@ -1690,6 +1756,7 @@ const ADMIN_SECTIONS=[
   {key:'appearance',label:'Appearance',icon:'sliders'},
   {key:'qrcode',label:'QR Code',icon:'qrcode'},
   {key:'orders',label:'Orders',icon:'cart'},
+  {key:'trash',label:'Trash',icon:'trash'},
   {key:'password',label:'Password',icon:'lock'},
   {key:'data',label:'Data',icon:'database'}
 ];
@@ -1911,8 +1978,8 @@ function panelProducts(){
     +'<option value="price_low"'+(CONFIG.appearance.product_sort==='price_low'?' selected':'')+'>Price: Low to High</option>'
     +'<option value="price_high"'+(CONFIG.appearance.product_sort==='price_high'?' selected':'')+'>Price: High to Low</option>'
     +'<option value="name_az"'+(CONFIG.appearance.product_sort==='name_az'?' selected':'')+'>Name: A to Z</option></select></div></div>'
-    +'<div class="admin-card"><h4>Product List ('+CONFIG.products.length+') &mdash; unlimited</h4>'
-    +(CONFIG.products.length?CONFIG.products.map(p=>(
+    +'<div class="admin-card"><h4>Product List ('+activeList('products').length+') &mdash; unlimited</h4>'
+    +(activeList('products').length?activeList('products').map(p=>(
       '<div class="list-row" draggable="true" data-id="'+p.id+'">'+icon('drag',16)
       +(p.image_b64?'<img src="'+p.image_b64+'" alt="">':'')
       +'<div class="lr-main"><strong>'+escapeHTML(p.name)+'</strong><span>'+(p.currency==='USD'?'$':'KES ')+Number(p.price||0).toLocaleString()+' • '+(p.qty_value?p.qty_value+(p.qty_unit||''):'')+(p.in_stock?'':' • Out of stock')+'</span></div>'
@@ -1971,10 +2038,7 @@ function bindProductsActions(){
     rerenderAdminBody();
   }));
   document.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>{
-    if(!confirm('Delete this product?')) return;
-    CONFIG.products=CONFIG.products.filter(p=>p.id!==b.dataset.delete);
-    commitNow('Product deleted');
-    rerenderAdminBody();
+    softDeleteItem('products',b.dataset.delete,'Product');
   }));
   bindDragReorder('products');
 }
@@ -2005,7 +2069,7 @@ function syncIncludesDraftFromDOM(){
 }
 function panelPackages(){
   const editing=CONFIG.packages.find(k=>k.id===editingPackageId);
-  const atCap=CONFIG.packages.length>=MAX_PACKAGES && !editing;
+  const atCap=activeList('packages').length>=MAX_PACKAGES && !editing;
   return '<div class="admin-panel-section">'
     +'<div class="admin-card"><h4>'+(editing?'Edit Package':'Add Package')+'</h4>'
     +'<div class="a-row">'
@@ -2024,8 +2088,8 @@ function panelPackages(){
     +(atCap?'<div class="cap-note">Maximum of '+MAX_PACKAGES+' packages reached.</div>':'')
     +'<div style="display:flex;gap:10px;"><button class="btn btn-primary" id="kf-save" '+(atCap?'disabled':'')+'>'+(editing?'Update Package':'Add Package')+'</button>'
     +(editing?'<button class="btn btn-ghost" id="kf-cancel" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Cancel</button>':'')+'</div></div>'
-    +'<div class="admin-card"><h4>Package List ('+CONFIG.packages.length+'/'+MAX_PACKAGES+')</h4>'
-    +(CONFIG.packages.length?CONFIG.packages.map(k=>(
+    +'<div class="admin-card"><h4>Package List ('+activeList('packages').length+'/'+MAX_PACKAGES+')</h4>'
+    +(activeList('packages').length?activeList('packages').map(k=>(
       '<div class="list-row"><div class="lr-main"><strong>'+escapeHTML(k.name)+'</strong><span>'+(k.currency==='USD'?'$':'KES ')+Number(k.price||0).toLocaleString()+'</span></div>'
       +'<div class="lr-actions"><button class="icon-btn" data-edit-pkg="'+k.id+'" style="color:#fff;" aria-label="Edit '+escapeHTML(k.name)+'">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-pkg="'+k.id+'" style="color:#F87171;" aria-label="Delete '+escapeHTML(k.name)+'">'+icon('trash',16)+'</button></div></div>'
     )).join(''):'<div class="admin-empty">No packages yet.</div>')
@@ -2061,7 +2125,7 @@ function bindPackagesActions(){
       const i=CONFIG.packages.findIndex(k=>k.id===editingPackageId);
       CONFIG.packages[i]=data;
     } else {
-      if(CONFIG.packages.length>=MAX_PACKAGES){ toast('Package limit reached',true); return; }
+      if(activeList('packages').length>=MAX_PACKAGES){ toast('Package limit reached',true); return; }
       CONFIG.packages.push(data);
     }
     editingPackageId=null; packageIncludesDraft=[];
@@ -2076,25 +2140,23 @@ function bindPackagesActions(){
     rerenderAdminBody();
   }));
   document.querySelectorAll('[data-delete-pkg]').forEach(b=>b.addEventListener('click',()=>{
-    if(!confirm('Delete this package?')) return;
-    CONFIG.packages=CONFIG.packages.filter(k=>k.id!==b.dataset.deletePkg);
-    commitNow('Package deleted');
-    rerenderAdminBody();
+    softDeleteItem('packages',b.dataset.deletePkg,'Package');
   }));
 }
 
 /* ============ ADMIN PANEL: Gallery ============ */
 function panelGallery(){
-  const atCap=CONFIG.gallery.length>=MAX_GALLERY;
+  const images=activeList('gallery');
+  const atCap=images.length>=MAX_GALLERY;
   return '<div class="admin-panel-section">'
     +'<div class="admin-card"><h4>Section Visibility</h4>'
     +'<div class="a-toggle"><span>Show Gallery section on site</span><div class="switch'+(CONFIG.appearance.sections_visible.gallery?' on':'')+'" data-path="appearance.sections_visible.gallery"></div></div></div>'
-    +'<div class="admin-card"><h4>Images ('+CONFIG.gallery.length+'/'+MAX_GALLERY+')</h4>'
+    +'<div class="admin-card"><h4>Images ('+images.length+'/'+MAX_GALLERY+')</h4>'
     +(atCap?'<div class="cap-note">Maximum of '+MAX_GALLERY+' images reached.</div>':'<input type="file" accept="image/*" id="gal-upload">')
-    +'<div class="gallery-admin-grid" style="margin-top:14px;">'+CONFIG.gallery.map(g=>(
+    +'<div class="gallery-admin-grid" style="margin-top:14px;">'+images.map(g=>(
       '<div class="g-item"><img src="'+g.image_b64+'" alt=""><button data-remove-gal="'+g.id+'" aria-label="Remove image" type="button">'+icon('trash',12)+'</button></div>'
     )).join('')+'</div>'
-    +(CONFIG.gallery.length?'':'<div class="admin-empty">No images yet.</div>')
+    +(images.length?'':'<div class="admin-empty">No images yet.</div>')
     +'</div></div>';
 }
 function bindGalleryActions(){
@@ -2109,9 +2171,7 @@ function bindGalleryActions(){
     }catch(err){ toast(err.message,true); }
   });
   document.querySelectorAll('[data-remove-gal]').forEach(b=>b.addEventListener('click',()=>{
-    CONFIG.gallery=CONFIG.gallery.filter(g=>g.id!==b.dataset.removeGal);
-    commitNow('Image removed');
-    rerenderAdminBody();
+    softDeleteItem('gallery',b.dataset.removeGal,'Image');
   }));
 }
 
@@ -2132,7 +2192,7 @@ function panelTestimonials(){
     +'<div style="display:flex;gap:10px;"><button class="btn btn-primary" id="tf-save">'+(editing?'Update':'Add')+' Testimonial</button>'
     +(editing?'<button class="btn btn-ghost" id="tf-cancel" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Cancel</button>':'')+'</div></div>'
     +'<div class="admin-card"><h4>Testimonial List</h4>'
-    +(CONFIG.testimonials.length?CONFIG.testimonials.map(t=>(
+    +(activeList('testimonials').length?activeList('testimonials').map(t=>(
       '<div class="list-row"><div class="lr-main"><strong>'+escapeHTML(t.name)+'</strong><span>'+'★'.repeat(t.stars)+'</span></div>'
       +'<div class="lr-actions"><button class="icon-btn" data-edit-test="'+t.id+'" style="color:#fff;" aria-label="Edit testimonial from '+escapeHTML(t.name)+'">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-test="'+t.id+'" style="color:#F87171;" aria-label="Delete testimonial from '+escapeHTML(t.name)+'">'+icon('trash',16)+'</button></div></div>'
     )).join(''):'<div class="admin-empty">No testimonials yet.</div>')
@@ -2166,10 +2226,7 @@ function bindTestimonialsActions(){
     editingTestimonialId=b.dataset.editTest; rerenderAdminBody();
   }));
   document.querySelectorAll('[data-delete-test]').forEach(b=>b.addEventListener('click',()=>{
-    if(!confirm('Delete this testimonial?')) return;
-    CONFIG.testimonials=CONFIG.testimonials.filter(t=>t.id!==b.dataset.deleteTest);
-    commitNow('Testimonial deleted');
-    rerenderAdminBody();
+    softDeleteItem('testimonials',b.dataset.deleteTest,'Testimonial');
   }));
 }
 
@@ -2188,7 +2245,7 @@ function panelAbout(){
     +'<div style="display:flex;gap:10px;"><button class="btn btn-primary" id="tm-save">'+(editing?'Update':'Add')+' Member</button>'
     +(editing?'<button class="btn btn-ghost" id="tm-cancel" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Cancel</button>':'')+'</div></div>'
     +'<div class="admin-card"><h4>Team List</h4>'
-    +(CONFIG.about.team.length?CONFIG.about.team.map(m=>(
+    +(activeList('about.team').length?activeList('about.team').map(m=>(
       '<div class="list-row">'+(m.photo_b64?'<img src="'+m.photo_b64+'" alt="">':'')+'<div class="lr-main"><strong>'+escapeHTML(m.name)+'</strong><span>'+escapeHTML(m.role)+'</span></div>'
       +'<div class="lr-actions"><button class="icon-btn" data-edit-team="'+m.id+'" style="color:#fff;" aria-label="Edit '+escapeHTML(m.name)+'">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-team="'+m.id+'" style="color:#F87171;" aria-label="Delete '+escapeHTML(m.name)+'">'+icon('trash',16)+'</button></div></div>'
     )).join(''):'<div class="admin-empty">No team members yet.</div>')
@@ -2221,10 +2278,7 @@ function bindAboutActions(){
     rerenderAdminBody();
   }));
   document.querySelectorAll('[data-delete-team]').forEach(b=>b.addEventListener('click',()=>{
-    if(!confirm('Remove this team member?')) return;
-    CONFIG.about.team=CONFIG.about.team.filter(m=>m.id!==b.dataset.deleteTeam);
-    commitNow('Team member removed');
-    rerenderAdminBody();
+    softDeleteItem('about.team',b.dataset.deleteTeam,'Team Member');
   }));
 }
 
@@ -2232,7 +2286,7 @@ function bindAboutActions(){
 let editingDrawerId=null;
 function panelDrawer(){
   const editing=CONFIG.drawer.highlights.find(h=>h.id===editingDrawerId);
-  const atCap=CONFIG.drawer.highlights.length>=MAX_DRAWER && !editing;
+  const atCap=activeList('drawer.highlights').length>=MAX_DRAWER && !editing;
   return '<div class="admin-panel-section">'
     +'<div class="admin-card"><h4>About the Hamburger Quick Menu</h4><p style="font-size:13px;color:rgba(255,255,255,.5);">Tapping the menu icon (top-left) opens a quick-info drawer with up to '+MAX_DRAWER+' short highlights, e.g. "How We Filter Our Water".</p></div>'
     +'<div class="admin-card"><h4>'+(editing?'Edit Highlight':'Add Highlight')+'</h4>'
@@ -2241,8 +2295,8 @@ function panelDrawer(){
     +(atCap?'<div class="cap-note">Maximum of '+MAX_DRAWER+' highlights reached.</div>':'')
     +'<div style="display:flex;gap:10px;"><button class="btn btn-primary" id="dr-save" '+(atCap?'disabled':'')+'>'+(editing?'Update':'Add')+' Highlight</button>'
     +(editing?'<button class="btn btn-ghost" id="dr-cancel" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Cancel</button>':'')+'</div></div>'
-    +'<div class="admin-card"><h4>Highlights ('+CONFIG.drawer.highlights.length+'/'+MAX_DRAWER+')</h4>'
-    +(CONFIG.drawer.highlights.length?CONFIG.drawer.highlights.map(h=>(
+    +'<div class="admin-card"><h4>Highlights ('+activeList('drawer.highlights').length+'/'+MAX_DRAWER+')</h4>'
+    +(activeList('drawer.highlights').length?activeList('drawer.highlights').map(h=>(
       '<div class="list-row"><div class="lr-main"><strong>'+escapeHTML(h.title)+'</strong><span>'+escapeHTML(h.body)+'</span></div>'
       +'<div class="lr-actions"><button class="icon-btn" data-edit-dr="'+h.id+'" style="color:#fff;" aria-label="Edit '+escapeHTML(h.title)+'">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-dr="'+h.id+'" style="color:#F87171;" aria-label="Delete '+escapeHTML(h.title)+'">'+icon('trash',16)+'</button></div></div>'
     )).join(''):'<div class="admin-empty">No highlights yet.</div>')
@@ -2258,7 +2312,7 @@ function bindDrawerActions(){
       const i=CONFIG.drawer.highlights.findIndex(h=>h.id===editingDrawerId);
       CONFIG.drawer.highlights[i]=data;
     } else {
-      if(CONFIG.drawer.highlights.length>=MAX_DRAWER){ toast('Highlight limit reached',true); return; }
+      if(activeList('drawer.highlights').length>=MAX_DRAWER){ toast('Highlight limit reached',true); return; }
       CONFIG.drawer.highlights.push(data);
     }
     editingDrawerId=null;
@@ -2269,10 +2323,7 @@ function bindDrawerActions(){
   if(cancelBtn) cancelBtn.addEventListener('click',()=>{ editingDrawerId=null; rerenderAdminBody(); });
   document.querySelectorAll('[data-edit-dr]').forEach(b=>b.addEventListener('click',()=>{ editingDrawerId=b.dataset.editDr; rerenderAdminBody(); }));
   document.querySelectorAll('[data-delete-dr]').forEach(b=>b.addEventListener('click',()=>{
-    if(!confirm('Delete this highlight?')) return;
-    CONFIG.drawer.highlights=CONFIG.drawer.highlights.filter(h=>h.id!==b.dataset.deleteDr);
-    commitNow('Highlight deleted');
-    rerenderAdminBody();
+    softDeleteItem('drawer.highlights',b.dataset.deleteDr,'Highlight');
   }));
 }
 
@@ -2488,12 +2539,12 @@ function bindQRCodeActions(){
 const ADMIN_RENDERERS={
   identity:panelIdentity, socials:panelSocials, products:panelProducts, packages:panelPackages,
   gallery:panelGallery, testimonials:panelTestimonials, about:panelAbout, drawer:panelDrawer,
-  appearance:panelAppearance, qrcode:panelQRCode, orders:panelOrders, password:panelPassword, data:panelData
+  appearance:panelAppearance, qrcode:panelQRCode, orders:panelOrders, trash:panelTrash, password:panelPassword, data:panelData
 };
 const ADMIN_BINDERS={
   identity:bindIdentityActions, socials:()=>{}, products:bindProductsActions, packages:bindPackagesActions,
   gallery:bindGalleryActions, testimonials:bindTestimonialsActions, about:bindAboutActions, drawer:bindDrawerActions,
-  appearance:bindAppearanceActions, qrcode:bindQRCodeActions, orders:bindOrdersActions, password:bindPasswordActions, data:bindDataActions
+  appearance:bindAppearanceActions, qrcode:bindQRCodeActions, orders:bindOrdersActions, trash:bindTrashActions, password:bindPasswordActions, data:bindDataActions
 };
 function bindAdminPanelActions(key){
   const fn=ADMIN_BINDERS[key];
@@ -2635,6 +2686,44 @@ function bindOrdersActions(){
   nameInput.addEventListener('input',refilter);
   fromInput.addEventListener('change',refilter);
   toInput.addEventListener('change',refilter);
+}
+
+/* ============ ADMIN PANEL: Trash ============ */
+function trashedEntries(){
+  const rows=[];
+  TRASH_TYPES.forEach(t=>{
+    (getPath(CONFIG,t.path)||[]).forEach(item=>{
+      if(item.deleted_at) rows.push({type:t,item});
+    });
+  });
+  rows.sort((a,b)=>b.item.deleted_at-a.item.deleted_at);
+  return rows;
+}
+function panelTrash(){
+  const rows=trashedEntries();
+  return '<div class="admin-card"><h4>About Trash</h4><p style="font-size:13px;color:rgba(255,255,255,.5);">Deleted products, packages, images, testimonials, team members and quick-menu highlights land here for 30 days before being purged automatically. Restore anytime before then.</p></div>'
+    +'<div class="admin-card"><h4>Trashed Items ('+rows.length+')</h4>'
+    +(rows.length?rows.map(({type,item})=>{
+      const daysLeft=Math.max(0,Math.ceil((TRASH_RETENTION_MS-(Date.now()-item.deleted_at))/86400000));
+      return '<div class="list-row">'
+        +(type.imageOf && type.imageOf(item)?'<img src="'+type.imageOf(item)+'" alt="">':'')
+        +'<div class="lr-main"><strong>'+escapeHTML(type.titleOf(item)||'Untitled')+'</strong>'
+        +'<span>'+escapeHTML(type.label)+(type.subOf(item)?' • '+escapeHTML(type.subOf(item)):'')+' • '+daysLeft+' day'+(daysLeft===1?'':'s')+' left</span></div>'
+        +'<div class="lr-actions"><button class="icon-btn" data-restore="'+type.path+'|'+item.id+'" style="color:#fff;" aria-label="Restore '+escapeHTML(type.titleOf(item)||type.label)+'">'+icon('restore',16)+'</button>'
+        +'<button class="icon-btn" data-purge="'+type.path+'|'+item.id+'" style="color:#F87171;" aria-label="Delete forever: '+escapeHTML(type.titleOf(item)||type.label)+'">'+icon('trash',16)+'</button></div></div>';
+    }).join(''):'<div class="admin-empty">Trash is empty.</div>')
+    +'</div>';
+}
+function bindTrashActions(){
+  document.querySelectorAll('[data-restore]').forEach(b=>b.addEventListener('click',()=>{
+    const [path,id]=b.dataset.restore.split('|');
+    restoreItem(path,id);
+  }));
+  document.querySelectorAll('[data-purge]').forEach(b=>b.addEventListener('click',()=>{
+    if(!confirm('Delete this item forever? This cannot be undone.')) return;
+    const [path,id]=b.dataset.purge.split('|');
+    purgeForeverItem(path,id);
+  }));
 }
 
 function initLightbox(){
@@ -2804,6 +2893,20 @@ async function runSelfTests(){
     try{ JSON.parse('{not valid json'); }catch(e){ threw=true; }
     assert('malformed JSON import is rejected', threw);
   }catch(e){ assert('malformed JSON import is rejected', false); }
+  try{
+    const before=CONFIG.testimonials.slice();
+    CONFIG.testimonials.push({id:'__selftest_trash',name:'Self-test',quote:'q',stars:5,date:''});
+    const hiddenWhenTrashed=(()=>{
+      CONFIG.testimonials.find(t=>t.id==='__selftest_trash').deleted_at=Date.now();
+      return !activeList('testimonials').some(t=>t.id==='__selftest_trash');
+    })();
+    const visibleAfterRestore=(()=>{
+      delete CONFIG.testimonials.find(t=>t.id==='__selftest_trash').deleted_at;
+      return activeList('testimonials').some(t=>t.id==='__selftest_trash');
+    })();
+    CONFIG.testimonials=before;
+    assert('soft-deleted item hidden from activeList() and restorable', hiddenWhenTrashed && visibleAfterRestore);
+  }catch(e){ assert('soft-deleted item hidden from activeList() and restorable', false); }
 
   const pass=results.filter(r=>r.pass).length;
   console.log('%cHydroBiz self-test: '+pass+'/'+results.length+' passed','font-weight:bold;font-size:13px;');
@@ -2813,6 +2916,7 @@ async function runSelfTests(){
 
 /* ============ MAIN INIT ============ */
 document.addEventListener('DOMContentLoaded',()=>{
+  purgeExpiredTrash();
   renderAll();
   runPreloader();
   initHamburger();
