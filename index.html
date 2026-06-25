@@ -184,6 +184,7 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px;}
 .product-card{padding:0;overflow:hidden;display:flex;flex-direction:column;}
 .product-card .pc-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--bg-soft);}
+.product-card img.pc-img{cursor:zoom-in;}
 .product-card .pc-video{width:100%;aspect-ratio:4/3;background:var(--bg-soft);}
 .product-card .pc-video iframe{width:100%;height:100%;border:0;display:block;}
 .product-card .pc-body{padding:20px;display:flex;flex-direction:column;gap:8px;flex:1;}
@@ -330,13 +331,33 @@ input,textarea,select{font-family:inherit;font-size:15px;}
   .fab-item-icon{width:25px;height:25px;}
 }
 .qr-panel{max-width:320px;position:relative;}
-.qr-image-wrap{background:#fff;border-radius:14px;padding:14px;display:inline-flex;margin:6px 0 14px;}
-.qr-image-wrap img{display:block;width:200px;height:200px;}
 .qr-url{font-size:12.5px;color:rgba(255,255,255,.55);word-break:break-all;margin-bottom:18px;}
 
+/* ============ BRANDED QR CARD (admin preview + public modal + print) ============
+   Premium single-card layout: bordered in the business's own accent color (so it
+   stays on-brand for every tenant rather than a one-size-fits-all hardcoded color),
+   bold uppercase business name, a separately-framed QR box, and a soft info strip
+   echoing the name + call-to-action — one self-contained printable/downloadable
+   page with only the info that actually matters (no third-party attribution). */
+.qr-brand-card{display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border:2px solid var(--accent);border-radius:22px;padding:30px 26px 26px;margin:6px 0 14px;color:#0B1418;box-shadow:0 14px 34px rgba(0,0,0,.10);}
+.qr-brand-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+.qr-brand-name{font-family:var(--font-display);font-weight:800;font-size:21px;line-height:1.25;text-transform:uppercase;letter-spacing:-.01em;margin-top:5px;}
+.qr-brand-tagline{font-size:12.5px;color:#5b6b70;margin-top:4px;max-width:260px;}
+.qr-brand-frame{display:inline-flex;margin:20px 0 16px;padding:10px;border:2px solid var(--accent);border-radius:16px;}
+.qr-brand-frame img{display:block;border-radius:8px;}
+.qr-brand-infobox{width:100%;max-width:280px;background:#F2F5F6;border-radius:14px;padding:14px 18px 16px;display:flex;flex-direction:column;align-items:center;}
+.qr-brand-logo{width:38px;height:38px;object-fit:contain;border-radius:9px;margin-bottom:8px;}
+.qr-brand-initial{display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:16px;color:#fff;background:var(--accent);}
+.qr-brand-infoname{font-weight:700;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;color:#7c8a8e;}
+.qr-brand-infocap{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#a3aeb1;margin-top:3px;}
+.qr-brand-contact{font-size:12px;color:#5b6b70;margin-top:12px;}
+.qr-brand-badges{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:16px;}
+.qr-brand-badges span{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:var(--accent);}
+.qr-brand-badges .icon-svg{width:11px;height:11px;}
+.qr-brand-url{font-size:10px;color:#9aa4a7;margin-top:14px;word-break:break-all;font-family:var(--font-mono,monospace);}
+
 /* ============ ADMIN: QR CODE GENERATOR ============ */
-.qr-admin-preview{background:#fff;border-radius:14px;padding:18px;display:inline-flex;align-items:center;justify-content:center;margin:6px 0;border:1px solid rgba(255,255,255,.08);}
-.qr-admin-preview img{display:block;width:220px;height:220px;border-radius:6px;}
+.qr-admin-preview{display:inline-flex;margin:6px 0;}
 .qr-color-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media (max-width:640px){.qr-color-row{grid-template-columns:1fr;}}
 .qr-color-field{display:flex;flex-direction:column;gap:6px;}
@@ -344,12 +365,87 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .qr-color-field input[type="color"]{width:100%;height:42px;padding:3px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);cursor:pointer;}
 /* Printable QR: hidden in normal view, shown exclusively when body.qr-printing is active */
 #qr-print-area{position:fixed;left:-9999px;top:0;}
-#qr-print-area img{display:block;width:280px;height:280px;}
 @media print{
   body.qr-printing > *:not(#qr-print-area){display:none!important;}
-  body.qr-printing #qr-print-area{position:static;left:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;padding:40px 0;}
-  body.qr-printing #qr-print-area img{width:320px;height:320px;}
-  body.qr-printing #qr-print-area .qr-print-caption{margin-top:16px;font-size:14px;color:#000;text-align:center;}
+  body.qr-printing #qr-print-area{position:static;left:auto;display:flex;align-items:center;justify-content:center;width:100%;padding:40px 0;}
+  body.qr-printing #qr-print-area .qr-brand-card{box-shadow:none;padding:0;}
+}
+
+/* ============ ADMIN: CLOUD SYNC ============ */
+.cs-status-pill{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font-size:12.5px;color:rgba(255,255,255,.8);}
+.cs-dot{width:8px;height:8px;border-radius:50%;background:#6b7780;flex:none;}
+.cs-status-pill.cs-connecting .cs-dot{background:#f5b942;animation:pulse-dot 1.1s ease-in-out infinite;}
+.cs-status-pill.cs-synced .cs-dot{background:#34d399;}
+.cs-status-pill.cs-error .cs-dot{background:#ef4444;}
+@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.35;}}
+.cs-rules{font-family:var(--font-mono,monospace);font-size:11.5px;line-height:1.5;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px;white-space:pre-wrap;word-break:break-word;color:rgba(255,255,255,.8);margin:10px 0;}
+
+/* ============ VIRTUAL MANUAL: help trigger + welcome modal ============ */
+.help-trigger-btn{position:relative;}
+.help-trigger-btn .ht-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--accent-bright);box-shadow:0 0 0 2px var(--admin-bg);}
+.vm-welcome-card{max-width:460px;text-align:center;padding:38px 32px;}
+.vm-welcome-icon{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--accent-bright),var(--accent));display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:#fff;box-shadow:var(--shadow-lg);}
+.vm-welcome-card h3{font-size:21px;margin-bottom:10px;}
+.vm-welcome-card p{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:24px;}
+.vm-welcome-actions{display:flex;flex-direction:column;gap:10px;}
+
+/* ============ VIRTUAL MANUAL: spotlight coachmark tour ============ */
+#tour-overlay{position:fixed;inset:0;z-index:4000;pointer-events:none;}
+.tour-veil{position:fixed;inset:0;background:rgba(5,8,10,0);transition:background .25s var(--ease);pointer-events:auto;}
+.tour-veil.show{background:rgba(5,8,10,.55);}
+.tour-spot{position:fixed;border-radius:14px;box-shadow:0 0 0 4000px rgba(5,8,10,.55);transition:top .35s var(--ease),left .35s var(--ease),width .35s var(--ease),height .35s var(--ease),opacity .2s ease;pointer-events:none;}
+.tour-spot::after{content:'';position:absolute;inset:-3px;border-radius:17px;border:2px solid var(--accent-bright);opacity:.9;animation:tourPulse 1.8s ease-in-out infinite;}
+@keyframes tourPulse{0%,100%{box-shadow:0 0 0 0 rgba(35,181,200,.45);}50%{box-shadow:0 0 0 6px rgba(35,181,200,0);}}
+.tour-card{position:fixed;width:min(340px,86vw);background:#161d23;border:1px solid var(--glass-border);border-radius:16px;box-shadow:var(--shadow-lg);padding:20px 22px;color:#fff;opacity:0;transform:scale(.94) translateY(6px);transition:opacity .25s var(--ease),transform .3s var(--spring),top .35s var(--ease),left .35s var(--ease);pointer-events:auto;}
+.tour-card.show{opacity:1;transform:scale(1) translateY(0);}
+.tour-card .tc-eyebrow{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-bright);margin-bottom:6px;}
+.tour-card h4{font-size:16px;margin-bottom:8px;}
+.tour-card p{font-size:13.5px;line-height:1.55;color:rgba(255,255,255,.68);margin-bottom:16px;}
+.tour-dots{display:flex;gap:5px;align-items:center;}
+.tour-dots span{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.18);transition:background .2s ease,transform .2s ease;}
+.tour-dots span.on{background:var(--accent-bright);transform:scale(1.25);}
+.tour-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.tour-nav-btns{display:flex;gap:6px;}
+.tour-nav-btns button{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.07);color:#fff;transition:background .2s ease;}
+.tour-nav-btns button:hover{background:rgba(255,255,255,.14);}
+.tour-nav-btns button:disabled{opacity:.3;pointer-events:none;}
+.tour-nav-btns button svg{width:15px;height:15px;}
+.tour-skip{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.45);background:none;}
+.tour-skip:hover{color:#fff;}
+.tour-finish-btn{background:var(--accent-bright);color:#fff;font-size:13px;font-weight:700;padding:8px 16px;border-radius:9px;}
+
+/* ============ VIRTUAL MANUAL: searchable manual panel ============ */
+.manual-overlay{position:fixed;inset:0;z-index:4100;background:rgba(5,8,10,.6);display:flex;align-items:center;justify-content:center;padding:24px;}
+.manual-panel{width:min(640px,100%);max-height:min(720px,88vh);background:var(--admin-bg);color:#fff;border:1px solid var(--glass-border);border-radius:18px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;}
+.manual-head{padding:22px 26px 16px;border-bottom:1px solid var(--glass-border);flex-shrink:0;}
+.manual-head-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.manual-head-top h3{font-size:18px;display:flex;align-items:center;gap:10px;}
+.manual-progress-wrap{display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(255,255,255,.5);margin-bottom:14px;}
+.manual-progress-bar{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;}
+.manual-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent-bright),var(--accent));border-radius:4px;transition:width .4s var(--ease);}
+.manual-search{width:100%;padding:10px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;font-size:13.5px;}
+.manual-search:focus{outline:none;border-color:var(--accent-bright);}
+.manual-body{flex:1;overflow-y:auto;padding:10px 16px 20px;}
+.manual-item{border-bottom:1px solid rgba(255,255,255,.06);}
+.manual-item summary{list-style:none;cursor:pointer;padding:14px 10px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600;}
+.manual-item summary::-webkit-details-marker{display:none;}
+.manual-item summary .mi-chev{margin-left:auto;flex-shrink:0;transition:transform .2s var(--ease);color:rgba(255,255,255,.4);}
+.manual-item[open] summary .mi-chev{transform:rotate(90deg);}
+.manual-item .mi-mastered{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);flex-shrink:0;}
+.manual-item .mi-mastered.on{background:#34d399;}
+.manual-item-body{padding:0 10px 18px 30px;font-size:13.5px;color:rgba(255,255,255,.65);line-height:1.6;}
+.manual-item-body .mi-step{display:flex;gap:10px;margin-bottom:10px;}
+.manual-item-body .mi-step b{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--accent-bright);font-size:11px;display:flex;align-items:center;justify-content:center;}
+.manual-item-body .mi-faq{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);}
+.manual-item-body .mi-faq p{margin-bottom:4px;}
+.manual-item-body .mi-faq strong{color:rgba(255,255,255,.85);}
+.manual-replay-btn{margin-top:10px;font-size:12.5px;font-weight:700;color:var(--accent-bright);display:inline-flex;align-items:center;gap:6px;}
+.manual-foot{padding:14px 26px;border-top:1px solid var(--glass-border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.manual-empty{text-align:center;padding:30px 10px;color:rgba(255,255,255,.4);font-size:13.5px;}
+@media (max-width:560px){
+  .tour-card{width:min(300px,88vw);padding:16px 18px;}
+  .manual-head{padding:18px 18px 14px;}
+  .manual-foot{padding:12px 18px;}
 }
 
 /* ============ QUICK DRAWER ============ */
@@ -363,7 +459,7 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .qd-item p{font-size:13.5px;}
 
 /* ============ ADMIN LOGIN MODAL ============ */
-.modal-overlay{position:fixed;inset:0;background:rgba(7,12,14,.6);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay{position:fixed;inset:0;background:rgba(7,12,14,.6);z-index:3500;display:flex;align-items:center;justify-content:center;padding:20px;}
 .modal-panel{background:var(--admin-bg);color:#fff;width:100%;max-width:380px;padding:32px;text-align:center;}
 .modal-panel h3{font-size:20px;margin-bottom:8px;}
 .modal-panel p.hint{color:rgba(255,255,255,.5);font-size:13px;margin-bottom:22px;}
@@ -466,8 +562,9 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 }
 
 /* ============ LIGHTBOX ============ */
-.lightbox-overlay{position:fixed;inset:0;background:rgba(5,10,12,.92);z-index:4000;display:flex;align-items:center;justify-content:center;}
-.lightbox-overlay img{max-width:88vw;max-height:82vh;object-fit:contain;border-radius:8px;}
+.lightbox-overlay{position:fixed;inset:0;background:rgba(5,10,12,.92);z-index:4000;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.lightbox-overlay img{max-width:88vw;max-height:82vh;object-fit:contain;border-radius:8px;cursor:zoom-in;transition:transform .2s ease;}
+.lightbox-overlay img.zoomed{cursor:zoom-out;}
 .lightbox-overlay .lb-close{position:absolute;top:20px;right:24px;color:#fff;width:42px;height:42px;}
 .lightbox-overlay .lb-nav{position:absolute;top:50%;transform:translateY(-50%);color:#fff;width:48px;height:48px;background:rgba(255,255,255,.08);border-radius:50%;}
 .lightbox-overlay .lb-prev{left:18px;}
@@ -543,7 +640,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
     <div class="container catalog-bar-inner">
       <div class="search-bar">
         <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>
-        <input type="search" id="catalog-search" placeholder="Search products…" aria-label="Search products">
+        <input type="search" id="catalog-search" name="catalog-search-query" placeholder="Search products…" aria-label="Search products" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other">
       </div>
       <div class="category-tabs" id="category-tabs" hidden></div>
     </div>
@@ -752,18 +849,17 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
     <button class="icon-btn" id="qr-modal-close" aria-label="Close" type="button" style="position:absolute;top:14px;right:14px;color:rgba(255,255,255,.6);">
       <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
     </button>
-    <h3>Scan to Visit</h3>
     <p class="hint">Point a phone camera at this code</p>
-    <div class="qr-image-wrap"><img id="qr-image" alt="QR code linking to this site" width="220" height="220"></div>
+    <div id="qr-modal-brand"></div>
     <p class="qr-url" id="qr-url-text"></p>
     <div class="modal-actions">
       <button class="btn btn-ghost" id="qr-copy-link" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Copy Link</button>
       <button class="btn btn-ghost" id="qr-print" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Print</button>
-      <a class="btn btn-primary" id="qr-download" download="qr-code.png" target="_blank" rel="noopener">Download</a>
+      <button class="btn btn-primary" id="qr-download" type="button">Download</button>
     </div>
   </div>
 </div>
-<div id="qr-print-area" aria-hidden="true"><img id="qr-print-image" alt="Printable QR code"><div class="qr-print-caption" id="qr-print-caption"></div></div>
+<div id="qr-print-area" aria-hidden="true"></div>
 
 <div class="admin-dashboard" id="admin-dashboard" hidden>
   <aside class="admin-sidebar" id="admin-sidebar">
@@ -772,10 +868,72 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
   <main class="admin-main">
     <div class="admin-topbar">
       <h2 id="admin-section-title">Business Identity</h2>
-      <button class="btn btn-ghost" id="admin-exit-btn" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Exit Admin</button>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="icon-btn help-trigger-btn" id="admin-help-btn" type="button" aria-label="Virtual Manual" title="Virtual Manual" style="color:#fff;background:rgba(255,255,255,.06);width:38px;height:38px;border:1px solid rgba(255,255,255,.12);">
+          <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.4a2.7 2.7 0 1 1 4.4 2.4c-.8.5-1.4 1-1.4 2v.4M12 17h.01" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="ht-dot" id="admin-help-dot" hidden></span>
+        </button>
+        <button class="btn btn-ghost" id="admin-exit-btn" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Exit Admin</button>
+      </div>
     </div>
     <div class="admin-body" id="admin-body"></div>
   </main>
+</div>
+
+<div id="tour-overlay" hidden>
+  <div class="tour-veil" id="tour-veil"></div>
+  <div class="tour-spot" id="tour-spot"></div>
+  <div class="tour-card" id="tour-card">
+    <div class="tc-eyebrow" id="tour-card-eyebrow"></div>
+    <h4 id="tour-card-title"></h4>
+    <p id="tour-card-body"></p>
+    <div class="tour-card-foot">
+      <div class="tour-dots" id="tour-dots"></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="tour-skip" id="tour-skip" type="button">Skip</button>
+        <div class="tour-nav-btns" id="tour-nav-btns">
+          <button id="tour-back" type="button" aria-label="Back"></button>
+          <button id="tour-next" type="button" aria-label="Next"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="tour-welcome-modal" hidden>
+  <div class="modal-panel vm-welcome-card">
+    <div class="vm-welcome-icon" id="vm-welcome-icon"></div>
+    <h3>Welcome to Your Admin Panel</h3>
+    <p>This is where you run your whole site — products, pricing, photos, and more. Want a quick guided tour of how everything works, section by section?</p>
+    <div class="vm-welcome-actions">
+      <button class="btn btn-primary" id="vm-welcome-tour" type="button">Take the Quick Tour</button>
+      <button class="btn btn-ghost" id="vm-welcome-skip" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Skip — I've got this</button>
+    </div>
+  </div>
+</div>
+
+<div class="manual-overlay" id="manual-overlay" hidden>
+  <div class="manual-panel">
+    <div class="manual-head">
+      <div class="manual-head-top">
+        <h3 id="manual-head-icon-slot">Virtual Manual</h3>
+        <button class="icon-btn" id="manual-close" aria-label="Close" type="button" style="color:rgba(255,255,255,.6);"></button>
+      </div>
+      <div class="manual-progress-wrap">
+        <span id="manual-progress-label">0 of 0 mastered</span>
+        <div class="manual-progress-bar"><div class="manual-progress-fill" id="manual-progress-fill" style="width:0%;"></div></div>
+      </div>
+      <input class="manual-search" id="manual-search" type="text" placeholder="Search the manual… e.g. &quot;products&quot;, &quot;password&quot;, &quot;QR code&quot;" autocomplete="off">
+    </div>
+    <div class="manual-body" id="manual-body"></div>
+    <div class="manual-foot">
+      <button class="btn btn-sm btn-ghost" id="manual-reset-all" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Reset All Tours</button>
+      <div class="a-toggle" style="padding:0;background:none;gap:8px;">
+        <span style="font-size:12.5px;color:rgba(255,255,255,.55);">Auto-start tours</span>
+        <div class="switch" id="manual-autostart-toggle"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast" hidden></div>
@@ -831,7 +989,12 @@ const DEFAULT_CONFIG={
   orders:[],
   notifications:[],
   admin_security:{idle_timeout_min:5},
-  password_hash:null
+  password_hash:null,
+  cloud_sync:{
+    enabled:false,
+    api_key:'', auth_domain:'', project_id:'', storage_bucket:'', messaging_sender_id:'', app_id:'',
+    owner_email:'', updated_at:0
+  }
 };
 
 /* ============ UTILS ============ */
@@ -925,6 +1088,7 @@ function saveConfig(){
     console.error('saveConfig failed (storage full?)',e);
     toast('Storage is full — remove some images/videos to free up space.',true);
   }
+  cloudSyncPush();
 }
 const debouncedSaveAndToast=debounce(()=>{ saveConfig(); toast('Saved'); },500);
 function commitField(path,value){
@@ -934,6 +1098,132 @@ function commitField(path,value){
 function commitNow(msg){
   saveConfig();
   if(msg!==false) toast(msg||'Saved');
+}
+
+/* ============ CLOUD SYNC (optional, opt-in Firebase real-time backend) ============
+   Off by default — zero network calls, zero added weight unless the owner flips
+   CONFIG.cloud_sync.enabled on AND fills in their own Firebase project keys. Each
+   business uses its OWN Firebase project (free Spark plan covers one site) — there
+   is no shared backend and no cross-tenant data. The Firebase compat SDK is loaded
+   from its CDN via plain <script> tags only when needed, same as the Google Fonts
+   link already in <head> — this keeps the zero-build/single-file constraint intact.
+   Read access is public (security rules: allow read: if true) so visitors always see
+   the live site; write access requires the owner to sign in with Firebase Auth. */
+const CLOUD_CLIENT_KEY='hb_cloud_client_id';
+function cloudClientId(){
+  let id=sessionStorage.getItem(CLOUD_CLIENT_KEY);
+  if(!id){ id=uid(); sessionStorage.setItem(CLOUD_CLIENT_KEY,id); }
+  return id;
+}
+const CLOUD_CLIENT_ID=cloudClientId();
+const FIREBASE_SDK_VERSION='10.12.2';
+
+let cloudApp=null, cloudDb=null, cloudAuth=null, cloudUnsub=null;
+let cloudPendingRemote=null; // queued remote update while admin dashboard is open with unsaved edits
+let cloudLastInitKey='';
+let cloudSyncStatusState='off'; // 'off' | 'connecting' | 'synced' | 'error'
+
+function setCloudStatus(state){ cloudSyncStatusState=state; }
+function cloudSyncStatus(){ return cloudSyncStatusState; }
+function cloudCurrentUser(){ return cloudAuth && cloudAuth.currentUser; }
+function cloudConfigComplete(){
+  const c=CONFIG.cloud_sync||{};
+  return !!(c.enabled && c.api_key && c.auth_domain && c.project_id && c.app_id);
+}
+
+function loadScriptOnce(src){
+  return new Promise((resolve,reject)=>{
+    const existing=document.querySelector('script[data-src="'+src+'"]');
+    if(existing){
+      if(existing.dataset.loaded==='1') resolve();
+      else existing.addEventListener('load',()=>resolve(),{once:true});
+      return;
+    }
+    const s=document.createElement('script');
+    s.src=src; s.async=true; s.dataset.src=src;
+    s.onload=()=>{ s.dataset.loaded='1'; resolve(); };
+    s.onerror=()=>reject(new Error('Failed to load script: '+src));
+    document.head.appendChild(s);
+  });
+}
+async function loadFirebaseSDK(){
+  if(window.firebase && window.firebase.apps) return;
+  const base='https://www.gstatic.com/firebasejs/'+FIREBASE_SDK_VERSION+'/';
+  await loadScriptOnce(base+'firebase-app-compat.js');
+  await Promise.all([
+    loadScriptOnce(base+'firebase-firestore-compat.js'),
+    loadScriptOnce(base+'firebase-auth-compat.js')
+  ]);
+}
+
+function cloudSyncTeardown(){
+  if(cloudUnsub){ cloudUnsub(); cloudUnsub=null; }
+  cloudDb=null; cloudAuth=null; cloudApp=null;
+  cloudLastInitKey='';
+  setCloudStatus('off');
+}
+
+async function cloudSyncInit(){
+  if(!cloudConfigComplete()){ cloudSyncTeardown(); return; }
+  const c=CONFIG.cloud_sync;
+  const key=JSON.stringify([c.api_key,c.auth_domain,c.project_id,c.app_id]);
+  if(cloudDb && key===cloudLastInitKey) return; // already connected with these exact keys
+  cloudLastInitKey=key;
+  setCloudStatus('connecting');
+  try{
+    await loadFirebaseSDK();
+    const fbConfig={apiKey:c.api_key,authDomain:c.auth_domain,projectId:c.project_id,storageBucket:c.storage_bucket,messagingSenderId:c.messaging_sender_id,appId:c.app_id};
+    cloudApp=firebase.apps.length?firebase.apps[0]:firebase.initializeApp(fbConfig);
+    cloudDb=firebase.firestore();
+    cloudAuth=firebase.auth();
+    cloudAuth.onAuthStateChanged(()=>attachCloudListener());
+    attachCloudListener();
+  }catch(err){
+    console.error('Cloud Sync init failed',err);
+    setCloudStatus('error');
+  }
+}
+function cloudDocRef(){ return cloudDb.collection('hydrobiz').doc('config'); }
+function attachCloudListener(){
+  if(!cloudDb) return;
+  if(cloudUnsub) cloudUnsub();
+  cloudUnsub=cloudDocRef().onSnapshot(snap=>{
+    setCloudStatus('synced');
+    const data=snap.data();
+    if(!data || !data.payload) return;
+    if(data.client_id===CLOUD_CLIENT_ID) return; // ignore our own echoed write
+    applyRemoteConfig(data.payload);
+  }, err=>{
+    console.error('Cloud Sync listener error',err);
+    setCloudStatus('error');
+  });
+}
+function applyRemoteConfig(payload){
+  // Never stomp on in-progress, unsaved admin edits: if the dashboard is open, queue
+  // the update and apply it the moment the owner exits (see closeAdminDashboard) —
+  // same data-loss class as the image-upload-mid-form bug fixed elsewhere in admin.
+  const dash=document.getElementById('admin-dashboard');
+  if(dash && !dash.hidden){ cloudPendingRemote=payload; return; }
+  CONFIG=deepMerge(JSON.parse(JSON.stringify(DEFAULT_CONFIG)),payload);
+  try{ localStorage.setItem(CONFIG_KEY,JSON.stringify(CONFIG)); }catch(e){}
+  renderAll();
+}
+const cloudSyncPushDebounced=debounce(()=>{
+  if(!cloudDb || !cloudConfigComplete()) return;
+  cloudDocRef().set({ payload:CONFIG, updated_at:Date.now(), client_id:CLOUD_CLIENT_ID })
+    .then(()=>setCloudStatus('synced'))
+    .catch(err=>{ console.error('Cloud Sync push failed',err); setCloudStatus('error'); });
+},600);
+function cloudSyncPush(){
+  if(!cloudDb || !cloudConfigComplete()) return;
+  cloudSyncPushDebounced();
+}
+async function cloudSignIn(email,password){
+  if(!cloudAuth) throw new Error('Cloud Sync is not configured yet.');
+  await cloudAuth.signInWithEmailAndPassword(email,password);
+}
+async function cloudSignOut(){
+  if(cloudAuth) await cloudAuth.signOut();
 }
 
 /* ============ CART STATE ============ */
@@ -1095,7 +1385,13 @@ const ICONS={
   clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" stroke-linecap="round" stroke-linejoin="round"/>',
   restore:'<path d="M4 4v6h6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 14a8 8 0 1 0 2-8.5L4 9" stroke-linecap="round" stroke-linejoin="round"/>',
   chart:'<path d="M3 21h18" stroke-linecap="round"/><path d="M6 21V12M11.5 21V6M17 21v-9" stroke-linecap="round" stroke-linejoin="round"/>',
-  bell:'<path d="M6 10a6 6 0 1 1 12 0v4l1.7 3.2H4.3L6 14Z" stroke-linejoin="round"/><path d="M10 19.5a2 2 0 0 0 4 0" stroke-linecap="round"/>'
+  bell:'<path d="M6 10a6 6 0 1 1 12 0v4l1.7 3.2H4.3L6 14Z" stroke-linejoin="round"/><path d="M10 19.5a2 2 0 0 0 4 0" stroke-linecap="round"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.3 9.4a2.7 2.7 0 1 1 4.4 2.4c-.8.5-1.4 1-1.4 2v.4M12 17h.01" stroke-linecap="round" stroke-linejoin="round"/>',
+  close:'<path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>',
+  arrowRight:'<path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>',
+  arrowLeft:'<path d="M19 12H5M11 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>',
+  sparkle:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.1 2.1M15.6 15.6l2.1 2.1M17.7 6.3l-2.1 2.1M8.4 15.6l-2.1 2.1" stroke-linecap="round"/>',
+  book:'<path d="M4 5.5A2 2 0 0 1 6 4h6v16H6a2 2 0 0 1-2-2Z" stroke-linejoin="round"/><path d="M20 5.5A2 2 0 0 0 18 4h-6v16h6a2 2 0 0 0 2-2Z" stroke-linejoin="round"/>'
 };
 function icon(name,size=18){ return '<svg class="icon-svg" viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="currentColor" stroke-width="1.7">'+(ICONS[name]||'')+'</svg>'; }
 const SOCIAL_ICONS={
@@ -1332,7 +1628,7 @@ function renderProducts(){
     const ytEmbed=youtubeEmbedUrl(p.video_url);
     const media=ytEmbed
       ? '<div class="pc-video"><iframe src="'+escapeHTML(ytEmbed)+'" loading="lazy" title="'+escapeHTML(p.name)+'" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe></div>'
-      : (p.image_b64?'<img class="pc-img" src="'+p.image_b64+'" alt="'+escapeHTML(p.name)+'" loading="lazy">':'<div class="pc-img"></div>');
+      : (p.image_b64?'<img class="pc-img" src="'+p.image_b64+'" alt="'+escapeHTML(p.name)+'" loading="lazy" tabindex="0" role="button" aria-label="View larger photo of '+escapeHTML(p.name)+'">':'<div class="pc-img"></div>');
     return (
     '<div class="card product-card" data-category="'+escapeHTML(productCategory(p))+'">'
     +media
@@ -1348,6 +1644,12 @@ function renderProducts(){
     );
   }).join('');
   enhanceTilt(grid);
+  const productImgs=Array.from(grid.querySelectorAll('img.pc-img'));
+  const productSrcs=productImgs.map(img=>img.getAttribute('src'));
+  productImgs.forEach((img,i)=>{
+    img.addEventListener('click',()=>openLightbox(productSrcs,i));
+    img.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openLightbox(productSrcs,i); } });
+  });
 }
 function initCatalogFilters(){
   const search=document.getElementById('catalog-search');
@@ -1437,7 +1739,11 @@ function initFabGroup(){
   });
   document.getElementById('qr-print').addEventListener('click',()=>{
     const url=location.href.split('#')[0];
-    printQRCode(qrApiUrl(url,480),(CONFIG.identity.name||'')+(CONFIG.identity.name?' — ':'')+url);
+    printQRCode(qrApiUrl(url,480));
+  });
+  document.getElementById('qr-download').addEventListener('click',()=>{
+    const url=location.href.split('#')[0];
+    composeAndDownloadQR(qrApiUrl(url,512),512,qrFileName());
   });
 }
 /* Builds the api.qrserver.com URL for a given target URL/size, honoring the
@@ -1454,24 +1760,58 @@ function qrApiUrl(targetUrl,size){
     +'&color='+encodeURIComponent(fg)+'&bgcolor='+encodeURIComponent(bg)
     +'&data='+encodeURIComponent(targetUrl);
 }
+function qrFileName(){
+  return (CONFIG.identity.name||'hydrobiz').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-qr-code.png';
+}
+/* Best available owner contact line for the branded QR card: phone, else
+   WhatsApp, else email, else blank (card just omits the contact row). */
+function qrContactLine(){
+  const id=CONFIG.identity;
+  if(id.phone) return id.phone;
+  if(CONFIG.socials && CONFIG.socials.whatsapp) return CONFIG.socials.whatsapp;
+  if(id.email) return id.email;
+  return '';
+}
+/* Shared branded card markup (logo, name, tagline, QR image, caption, contact)
+   reused by the admin preview, the public QR modal, and the printable area —
+   so every surface that shows the QR code presents it the same professional,
+   branded way. Pass showUrl=the live site URL to also print it as plain text
+   under the card (useful on a printed flyer if the camera scan ever fails);
+   omit it where the URL is already shown elsewhere in the surrounding UI. */
+function brandedQRCardHTML(imgUrl,size,showUrl){
+  const id=CONFIG.identity;
+  const name=id.name||'Your Business Name';
+  const contact=qrContactLine();
+  const initial=escapeHTML((name.trim().charAt(0)||'H').toUpperCase());
+  return '<div class="qr-brand-card">'
+    +'<div class="qr-brand-eyebrow">Official Store QR Code</div>'
+    +'<div class="qr-brand-name">'+escapeHTML(name)+'</div>'
+    +(id.tagline?'<div class="qr-brand-tagline">'+escapeHTML(id.tagline)+'</div>':'')
+    +'<div class="qr-brand-frame"><img class="qr-brand-img" src="'+imgUrl+'" width="'+size+'" height="'+size+'" alt="QR code linking to this site"></div>'
+    +'<div class="qr-brand-infobox">'
+      +(id.logo_b64?'<img class="qr-brand-logo" src="'+id.logo_b64+'" alt="'+escapeHTML(name)+' logo">':'<div class="qr-brand-logo qr-brand-initial">'+initial+'</div>')
+      +'<div class="qr-brand-infoname">'+escapeHTML(name)+'</div>'
+      +'<div class="qr-brand-infocap">Scan to visit our site</div>'
+    +'</div>'
+    +(contact?'<div class="qr-brand-contact">'+escapeHTML(contact)+'</div>':'')
+    +'<div class="qr-brand-badges"><span>'+icon('check',11)+'High Resolution</span><span>'+icon('check',11)+'Print Ready</span></div>'
+    +(showUrl?'<div class="qr-brand-url">'+escapeHTML(showUrl)+'</div>':'')
+    +'</div>';
+}
 function openQRModal(){
   const url=location.href.split('#')[0];
   const apiUrl=qrApiUrl(url,240);
-  document.getElementById('qr-image').src=apiUrl;
+  document.getElementById('qr-modal-brand').innerHTML=brandedQRCardHTML(apiUrl,220);
   document.getElementById('qr-url-text').textContent=url;
-  document.getElementById('qr-download').href=apiUrl;
-  document.getElementById('qr-download').setAttribute('download','qr-code.png');
   document.getElementById('qr-modal').hidden=false;
 }
 function closeQRModal(){ document.getElementById('qr-modal').hidden=true; }
-/* Shared print flow: fills the always-in-DOM #qr-print-area with the given
-   image URL + caption, flips body.qr-printing (which the @media print rule
-   keys off), triggers window.print(), then cleans up afterward. */
-function printQRCode(imgUrl,caption){
-  const img=document.getElementById('qr-print-image');
-  const cap=document.getElementById('qr-print-caption');
-  img.src=imgUrl;
-  cap.textContent=caption||'';
+/* Shared print flow: fills the always-in-DOM #qr-print-area with the branded
+   card, flips body.qr-printing (which the @media print rule keys off),
+   triggers window.print(), then cleans up afterward. */
+function printQRCode(imgUrl){
+  const url=location.href.split('#')[0];
+  document.getElementById('qr-print-area').innerHTML=brandedQRCardHTML(imgUrl,280,url);
   document.body.classList.add('qr-printing');
   function cleanup(){
     document.body.classList.remove('qr-printing');
@@ -1479,6 +1819,150 @@ function printQRCode(imgUrl,caption){
   }
   window.addEventListener('afterprint',cleanup);
   setTimeout(()=>{ window.print(); },60);
+}
+/* ============ BRANDED QR DOWNLOAD (canvas composite) ============
+   Bakes the logo/name/tagline/QR/caption/contact into one flattened PNG so the
+   downloaded file looks like a finished print asset, not a bare QR square.
+   The owner's logo is same-origin (a data: URL) so it never taints the canvas;
+   the QR image comes from api.qrserver.com loaded with crossOrigin="anonymous"
+   (the API serves permissive CORS headers). If anything about the composite
+   fails for any reason — offline, a future API change, an exotic browser — we
+   fall back to downloading the plain, unbranded QR image so the owner always
+   gets *something* rather than a dead button. */
+function loadImageEl(src,crossOrigin){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    if(crossOrigin) img.crossOrigin=crossOrigin;
+    img.onload=()=>resolve(img);
+    img.onerror=()=>reject(new Error('image failed to load: '+src));
+    img.src=src;
+  });
+}
+function canvasRoundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function themeAccentColor(){
+  const v=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  return v||'#0B6E7A';
+}
+async function composeBrandedQRCanvas(qrUrl,qrSize){
+  const id=CONFIG.identity;
+  const name=id.name||'Your Business Name';
+  const contact=qrContactLine();
+  const accent=themeAccentColor();
+  const qrImg=await loadImageEl(qrUrl,'anonymous');
+  let logoImg=null;
+  if(id.logo_b64){ try{ logoImg=await loadImageEl(id.logo_b64); }catch(e){ logoImg=null; } }
+  const pad=Math.round(qrSize*0.16);
+  const frameBorder=Math.max(3,Math.round(qrSize*0.012));
+  const framePad=Math.round(qrSize*0.045);
+  const width=qrSize+pad*2;
+  const eyebrowH=Math.round(qrSize*0.05);
+  const nameH=Math.round(qrSize*0.105);
+  const taglineH=id.tagline?Math.round(qrSize*0.06):0;
+  const frameOuter=qrSize+framePad*2+frameBorder*2;
+  const infoLogoSize=Math.round(qrSize*0.16);
+  const infoNameH=Math.round(qrSize*0.06);
+  const infoCapH=Math.round(qrSize*0.045);
+  const infoBoxH=Math.round(qrSize*0.16)+infoLogoSize+infoNameH+infoCapH;
+  const contactH=contact?Math.round(qrSize*0.055):0;
+  const badgesH=Math.round(qrSize*0.06);
+  const gapSm=Math.round(qrSize*0.035);
+  const gapMd=Math.round(qrSize*0.06);
+  const height=pad+eyebrowH+nameH+taglineH+gapMd+frameOuter+gapMd+infoBoxH+(contact?gapSm+contactH:0)+gapMd+badgesH+pad;
+  const canvas=document.createElement('canvas');
+  canvas.width=width; canvas.height=height;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(0,0,width,height);
+  const cardBorder=Math.max(3,Math.round(qrSize*0.01));
+  canvasRoundRect(ctx,cardBorder/2,cardBorder/2,width-cardBorder,height-cardBorder,Math.round(qrSize*0.06));
+  ctx.lineWidth=cardBorder; ctx.strokeStyle=accent; ctx.stroke();
+  ctx.textAlign='center';
+  let cy=pad;
+  ctx.fillStyle=accent;
+  ctx.font='700 '+Math.round(eyebrowH*0.85)+'px Inter, Arial, sans-serif';
+  ctx.fillText('OFFICIAL STORE QR CODE',width/2,cy+eyebrowH*0.8,width-pad);
+  cy+=eyebrowH+gapSm;
+  ctx.fillStyle='#0B1418';
+  ctx.font='800 '+Math.round(nameH*0.62)+'px Inter, Arial, sans-serif';
+  ctx.fillText(name.toUpperCase(),width/2,cy+nameH*0.72,width-pad);
+  cy+=nameH;
+  if(id.tagline){
+    ctx.fillStyle='#5b6b70';
+    ctx.font=Math.round(taglineH*0.7)+'px Inter, Arial, sans-serif';
+    ctx.fillText(id.tagline,width/2,cy+taglineH*0.72,width-pad);
+    cy+=taglineH;
+  }
+  cy+=gapMd;
+  canvasRoundRect(ctx,(width-frameOuter)/2,cy,frameOuter,frameOuter,Math.round(qrSize*0.05));
+  ctx.lineWidth=frameBorder; ctx.strokeStyle=accent; ctx.stroke();
+  ctx.drawImage(qrImg,(width-qrSize)/2,cy+framePad+frameBorder,qrSize,qrSize);
+  cy+=frameOuter+gapMd;
+  const infoBoxW=Math.min(width-pad,Math.round(qrSize*0.78));
+  canvasRoundRect(ctx,(width-infoBoxW)/2,cy,infoBoxW,infoBoxH,Math.round(qrSize*0.035));
+  ctx.fillStyle='#F2F5F6'; ctx.fill();
+  let iy=cy+Math.round(qrSize*0.08);
+  if(logoImg){
+    const ratio=logoImg.height/logoImg.width||1;
+    const lw=infoLogoSize, lh=Math.min(infoLogoSize,infoLogoSize*ratio);
+    ctx.drawImage(logoImg,(width-lw)/2,iy,lw,lh);
+  }else{
+    ctx.beginPath();
+    ctx.arc(width/2,iy+infoLogoSize/2,infoLogoSize/2,0,Math.PI*2);
+    ctx.fillStyle=accent; ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.font='800 '+Math.round(infoLogoSize*0.55)+'px Inter, Arial, sans-serif';
+    ctx.fillText((name.trim().charAt(0)||'H').toUpperCase(),width/2,iy+infoLogoSize*0.68,infoLogoSize);
+  }
+  iy+=infoLogoSize+Math.round(qrSize*0.045);
+  ctx.fillStyle='#7c8a8e';
+  ctx.font='700 '+Math.round(infoNameH*0.62)+'px Inter, Arial, sans-serif';
+  ctx.fillText(name.toUpperCase(),width/2,iy+infoNameH*0.7,infoBoxW-20);
+  iy+=infoNameH;
+  ctx.fillStyle='#a3aeb1';
+  ctx.font='600 '+Math.round(infoCapH*0.62)+'px Inter, Arial, sans-serif';
+  ctx.fillText('SCAN TO VISIT OUR SITE',width/2,iy+infoCapH*0.7,infoBoxW-20);
+  cy+=infoBoxH;
+  if(contact){
+    cy+=gapSm;
+    ctx.fillStyle='#5b6b70';
+    ctx.font=Math.round(contactH*0.62)+'px Inter, Arial, sans-serif';
+    ctx.fillText(contact,width/2,cy+contactH*0.72,width-pad);
+    cy+=contactH;
+  }
+  cy+=gapMd;
+  ctx.fillStyle=accent;
+  ctx.font='700 '+Math.round(badgesH*0.55)+'px Inter, Arial, sans-serif';
+  ctx.fillText('✓ High Resolution      ✓ Print Ready',width/2,cy+badgesH*0.6,width-pad);
+  return canvas;
+}
+function downloadPlainQR(qrUrl,filename){
+  const a=document.createElement('a');
+  a.href=qrUrl; a.download=filename; a.target='_blank'; a.rel='noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+async function composeAndDownloadQR(qrUrl,qrSize,filename){
+  try{
+    const canvas=await composeBrandedQRCanvas(qrUrl,qrSize);
+    canvas.toBlob(blob=>{
+      if(!blob){ downloadPlainQR(qrUrl,filename); return; }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download=filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),2000);
+    },'image/png');
+  }catch(err){
+    console.error('Branded QR composite failed, falling back to plain QR image',err);
+    downloadPlainQR(qrUrl,filename);
+  }
 }
 
 /* ============ RENDER: packages ============ */
@@ -1514,8 +1998,12 @@ function renderAbout(){
   )).join('');
 }
 
-/* ============ RENDER: gallery + lightbox ============ */
-let lightboxIndex=0;
+/* ============ RENDER: gallery + lightbox ============
+   The lightbox is generic — it shows whichever image list it was opened with
+   (lightboxList), so both the Gallery grid and Product card images can reuse it.
+   Source images are shown unmodified (no resampling), so quality is whatever was
+   uploaded; the lightbox itself offers click-to-zoom + wheel-zoom up to 4x. */
+let lightboxList=[], lightboxIndex=0;
 function renderGallery(){
   const grid=document.getElementById('gallery-grid');
   const images=activeList('gallery');
@@ -1524,11 +2012,23 @@ function renderGallery(){
     return;
   }
   grid.innerHTML=images.map((g,i)=>'<img src="'+g.image_b64+'" alt="Gallery image '+(i+1)+'" data-i="'+i+'">').join('');
-  grid.querySelectorAll('img').forEach(img=>img.addEventListener('click',()=>openLightbox(Number(img.dataset.i))));
+  const srcs=images.map(g=>g.image_b64);
+  grid.querySelectorAll('img').forEach(img=>img.addEventListener('click',()=>openLightbox(srcs,Number(img.dataset.i))));
 }
-function openLightbox(i){
+function resetLightboxZoom(){
+  const img=document.getElementById('lightbox-img');
+  img.dataset.scale='1';
+  img.style.transform='';
+  img.classList.remove('zoomed');
+}
+function openLightbox(list,i){
+  lightboxList=list;
   lightboxIndex=i;
-  document.getElementById('lightbox-img').src=activeList('gallery')[i].image_b64;
+  document.getElementById('lightbox-img').src=lightboxList[i];
+  resetLightboxZoom();
+  const multi=lightboxList.length>1;
+  document.getElementById('lightbox-prev').hidden=!multi;
+  document.getElementById('lightbox-next').hidden=!multi;
   document.getElementById('lightbox-overlay').hidden=false;
   document.body.classList.add('no-scroll');
 }
@@ -1537,10 +2037,10 @@ function closeLightbox(){
   document.body.classList.remove('no-scroll');
 }
 function stepLightbox(dir){
-  const images=activeList('gallery');
-  const n=images.length; if(!n) return;
+  const n=lightboxList.length; if(!n) return;
   lightboxIndex=(lightboxIndex+dir+n)%n;
-  document.getElementById('lightbox-img').src=images[lightboxIndex].image_b64;
+  document.getElementById('lightbox-img').src=lightboxList[lightboxIndex];
+  resetLightboxZoom();
 }
 
 /* ============ RENDER: testimonials ============ */
@@ -1715,7 +2215,9 @@ function initHamburger(){
         try{ btn.releasePointerCapture(pointerId); }catch(_){}
         reset();
         if(navigator.vibrate) navigator.vibrate(15);
-        if(hadPassword){ openAdminLogin(); } else { openAdminDashboard(); }
+        if(hadPassword && isAdminGraceActive()){ openAdminDashboard(); }
+        else if(hadPassword){ openAdminLogin(); }
+        else { openAdminDashboard(); }
       }
     }
   });
@@ -1851,6 +2353,7 @@ const ADMIN_SECTIONS=[
   {key:'about',label:'About',icon:'info'},
   {key:'drawer',label:'Quick Menu',icon:'menu'},
   {key:'appearance',label:'Appearance',icon:'sliders'},
+  {key:'cloudsync',label:'Cloud Sync',icon:'cloud'},
   {key:'qrcode',label:'QR Code',icon:'qrcode'},
   {key:'orders',label:'Orders',icon:'cart'},
   {key:'analytics',label:'Analytics',icon:'chart'},
@@ -1861,32 +2364,67 @@ const ADMIN_SECTIONS=[
 ];
 let adminActiveSection='identity';
 
+/* ============ ADMIN RE-ENTRY GRACE PERIOD ============
+   After the owner deliberately exits the dashboard (Exit Admin button), they can
+   re-enter via the hold-and-pull gesture without re-typing the password as long as
+   they're back within ADMIN_GRACE_MINUTES_MAX of exiting. Capped at 5 minutes max
+   (owner-configurable below that cap via CONFIG.admin_security.idle_timeout_min).
+   Idle-timeout auto-lock (abandonment) clears the grace window instead of starting
+   one, since that's the actual security boundary. */
+const ADMIN_GRACE_KEY='hb_admin_grace_until';
+const ADMIN_GRACE_MINUTES_MAX=5;
+function adminGraceMinutes(){
+  const m=Number(CONFIG.admin_security && CONFIG.admin_security.idle_timeout_min);
+  return Math.min(Math.max(Number.isFinite(m)?m:ADMIN_GRACE_MINUTES_MAX,0),ADMIN_GRACE_MINUTES_MAX);
+}
+function startAdminGrace(){
+  const ms=adminGraceMinutes()*60000;
+  if(ms<=0){ localStorage.removeItem(ADMIN_GRACE_KEY); return; }
+  localStorage.setItem(ADMIN_GRACE_KEY,String(Date.now()+ms));
+}
+function clearAdminGrace(){ localStorage.removeItem(ADMIN_GRACE_KEY); }
+function isAdminGraceActive(){
+  const until=Number(localStorage.getItem(ADMIN_GRACE_KEY));
+  return Number.isFinite(until) && until>Date.now();
+}
+
 function openAdminDashboard(){
   renderAdminSidebar();
   selectAdminSection('identity');
   document.getElementById('admin-dashboard').hidden=false;
   document.body.classList.add('no-scroll');
   startAdminIdleWatchdog();
+  refreshHelpDot();
+  maybeShowWelcome();
 }
-function closeAdminDashboard(){
+function closeAdminDashboard(fromIdleLock){
+  endTour(true);
+  closeManualPanel();
   document.getElementById('admin-dashboard').hidden=true;
   document.body.classList.remove('no-scroll');
   stopAdminIdleWatchdog();
-  renderAll();
+  if(fromIdleLock){ clearAdminGrace(); } else { startAdminGrace(); }
+  if(cloudPendingRemote){
+    const payload=cloudPendingRemote;
+    cloudPendingRemote=null;
+    applyRemoteConfig(payload);
+  } else {
+    renderAll();
+  }
 }
 
 /* ============ ADMIN IDLE WATCHDOG ============
-   Auto-locks (closes) the admin dashboard after ADMIN_IDLE_MS of no activity.
-   Only runs while #admin-dashboard is actually open; never runs for public visitors.
-   Activity signals are throttled (ADMIN_IDLE_THROTTLE_MS) so we don't reset a timer
-   on every single mousemove event. */
-const ADMIN_IDLE_MS=300000;
+   Auto-locks (closes) the admin dashboard after the configured idle period (owner-set
+   minutes, capped at ADMIN_GRACE_MINUTES_MAX) of no activity. Only runs while
+   #admin-dashboard is actually open; never runs for public visitors. Activity signals
+   are throttled (ADMIN_IDLE_THROTTLE_MS) so we don't reset a timer on every single
+   mousemove event. */
 const ADMIN_IDLE_THROTTLE_MS=1000;
 const ADMIN_IDLE_EVENTS=['mousemove','keydown','click','touchstart','scroll'];
 let adminIdleTimer=null, adminIdleLastReset=0, adminIdleBound=false;
 function adminIdleLock(){
   stopAdminIdleWatchdog();
-  closeAdminDashboard();
+  closeAdminDashboard(true);
   toast('Session timed out — please log in again',true);
 }
 function resetAdminIdleTimer(){
@@ -1894,12 +2432,12 @@ function resetAdminIdleTimer(){
   if(now-adminIdleLastReset<ADMIN_IDLE_THROTTLE_MS) return;
   adminIdleLastReset=now;
   clearTimeout(adminIdleTimer);
-  adminIdleTimer=setTimeout(adminIdleLock,ADMIN_IDLE_MS);
+  adminIdleTimer=setTimeout(adminIdleLock,adminGraceMinutes()*60000);
 }
 function startAdminIdleWatchdog(){
   adminIdleLastReset=0;
   clearTimeout(adminIdleTimer);
-  adminIdleTimer=setTimeout(adminIdleLock,ADMIN_IDLE_MS);
+  adminIdleTimer=setTimeout(adminIdleLock,adminGraceMinutes()*60000);
   if(!adminIdleBound){
     ADMIN_IDLE_EVENTS.forEach(evt=>document.addEventListener(evt,resetAdminIdleTimer,{passive:true}));
     adminIdleBound=true;
@@ -1922,7 +2460,10 @@ function renderAdminSidebar(){
       +(s.key==='notifications'&&unread?'<span class="as-badge">'+unread+'</span>':'')
       +'</button>'
     )).join('');
-  sidebar.querySelectorAll('.as-btn').forEach(b=>b.addEventListener('click',()=>selectAdminSection(b.dataset.section)));
+  sidebar.querySelectorAll('.as-btn').forEach(b=>b.addEventListener('click',()=>{
+    selectAdminSection(b.dataset.section);
+    maybeAutoStartTour(b.dataset.section);
+  }));
 }
 function selectAdminSection(key){
   adminActiveSection=key;
@@ -2099,11 +2640,18 @@ function bindProductsActions(){
   productStockDraft = editingProductId ? (CONFIG.products.find(p=>p.id===editingProductId)||{}).in_stock : true;
   document.getElementById('pf-image').addEventListener('change',async e=>{
     if(!e.target.files[0]) return;
-    try{ productImageDraft=await fileToBase64(e.target.files[0]); rerenderAdminBody(); }
+    try{
+      productImageDraft=await fileToBase64(e.target.files[0]);
+      const box=document.getElementById('pf-image').closest('.upload-box');
+      box.firstElementChild.outerHTML=productImageDraft?'<img src="'+productImageDraft+'" alt="">':icon('upload',54);
+    }
     catch(err){ toast(err.message,true); }
   });
   document.getElementById('pf-stock-switch').addEventListener('click',()=>{
-    productStockDraft=!productStockDraft; rerenderAdminBody();
+    productStockDraft=!productStockDraft;
+    const sw=document.getElementById('pf-stock-switch');
+    sw.classList.toggle('on',productStockDraft);
+    if(sw.previousElementSibling) sw.previousElementSibling.textContent='Stock Status: '+(productStockDraft?'Available':'Out of Stock');
   });
   document.getElementById('pf-save').addEventListener('click',()=>{
     const name=document.getElementById('pf-name').value.trim();
@@ -2203,16 +2751,23 @@ function panelPackages(){
 }
 function bindPackagesActions(){
   if(!document.getElementById('kf-name')) return;
+  function renderIncludesRows(){
+    const wrap=document.getElementById('kf-includes');
+    wrap.innerHTML=packageIncludesDraft.map((v,i)=>(
+      '<div class="bullet-row"><input value="'+escapeHTML(v)+'"><button class="icon-btn" data-remove-line="'+i+'" type="button" style="color:#F87171;" aria-label="Remove line">'+icon('trash',14)+'</button></div>'
+    )).join('');
+    wrap.querySelectorAll('[data-remove-line]').forEach(b=>b.addEventListener('click',()=>{
+      syncIncludesDraftFromDOM();
+      packageIncludesDraft.splice(Number(b.dataset.removeLine),1);
+      renderIncludesRows();
+    }));
+  }
+  renderIncludesRows();
   document.getElementById('kf-add-line').addEventListener('click',()=>{
     syncIncludesDraftFromDOM();
     packageIncludesDraft.push('');
-    rerenderAdminBody();
+    renderIncludesRows();
   });
-  document.querySelectorAll('[data-remove-line]').forEach(b=>b.addEventListener('click',()=>{
-    syncIncludesDraftFromDOM();
-    packageIncludesDraft.splice(Number(b.dataset.removeLine),1);
-    rerenderAdminBody();
-  }));
   document.getElementById('kf-save').addEventListener('click',()=>{
     const name=document.getElementById('kf-name').value.trim();
     if(!name){ toast('Package name is required',true); return; }
@@ -2361,7 +2916,11 @@ function bindAboutActions(){
   if(!document.getElementById('tm-name')) return;
   document.getElementById('tm-photo').addEventListener('change',async e=>{
     if(!e.target.files[0]) return;
-    try{ teamPhotoDraft=await fileToBase64(e.target.files[0]); rerenderAdminBody(); }
+    try{
+      teamPhotoDraft=await fileToBase64(e.target.files[0]);
+      const box=document.getElementById('tm-photo').closest('.upload-box');
+      box.firstElementChild.outerHTML=teamPhotoDraft?'<img src="'+teamPhotoDraft+'" alt="">':icon('upload',54);
+    }
     catch(err){ toast(err.message,true); }
   });
   document.getElementById('tm-save').addEventListener('click',()=>{
@@ -2538,6 +3097,10 @@ function panelPassword(){
     +'<div class="a-field"><label>Confirm New Password</label><div class="pw-field"><input type="password" id="pw-confirm" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
     +'<button class="btn btn-primary" id="pw-save" type="button">'+(hasPassword?'Update Password':'Set Password')+'</button>'
     +'<p class="cap-note" style="margin-top:10px;">Forgotten passwords cannot be recovered &mdash; use Data &rarr; Reset to clear and start over.</p>'
+    +'</div>'
+    +'<div class="admin-card"><h4>Auto-Lock &amp; Re-Entry Grace Period</h4>'
+    +'<p class="cap-note">How long the dashboard can sit idle before auto-locking, and how long after you tap "Exit Admin" you can come back in via the hold-and-pull gesture without re-typing your password. Maximum 5 minutes.</p>'
+    +'<div class="a-field"><label>Minutes (0&ndash;5)</label><input type="number" min="0" max="5" step="1" data-path="admin_security.idle_timeout_min" data-type="number" value="'+(CONFIG.admin_security&&CONFIG.admin_security.idle_timeout_min!=null?CONFIG.admin_security.idle_timeout_min:5)+'"></div>'
     +'</div></div>';
 }
 function bindPasswordActions(){
@@ -2615,38 +3178,120 @@ function bindDataActions(){
   });
 }
 
+/* ============ ADMIN PANEL: Cloud Sync ============ */
+function panelCloudSync(){
+  const c=CONFIG.cloud_sync||{};
+  const status=cloudSyncStatus();
+  const statusLabel={off:'Not connected',connecting:'Connecting…',synced:'Live — synced',error:'Connection error'}[status]||'Not connected';
+  const user=cloudCurrentUser();
+  return '<div class="admin-panel-section">'
+    +'<div class="admin-card"><h4>Real-Time Cloud Sync</h4>'
+    +'<p class="cap-note">Off by default — your site runs fine on localStorage alone. Turn this on and every save on this device pushes instantly to every visitor\'s screen on any device, no refresh needed. Each business connects its own free Firebase project; your data is never shared with other HydroBiz sites. Full setup steps are in README.md.</p>'
+    +'<div class="a-toggle"><span>Enable Cloud Sync</span><div class="switch'+(c.enabled?' on':'')+'" data-path="cloud_sync.enabled" data-rerender="1"></div></div>'
+    +'<div class="cs-status-pill cs-'+status+'"><span class="cs-dot"></span>'+statusLabel+'</div>'
+    +'</div>'
+    +(c.enabled?(
+      '<div class="admin-card"><h4>Firebase Project Keys</h4>'
+      +'<p class="cap-note">From Firebase Console &rarr; Project Settings &rarr; General &rarr; "Your apps" &rarr; Web app config object.</p>'
+      +'<div class="a-field"><label>API Key</label><input data-path="cloud_sync.api_key" autocomplete="off" value="'+escapeHTML(c.api_key||'')+'"></div>'
+      +'<div class="a-field"><label>Auth Domain</label><input data-path="cloud_sync.auth_domain" autocomplete="off" placeholder="yourproject.firebaseapp.com" value="'+escapeHTML(c.auth_domain||'')+'"></div>'
+      +'<div class="a-field"><label>Project ID</label><input data-path="cloud_sync.project_id" autocomplete="off" value="'+escapeHTML(c.project_id||'')+'"></div>'
+      +'<div class="a-field"><label>Storage Bucket</label><input data-path="cloud_sync.storage_bucket" autocomplete="off" placeholder="yourproject.appspot.com" value="'+escapeHTML(c.storage_bucket||'')+'"></div>'
+      +'<div class="a-field"><label>Messaging Sender ID</label><input data-path="cloud_sync.messaging_sender_id" autocomplete="off" value="'+escapeHTML(c.messaging_sender_id||'')+'"></div>'
+      +'<div class="a-field"><label>App ID</label><input data-path="cloud_sync.app_id" autocomplete="off" value="'+escapeHTML(c.app_id||'')+'"></div>'
+      +'<button class="btn btn-primary" id="cs-save-keys" type="button">Save &amp; Connect</button>'
+      +'</div>'
+      +'<div class="admin-card"><h4>Owner Sign-In</h4>'
+      +'<p class="cap-note">Read access is public so visitors always see your live site. Writing updates requires you to sign in — create this account once in Firebase Console &rarr; Authentication &rarr; Sign-in method &rarr; Email/Password.</p>'
+      +(user?(
+        '<p class="cap-note" style="color:#6ee7b7;">Signed in as '+escapeHTML(user.email)+'</p>'
+        +'<button class="btn btn-ghost" id="cs-signout" type="button">Sign Out</button>'
+      ):(
+        '<div class="a-field"><label>Email</label><input type="email" id="cs-email" autocomplete="off" value="'+escapeHTML(c.owner_email||'')+'"></div>'
+        +'<div class="a-field"><label>Password</label><div class="pw-field"><input type="password" id="cs-password" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
+        +'<button class="btn btn-primary" id="cs-signin" type="button">Sign In</button>'
+      ))
+      +'</div>'
+      +'<div class="admin-card"><h4>Firestore Security Rules</h4>'
+      +'<p class="cap-note">Paste this into Firebase Console &rarr; Firestore Database &rarr; Rules. Keeps your data publicly readable so the site works, but only writable once you\'re signed in.</p>'
+      +'<pre class="cs-rules" id="cs-rules-text">rules_version = \'2\';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /hydrobiz/config {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n  }\n}</pre>'
+      +'<button class="btn btn-ghost" id="cs-copy-rules" type="button">Copy Rules</button>'
+      +'</div>'
+    ):'')
+    +'</div>';
+}
+function bindCloudSyncActions(){
+  if(CONFIG.cloud_sync && CONFIG.cloud_sync.enabled){ cloudSyncInit(); }
+  else { cloudSyncTeardown(); }
+  bindPasswordEyeToggles(document.getElementById('admin-body'));
+  const saveKeysBtn=document.getElementById('cs-save-keys');
+  if(saveKeysBtn) saveKeysBtn.addEventListener('click',()=>{
+    commitNow('Cloud Sync keys saved');
+    cloudSyncInit();
+    rerenderAdminBody();
+  });
+  const signinBtn=document.getElementById('cs-signin');
+  if(signinBtn) signinBtn.addEventListener('click',async ()=>{
+    const email=document.getElementById('cs-email').value.trim();
+    const password=document.getElementById('cs-password').value;
+    if(!email||!password){ toast('Enter email and password',true); return; }
+    try{
+      await cloudSignIn(email,password);
+      CONFIG.cloud_sync.owner_email=email;
+      commitNow('Signed in');
+      rerenderAdminBody();
+    }catch(err){
+      toast('Sign in failed: '+(err.message||'check your credentials'),true);
+    }
+  });
+  const signoutBtn=document.getElementById('cs-signout');
+  if(signoutBtn) signoutBtn.addEventListener('click',async ()=>{
+    await cloudSignOut();
+    rerenderAdminBody();
+  });
+  const copyBtn=document.getElementById('cs-copy-rules');
+  if(copyBtn) copyBtn.addEventListener('click',()=>{
+    const text=document.getElementById('cs-rules-text').textContent;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(()=>toast('Rules copied')).catch(()=>toast('Copy failed',true));
+    }else{
+      toast('Copy failed',true);
+    }
+  });
+}
+
 /* ============ ADMIN PANEL: QR Code ============ */
 function panelQRCode(){
   const qs=CONFIG.appearance.qr_style||{};
   const url=location.href.split('#')[0];
-  const previewUrl=qrApiUrl(url,260);
+  const previewUrl=qrApiUrl(url,220);
   return '<div class="admin-panel-section">'
     +'<div class="admin-card">'
     +'<h4>Printable QR Code</h4>'
-    +'<p class="cap-note">This QR code points visitors to your live site. Customize its colors below — the same styling is used here, on the public "QR Code" button, and in printed/downloaded copies.</p>'
-    +'<div class="qr-admin-preview"><img id="qr-admin-preview-img" src="'+previewUrl+'" alt="QR code linking to this site" width="220" height="220"></div>'
+    +'<p class="cap-note">Branded with your logo, business name, and contact info — this is exactly what visitors see on the public "QR Code" button and what prints/downloads below. Customize its colors here too.</p>'
+    +'<div class="qr-admin-preview" id="qr-admin-preview"></div>'
     +'<p class="qr-url">'+escapeHTML(url)+'</p>'
     +'<div class="qr-color-row">'
     +'<div class="qr-color-field"><label>Foreground Color</label><input type="color" id="qr-fg" data-path="appearance.qr_style.fg" value="'+escapeHTML(qs.fg||'#000000')+'"></div>'
     +'<div class="qr-color-field"><label>Background Color</label><input type="color" id="qr-bg" data-path="appearance.qr_style.bg" value="'+escapeHTML(qs.bg||'#ffffff')+'"></div>'
     +'</div>'
     +'<div class="a-field" style="margin-top:14px;"><label>Quiet Zone / Margin (modules)</label><input type="number" id="qr-quiet-zone" min="0" max="40" data-path="appearance.qr_style.quiet_zone" data-type="number" value="'+(qs.quiet_zone!=null?qs.quiet_zone:8)+'"></div>'
-    +'<div class="cap-note">Corner/dot module shape is fixed by the QR API in use (square modules) — only color and margin are styleable here.</div>'
+    +'<div class="cap-note">Corner/dot module shape is fixed by the QR API in use (square modules) — only color and margin are styleable here. Logo, name, and contact info come from Business Identity.</div>'
     +'<div class="modal-actions" style="justify-content:flex-start;margin-top:16px;">'
     +'<button class="btn btn-ghost" id="qr-admin-reset" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Reset to Black/White</button>'
     +'<button class="btn btn-ghost" id="qr-admin-print" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Print</button>'
-    +'<a class="btn btn-primary" id="qr-admin-download" href="'+qrApiUrl(url,512)+'" download="qr-code.png" target="_blank" rel="noopener">Download PNG (Print Quality)</a>'
+    +'<button class="btn btn-primary" id="qr-admin-download" type="button">Download PNG (Print Quality)</button>'
     +'</div>'
     +'</div></div>';
 }
 function bindQRCodeActions(){
-  if(!document.getElementById('qr-admin-preview-img')) return;
+  const previewWrap=document.getElementById('qr-admin-preview');
+  if(!previewWrap) return;
   function refreshPreview(){
     const url=location.href.split('#')[0];
-    document.getElementById('qr-admin-preview-img').src=qrApiUrl(url,260);
-    const dl=document.getElementById('qr-admin-download');
-    if(dl) dl.href=qrApiUrl(url,512);
+    previewWrap.innerHTML=brandedQRCardHTML(qrApiUrl(url,220),200);
   }
+  refreshPreview();
   ['qr-fg','qr-bg','qr-quiet-zone'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.addEventListener('input',()=>{ setTimeout(refreshPreview,0); });
@@ -2660,7 +3305,12 @@ function bindQRCodeActions(){
   const printBtn=document.getElementById('qr-admin-print');
   if(printBtn) printBtn.addEventListener('click',()=>{
     const url=location.href.split('#')[0];
-    printQRCode(qrApiUrl(url,480),(CONFIG.identity.name||'')+(CONFIG.identity.name?' — ':'')+url);
+    printQRCode(qrApiUrl(url,480));
+  });
+  const downloadBtn=document.getElementById('qr-admin-download');
+  if(downloadBtn) downloadBtn.addEventListener('click',()=>{
+    const url=location.href.split('#')[0];
+    composeAndDownloadQR(qrApiUrl(url,512),512,qrFileName());
   });
 }
 
@@ -2668,12 +3318,12 @@ function bindQRCodeActions(){
 const ADMIN_RENDERERS={
   identity:panelIdentity, socials:panelSocials, products:panelProducts, packages:panelPackages,
   gallery:panelGallery, testimonials:panelTestimonials, about:panelAbout, drawer:panelDrawer,
-  appearance:panelAppearance, qrcode:panelQRCode, orders:panelOrders, analytics:panelAnalytics, notifications:panelNotifications, trash:panelTrash, password:panelPassword, data:panelData
+  appearance:panelAppearance, cloudsync:panelCloudSync, qrcode:panelQRCode, orders:panelOrders, analytics:panelAnalytics, notifications:panelNotifications, trash:panelTrash, password:panelPassword, data:panelData
 };
 const ADMIN_BINDERS={
   identity:bindIdentityActions, socials:()=>{}, products:bindProductsActions, packages:bindPackagesActions,
   gallery:bindGalleryActions, testimonials:bindTestimonialsActions, about:bindAboutActions, drawer:bindDrawerActions,
-  appearance:bindAppearanceActions, qrcode:bindQRCodeActions, orders:bindOrdersActions, analytics:bindAnalyticsActions, notifications:bindNotificationsActions, trash:bindTrashActions, password:bindPasswordActions, data:bindDataActions
+  appearance:bindAppearanceActions, cloudsync:bindCloudSyncActions, qrcode:bindQRCodeActions, orders:bindOrdersActions, analytics:bindAnalyticsActions, notifications:bindNotificationsActions, trash:bindTrashActions, password:bindPasswordActions, data:bindDataActions
 };
 function bindAdminPanelActions(key){
   const fn=ADMIN_BINDERS[key];
@@ -2967,7 +3617,27 @@ function initLightbox(){
     if(document.getElementById('lightbox-overlay').hidden) return;
     if(e.key==='ArrowLeft') stepLightbox(-1);
     if(e.key==='ArrowRight') stepLightbox(1);
+    if(e.key==='+'||e.key==='=') zoomLightbox(0.5);
+    if(e.key==='-') zoomLightbox(-0.5);
   });
+  const lbImg=document.getElementById('lightbox-img');
+  lbImg.addEventListener('click',e=>{
+    e.stopPropagation();
+    const cur=parseFloat(lbImg.dataset.scale||'1');
+    zoomLightbox(cur>1?-(cur-1):0.5);
+  });
+  lbImg.addEventListener('wheel',e=>{
+    e.preventDefault();
+    zoomLightbox(e.deltaY<0?0.4:-0.4);
+  },{passive:false});
+}
+function zoomLightbox(delta){
+  const lbImg=document.getElementById('lightbox-img');
+  const cur=parseFloat(lbImg.dataset.scale||'1');
+  const next=Math.min(4,Math.max(1,cur+delta));
+  lbImg.dataset.scale=String(next);
+  lbImg.style.transform=next>1?'scale('+next+')':'';
+  lbImg.classList.toggle('zoomed',next>1);
 }
 
 /* ============ CART UI ============ */
@@ -3176,11 +3846,418 @@ async function runSelfTests(){
   return results;
 }
 
+/* ============ VIRTUAL MANUAL: per-section help content ============
+   Selectors are deliberately structural (nth-of-type position within the shared
+   .admin-card layout of each panel) or stable IDs, never copy-dependent. The tour
+   engine filters out any step whose selector doesn't currently resolve, so
+   conditionally-rendered cards (e.g. Cloud Sync's key fields, only shown once the
+   toggle is on) simply get skipped rather than breaking the tour. */
+const ADMIN_HELP={
+  identity:{
+    summary:'Your business name, logo, hero section, contact details, and location all live here — the foundation every other section builds on.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Your Brand',body:'Upload your logo and favicon, and set your business name and tagline. These appear in the nav, browser tab, and splash screen.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Contact Info',body:'Your email, phone/WhatsApp number, and business hours show up in the Contact section and the quick-info drawer.'},
+      {selector:'.admin-body .admin-card:nth-of-type(3)',title:'Hero Section',body:'The big headline and image visitors see first. Switch between a teal gradient or white background to match your photo.'},
+      {selector:'.admin-body .admin-card:nth-of-type(4)',title:'Location & Maps',body:'Add your address and Google Maps link so visitors can find you and see how far away they are.'},
+      {selector:'.admin-body .admin-card:nth-of-type(5)',title:'Integrations',body:'Optionally connect a Formspree endpoint so contact-form messages land straight in your inbox.'}
+    ],
+    faq:[
+      {q:'Why isn\'t my logo showing up?',a:'Make sure you uploaded it under Brand above, then check Appearance to confirm the relevant sections are visible.'},
+      {q:'Can I change my business name later?',a:'Yes — edit it here anytime. It updates everywhere instantly, including the browser tab title.'}
+    ]
+  },
+  socials:{
+    summary:'Link your social profiles and WhatsApp number, and choose which ones appear publicly on your site.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Social & Messaging Links',body:'Paste a profile URL for each platform you use, then use "Show on site" to control what visitors actually see in your footer.'}
+    ]
+  },
+  products:{
+    summary:'Add, edit, reorder, and manage every product you sell — unlimited products, with drag-and-drop ordering.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Add a Product',body:'Fill in the name, price, quantity/volume, and an image or YouTube video, then save. Quantity/Volume is required so customers know exactly what they\'re buying.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Sorting',body:'Choose how products are ordered on your public site by default — newest first, price, or name.'},
+      {selector:'.admin-body .admin-card:nth-of-type(3)',title:'Product List',body:'Drag the handle on any row to reorder, or use the edit/trash icons. Deleted items go to Trash for 30 days before they\'re gone for good.'}
+    ],
+    faq:[
+      {q:'Is there a limit on how many products I can add?',a:'No — products are unlimited.'},
+      {q:'I deleted a product by mistake — can I get it back?',a:'Yes, open Trash in the sidebar within 30 days and restore it.'}
+    ]
+  },
+  packages:{
+    summary:'Bundle your products into named packages or combos, each with its own price and list of what\'s included.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Add a Package',body:'Give it a name, subtitle, price, and add bullet points describing what\'s included.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Package List',body:'Edit or delete existing packages anytime — they\'re capped at a set maximum to keep the list manageable.'}
+    ]
+  },
+  gallery:{
+    summary:'Upload photos that showcase your business — your facility, products in action, anything that builds trust.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Section Visibility',body:'Turn the whole Gallery section on or off for your public site.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Images',body:'Upload up to the image limit. Visitors can click any photo to zoom in with the lightbox viewer.'}
+    ]
+  },
+  testimonials:{
+    summary:'Showcase real customer feedback with star ratings to build trust with new visitors.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Section Visibility',body:'Turn the Testimonials section on or off.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Add a Testimonial',body:'Enter the customer\'s name, their quote, the date, and click the stars to set a rating.'},
+      {selector:'.admin-body .admin-card:nth-of-type(3)',title:'Testimonial List',body:'Edit or remove any testimonial. Removed ones go to Trash, recoverable for 30 days.'}
+    ]
+  },
+  about:{
+    summary:'Tell your story and introduce your team — the human side of your business.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Section Visibility',body:'Turn the About section on or off.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Our Story',body:'Write a short paragraph about how your business started and what makes it different.'},
+      {selector:'.admin-body .admin-card:nth-of-type(3)',title:'Add a Team Member',body:'Add a name, role, and optional photo for anyone you want featured.'},
+      {selector:'.admin-body .admin-card:nth-of-type(4)',title:'Team List',body:'Edit or remove team members anytime.'}
+    ]
+  },
+  drawer:{
+    summary:'The hamburger icon in the top-left opens a quick-info drawer with a few short highlights — set them here.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'About the Quick Menu',body:'A short tap on the hamburger icon opens this drawer for visitors. A long-press instead opens the admin login.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Add a Highlight',body:'Short, punchy facts work best — e.g. "How We Filter Our Water" or "Same-Day Delivery".'},
+      {selector:'.admin-body .admin-card:nth-of-type(3)',title:'Highlights',body:'Up to the highlight limit. Delete and re-add in the order you want them to appear.'}
+    ]
+  },
+  appearance:{
+    summary:'Switch layouts, customize every theme color, pick fonts, toggle sections, and configure your call-to-action and footer.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Layout',body:'Pick from three structural layouts — Classic, Split Showcase, or Bold Editorial. Changes apply instantly.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Theme Colors',body:'Drag or pick any color and your whole site updates live. Leave a swatch untouched to keep the built-in default.'},
+      {selector:'.admin-body .admin-card:nth-of-type(3)',title:'Typography',body:'Choose a heading font and a body font — loads instantly from Google Fonts.'},
+      {selector:'.admin-body .admin-card:nth-of-type(4)',title:'Section Visibility',body:'Show or hide entire sections like Products, Packages, About, Gallery, Testimonials, or Contact.'},
+      {selector:'.admin-body .admin-card:nth-of-type(5)',title:'Call To Action',body:'Customize the main button label and where it scrolls to.'},
+      {selector:'.admin-body .admin-card:nth-of-type(6)',title:'WhatsApp Button',body:'Toggle the floating WhatsApp button that lets visitors message you directly.'},
+      {selector:'.admin-body .admin-card:nth-of-type(7)',title:'Footer',body:'Set a short tagline shown in your site\'s footer.'}
+    ]
+  },
+  cloudsync:{
+    summary:'Optional real-time sync across every visitor\'s device using your own free Firebase project — off by default.',
+    steps:[
+      {selector:'.switch[data-path="cloud_sync.enabled"]',title:'Enable Cloud Sync',body:'Turn this on to push every save instantly to all visitors, no refresh needed. Your site works fine without it too.'},
+      {selector:'#cs-save-keys',title:'Connect Your Firebase Project',body:'Paste your Firebase web app config here, then Save & Connect. Full step-by-step setup is in README.md.'},
+      {selector:'#cs-rules-text',title:'Security Rules',body:'Copy this exact text into your Firebase Console\'s Firestore Rules tab so your data stays public-readable but owner-only writable.'}
+    ],
+    faq:[
+      {q:'Do I need Cloud Sync?',a:'No — it\'s entirely optional. Without it, your site still works great using your browser\'s local storage.'},
+      {q:'Is my data shared with other HydroBiz businesses?',a:'Never. Each business connects to its own separate, free Firebase project.'}
+    ]
+  },
+  qrcode:{
+    summary:'A printable, branded QR code linking straight to your site — perfect for flyers, packaging, or your storefront.',
+    steps:[
+      {selector:'#qr-admin-preview',title:'Your Branded QR Code',body:'Automatically includes your logo, business name, and contact info. Updates instantly if you change your branding.'},
+      {selector:'.qr-color-row',title:'Colors & Margin',body:'Customize the foreground/background colors and quiet-zone margin to match your brand.'},
+      {selector:'#qr-admin-download',title:'Print or Download',body:'Download a print-quality PNG, or print directly from this page.'}
+    ]
+  },
+  orders:{
+    summary:'Every cart checkout and contact-form enquiry is logged here automatically — searchable and filterable.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Filter Orders',body:'Search by customer name or narrow down by date range.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Orders List',body:'See what each customer ordered, the total, and which channel (WhatsApp, email, etc.) they used.'}
+    ]
+  },
+  analytics:{
+    summary:'Track your revenue and order volume over daily, weekly, monthly, or yearly periods.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Overview',body:'Your all-time total orders and revenue at a glance.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Revenue by Period',body:'Switch between Daily, Weekly, Monthly, and Yearly to see trends over time.'}
+    ]
+  },
+  notifications:{
+    summary:'Internal alerts for new orders and enquiries — so you never miss a sale.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Notifications',body:'Unread alerts are highlighted. Clear them all once you\'ve caught up.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Notification List',body:'Every alert is timestamped so you know exactly when it came in.'}
+    ]
+  },
+  trash:{
+    summary:'Anything you delete — products, photos, testimonials, team members, highlights — lands here first, recoverable for 30 days.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'About Trash',body:'Nothing is gone forever immediately — you get a 30-day safety net before automatic permanent deletion.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Trashed Items',body:'Restore anything you didn\'t mean to delete, or purge it permanently right away.'}
+    ]
+  },
+  password:{
+    summary:'Set or change your admin password, and control how long the dashboard stays unlocked before auto-locking.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-last-of-type(2)',title:'Set or Change Password',body:'Choose a password at least 6 characters long. Forgotten passwords can\'t be recovered — only a full Reset (in Data) clears it.'},
+      {selector:'.admin-body .admin-card:nth-last-of-type(1)',title:'Auto-Lock & Re-Entry',body:'Set how long the dashboard can sit idle before locking, and how long you can re-enter afterward without retyping your password.'}
+    ],
+    faq:[
+      {q:'I forgot my password — now what?',a:'There\'s no recovery. Go to Data and use Reset to Default, which clears the password along with everything else.'}
+    ]
+  },
+  data:{
+    summary:'Back up your entire site as a file, restore from a backup, or wipe everything and start fresh.',
+    steps:[
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Export Data',body:'Download a full JSON backup of your site any time — do this regularly.'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Import Data',body:'Restore from a previously exported file. This overwrites everything currently on your site.'},
+      {selector:'.admin-body .admin-card:nth-of-type(3)',title:'Reset to Default',body:'Permanently wipes your products, packages, gallery, testimonials, and settings. Type RESET to confirm — this can\'t be undone.'}
+    ],
+    faq:[
+      {q:'Will Reset delete my Cloud Sync settings too?',a:'No — Cloud Sync connection settings and your tour progress are kept separate and untouched by Reset or Import.'}
+    ]
+  }
+};
+
+/* ============ VIRTUAL MANUAL: mastery store (localStorage, excluded from
+   Cloud Sync / export-import / Reset — this is a local per-device UI-familiarity
+   signal, not site content) ============ */
+const MASTERY_KEY='hb_admin_mastery';
+function loadMastery(){
+  try{
+    const raw=localStorage.getItem(MASTERY_KEY);
+    const parsed=raw?JSON.parse(raw):{};
+    return Object.assign({welcomed:false,autostart:true,done:{}},parsed,{done:Object.assign({},parsed.done)});
+  }catch(e){ return {welcomed:false,autostart:true,done:{}}; }
+}
+let MASTERY=loadMastery();
+function saveMastery(){ localStorage.setItem(MASTERY_KEY,JSON.stringify(MASTERY)); }
+function isMastered(key){ return !!MASTERY.done[key]; }
+function markMastered(key){ MASTERY.done[key]=true; saveMastery(); refreshHelpDot(); }
+function unmasterSection(key){ delete MASTERY.done[key]; saveMastery(); refreshHelpDot(); }
+function resetAllMastery(){ MASTERY.done={}; saveMastery(); refreshHelpDot(); }
+function masteryProgress(){
+  const total=ADMIN_SECTIONS.filter(s=>ADMIN_HELP[s.key]).length;
+  const done=ADMIN_SECTIONS.filter(s=>ADMIN_HELP[s.key]&&isMastered(s.key)).length;
+  return {done,total};
+}
+
+/* ============ VIRTUAL MANUAL: spotlight coachmark tour engine ============ */
+let tourSteps=[], tourIdx=0, tourSectionKey=null, tourActive=false, tourRepositionBound=false;
+function buildTourSteps(sectionKey){
+  const help=ADMIN_HELP[sectionKey];
+  if(!help) return [];
+  return help.steps.filter(s=>document.querySelector(s.selector));
+}
+function startTour(sectionKey){
+  const steps=buildTourSteps(sectionKey);
+  if(!steps.length) return;
+  tourSteps=steps; tourIdx=0; tourSectionKey=sectionKey; tourActive=true;
+  document.getElementById('tour-overlay').hidden=false;
+  requestAnimationFrame(()=>document.getElementById('tour-veil').classList.add('show'));
+  bindTourReposition();
+  renderTourStep();
+}
+function endTour(skip){
+  if(!tourActive) return;
+  if(skip && tourSectionKey) markMastered(tourSectionKey);
+  tourActive=false;
+  document.getElementById('tour-veil').classList.remove('show');
+  document.getElementById('tour-card').classList.remove('show');
+  unbindTourReposition();
+  setTimeout(()=>{ if(!tourActive) document.getElementById('tour-overlay').hidden=true; },260);
+  tourSteps=[]; tourIdx=0; tourSectionKey=null;
+}
+function tourNext(){
+  if(tourIdx>=tourSteps.length-1){ endTour(true); return; }
+  tourIdx++; renderTourStep();
+}
+function tourBack(){
+  if(tourIdx<=0) return;
+  tourIdx--; renderTourStep();
+}
+function renderTourStep(){
+  const step=tourSteps[tourIdx];
+  if(!step){ endTour(true); return; }
+  const target=document.querySelector(step.selector);
+  if(!target){ tourSteps.splice(tourIdx,1); renderTourStep(); return; }
+  document.getElementById('tour-card-eyebrow').textContent='STEP '+(tourIdx+1)+' OF '+tourSteps.length;
+  document.getElementById('tour-card-title').textContent=step.title;
+  document.getElementById('tour-card-body').textContent=step.body;
+  document.getElementById('tour-dots').innerHTML=tourSteps.map((_,i)=>'<span class="'+(i===tourIdx?'on':'')+'"></span>').join('');
+  const backBtn=document.getElementById('tour-back');
+  backBtn.disabled=tourIdx===0;
+  backBtn.innerHTML=icon('arrowLeft',15);
+  const nextBtn=document.getElementById('tour-next');
+  const isLast=tourIdx===tourSteps.length-1;
+  nextBtn.classList.toggle('tour-finish-btn',isLast);
+  nextBtn.innerHTML=isLast?'Done':icon('arrowRight',15);
+  target.scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(positionTourUI,300);
+}
+function positionTourUI(){
+  if(!tourActive) return;
+  const step=tourSteps[tourIdx];
+  if(!step) return;
+  const target=document.querySelector(step.selector);
+  if(!target){ endTour(true); return; }
+  const r=target.getBoundingClientRect();
+  const pad=8;
+  const spot=document.getElementById('tour-spot');
+  spot.style.top=(r.top-pad)+'px';
+  spot.style.left=(r.left-pad)+'px';
+  spot.style.width=(r.width+pad*2)+'px';
+  spot.style.height=(r.height+pad*2)+'px';
+  const card=document.getElementById('tour-card');
+  const cardRect=card.getBoundingClientRect();
+  const margin=16;
+  const spaceBelow=window.innerHeight-r.bottom;
+  const spaceAbove=r.top;
+  let top;
+  if(spaceBelow>=cardRect.height+margin*2 || spaceBelow>=spaceAbove){
+    top=Math.min(r.bottom+margin,window.innerHeight-cardRect.height-margin);
+  } else {
+    top=Math.max(margin,r.top-cardRect.height-margin);
+  }
+  let left=r.left+r.width/2-cardRect.width/2;
+  left=Math.max(margin,Math.min(left,window.innerWidth-cardRect.width-margin));
+  card.style.top=top+'px';
+  card.style.left=left+'px';
+  requestAnimationFrame(()=>card.classList.add('show'));
+}
+const tourRepositionHandler=debounce(()=>{ if(tourActive) positionTourUI(); },80);
+function bindTourReposition(){
+  if(tourRepositionBound) return;
+  window.addEventListener('resize',tourRepositionHandler);
+  const body=document.getElementById('admin-body');
+  if(body) body.addEventListener('scroll',tourRepositionHandler,{passive:true});
+  tourRepositionBound=true;
+}
+function unbindTourReposition(){
+  if(!tourRepositionBound) return;
+  window.removeEventListener('resize',tourRepositionHandler);
+  const body=document.getElementById('admin-body');
+  if(body) body.removeEventListener('scroll',tourRepositionHandler);
+  tourRepositionBound=false;
+}
+
+/* ============ VIRTUAL MANUAL: auto-launch + first-run welcome ============
+   Deliberately NOT hooked into selectAdminSection()/rerenderAdminBody() (which
+   fire on every minor edit/toggle) — only called from genuine navigation: the
+   sidebar click handler and the dashboard's initial section load. */
+function maybeAutoStartTour(key){
+  if(tourActive) return;
+  if(!ADMIN_HELP[key]) return;
+  if(isMastered(key)) return;
+  if(!MASTERY.autostart) return;
+  setTimeout(()=>{ if(!tourActive && adminActiveSection===key) startTour(key); },280);
+}
+function maybeShowWelcome(){
+  if(MASTERY.welcomed){ maybeAutoStartTour('identity'); return; }
+  document.getElementById('tour-welcome-modal').hidden=false;
+}
+function refreshHelpDot(){
+  const {done,total}=masteryProgress();
+  const dot=document.getElementById('admin-help-dot');
+  if(dot) dot.hidden=done>=total;
+}
+
+/* ============ VIRTUAL MANUAL: searchable manual panel ============ */
+let manualSearchTerm='';
+function openManualPanel(){
+  endTour(true);
+  manualSearchTerm='';
+  const search=document.getElementById('manual-search');
+  if(search) search.value='';
+  renderManualPanel();
+  document.getElementById('manual-overlay').hidden=false;
+}
+function closeManualPanel(){ document.getElementById('manual-overlay').hidden=true; }
+function manualMatches(section,help,term){
+  if(!term) return true;
+  const hay=[
+    section.label, help.summary||'',
+    ...help.steps.map(s=>s.title+' '+s.body),
+    ...(help.faq?help.faq.map(f=>f.q+' '+f.a):[])
+  ].join(' ').toLowerCase();
+  return hay.includes(term);
+}
+function renderManualPanel(){
+  const {done,total}=masteryProgress();
+  document.getElementById('manual-progress-label').textContent=done+' of '+total+' mastered';
+  document.getElementById('manual-progress-fill').style.width=(total?Math.round(done/total*100):0)+'%';
+  document.getElementById('manual-autostart-toggle').classList.toggle('on',!!MASTERY.autostart);
+  const term=manualSearchTerm.trim().toLowerCase();
+  const body=document.getElementById('manual-body');
+  const matches=ADMIN_SECTIONS.filter(s=>ADMIN_HELP[s.key]&&manualMatches(s,ADMIN_HELP[s.key],term));
+  if(!matches.length){
+    body.innerHTML='<div class="manual-empty">No matching sections. Try a different search term.</div>';
+    return;
+  }
+  body.innerHTML=matches.map(s=>{
+    const help=ADMIN_HELP[s.key];
+    const mastered=isMastered(s.key);
+    return '<details class="manual-item"><summary>'
+      +'<span class="mi-mastered'+(mastered?' on':'')+'"></span>'
+      +icon(s.icon,16)
+      +'<span>'+escapeHTML(s.label)+'</span>'
+      +'<span class="mi-chev">'+icon('arrowRight',15)+'</span>'
+      +'</summary><div class="manual-item-body">'
+      +'<p>'+escapeHTML(help.summary)+'</p>'
+      +help.steps.map((step,i)=>'<div class="mi-step"><b>'+(i+1)+'</b><span>'+escapeHTML(step.title)+' — '+escapeHTML(step.body)+'</span></div>').join('')
+      +(help.faq&&help.faq.length?('<div class="mi-faq">'+help.faq.map(f=>'<p><strong>'+escapeHTML(f.q)+'</strong></p><p>'+escapeHTML(f.a)+'</p>').join('')+'</div>'):'')
+      +'<button class="manual-replay-btn" type="button" data-replay="'+s.key+'">'+icon('restore',13)+' Replay this tour</button>'
+      +'</div></details>';
+  }).join('');
+  body.querySelectorAll('[data-replay]').forEach(btn=>btn.addEventListener('click',()=>{
+    const key=btn.dataset.replay;
+    closeManualPanel();
+    selectAdminSection(key);
+    unmasterSection(key);
+    setTimeout(()=>startTour(key),320);
+  }));
+}
+function initVirtualManual(){
+  document.getElementById('vm-welcome-icon').innerHTML=icon('sparkle',28);
+  document.getElementById('manual-close').innerHTML=icon('close',16);
+  document.getElementById('manual-head-icon-slot').innerHTML=icon('book',18)+'<span style="margin-left:10px;">Virtual Manual</span>';
+  document.getElementById('admin-help-btn').addEventListener('click',openManualPanel);
+  document.getElementById('manual-close').addEventListener('click',closeManualPanel);
+  document.getElementById('manual-search').addEventListener('input',debounce(e=>{
+    manualSearchTerm=e.target.value; renderManualPanel();
+  },150));
+  document.getElementById('manual-reset-all').addEventListener('click',()=>{
+    resetAllMastery();
+    renderManualPanel();
+    toast('All tours reset — they\'ll auto-play again');
+  });
+  document.getElementById('manual-autostart-toggle').addEventListener('click',()=>{
+    MASTERY.autostart=!MASTERY.autostart;
+    saveMastery();
+    renderManualPanel();
+  });
+  document.getElementById('vm-welcome-tour').addEventListener('click',()=>{
+    MASTERY.welcomed=true; saveMastery();
+    document.getElementById('tour-welcome-modal').hidden=true;
+    startTour('identity');
+  });
+  document.getElementById('vm-welcome-skip').addEventListener('click',()=>{
+    MASTERY.welcomed=true;
+    ADMIN_SECTIONS.forEach(s=>{ if(ADMIN_HELP[s.key]) MASTERY.done[s.key]=true; });
+    saveMastery();
+    refreshHelpDot();
+    document.getElementById('tour-welcome-modal').hidden=true;
+    toast('Got it — reopen tours anytime from the Virtual Manual');
+  });
+  document.getElementById('tour-skip').addEventListener('click',()=>endTour(true));
+  document.getElementById('tour-next').addEventListener('click',tourNext);
+  document.getElementById('tour-back').addEventListener('click',tourBack);
+  document.addEventListener('keydown',e=>{
+    if(tourActive){
+      if(e.key==='Escape'){ endTour(true); }
+      else if(e.key==='ArrowRight'||e.key==='Enter'){ tourNext(); }
+      else if(e.key==='ArrowLeft'){ tourBack(); }
+    } else if(e.key==='Escape' && !document.getElementById('manual-overlay').hidden){
+      closeManualPanel();
+    }
+  });
+  refreshHelpDot();
+}
+
 /* ============ MAIN INIT ============ */
 document.addEventListener('DOMContentLoaded',()=>{
   purgeExpiredTrash();
   renderAll();
   runPreloader();
+  cloudSyncInit();
   initHamburger();
   initAdminLogin();
   initConfirmPasswordModal();
@@ -3190,6 +4267,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   initCatalogFilters();
   initFabGroup();
   document.getElementById('admin-exit-btn').addEventListener('click',closeAdminDashboard);
+  initVirtualManual();
   if(new URLSearchParams(location.search).get('selftest')==='1'){
     runSelfTests();
   }
