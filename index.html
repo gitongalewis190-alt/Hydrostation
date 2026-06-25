@@ -1140,12 +1140,16 @@ function applyFavicon(){
 }
 /* ============ THEME CUSTOMIZER ============ */
 /* Maps CONFIG.appearance.theme.<key> -> CSS custom property name on :root.
-   Only the color tokens are in scope (bg/accent/accent-bright/accent-glow/text) —
-   structural tokens (radius, shadow, spring, fonts) are intentionally untouched.
+   Covers every public-facing solid-color token (bg/bg-soft/accent/accent-bright/
+   accent-glow/text/text-soft/border) — structural tokens (radius, shadow, spring,
+   fonts) and admin-internal/alpha-channel tokens (admin-bg, glass-bg, glass-border)
+   are intentionally untouched: the former aren't colors, the latter are rgba()
+   values that don't map cleanly onto a plain <input type="color">.
    --heading-gradient derives from --accent/--accent-bright/--accent-glow via var()
    in the :root rule, so overriding those three alone cascades into the gradient too. */
 const THEME_COLOR_KEYS={
-  bg:'--bg', accent:'--accent', accent_bright:'--accent-bright', accent_glow:'--accent-glow', text:'--text'
+  bg:'--bg', bg_soft:'--bg-soft', accent:'--accent', accent_bright:'--accent-bright', accent_glow:'--accent-glow',
+  text:'--text', text_soft:'--text-soft', border:'--border'
 };
 function applyTheme(){
   const theme=(CONFIG.appearance&&CONFIG.appearance.theme)||{};
@@ -2363,7 +2367,7 @@ const LAYOUT_OPTIONS=[
 ];
 /* Built-in default hex values, mirrored from the :root CSS block — shown as picker
    placeholders/fallbacks when no per-site override is stored in CONFIG.appearance.theme. */
-const THEME_COLOR_DEFAULTS={bg:'#FFFFFF',accent:'#0B6E7A',accent_bright:'#23B5C8',accent_glow:'#5EEAD4',text:'#111827'};
+const THEME_COLOR_DEFAULTS={bg:'#FFFFFF',bg_soft:'#F7FBFC',accent:'#0B6E7A',accent_bright:'#23B5C8',accent_glow:'#5EEAD4',text:'#111827',text_soft:'#6B7280',border:'#E5F4F6'};
 function panelAppearance(){
   const a=CONFIG.appearance;
   const theme=a.theme||{};
@@ -2377,10 +2381,13 @@ function panelAppearance(){
     +'<p class="cap-note">Drag or pick a color and the site updates instantly. Leave a swatch untouched to keep the built-in default.</p>'
     +'<div class="theme-color-grid">'
     +colorField('Background','appearance.theme.bg','--bg',THEME_COLOR_DEFAULTS.bg,theme.bg)
+    +colorField('Background (Soft)','appearance.theme.bg_soft','--bg-soft',THEME_COLOR_DEFAULTS.bg_soft,theme.bg_soft)
     +colorField('Accent','appearance.theme.accent','--accent',THEME_COLOR_DEFAULTS.accent,theme.accent)
     +colorField('Accent Bright','appearance.theme.accent_bright','--accent-bright',THEME_COLOR_DEFAULTS.accent_bright,theme.accent_bright)
     +colorField('Accent Glow','appearance.theme.accent_glow','--accent-glow',THEME_COLOR_DEFAULTS.accent_glow,theme.accent_glow)
     +colorField('Text','appearance.theme.text','--text',THEME_COLOR_DEFAULTS.text,theme.text)
+    +colorField('Text (Soft)','appearance.theme.text_soft','--text-soft',THEME_COLOR_DEFAULTS.text_soft,theme.text_soft)
+    +colorField('Border','appearance.theme.border','--border',THEME_COLOR_DEFAULTS.border,theme.border)
     +'</div>'
     +'<button class="btn btn-ghost" id="theme-reset-btn" type="button" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18);color:#fff;align-self:flex-start;">Reset to default theme</button>'
     +'</div>'
