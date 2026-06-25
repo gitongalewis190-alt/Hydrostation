@@ -477,7 +477,7 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 /* split */
 body[data-layout="split"] .hero-content{max-width:none;}
 body[data-layout="split"] .hero .container{display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:40px;}
-body[data-layout="split"] .hero-side-img{border-radius:20px;overflow:hidden;box-shadow:var(--shadow-lg);aspect-ratio:4/5;}
+body[data-layout="split"] .hero-side-img{position:relative;z-index:2;border-radius:20px;overflow:hidden;box-shadow:var(--shadow-lg);aspect-ratio:4/5;}
 body[data-layout="split"] .hero-side-img img{width:100%;height:100%;object-fit:cover;}
 @media (max-width:900px){body[data-layout="split"] .hero .container{grid-template-columns:1fr;}body[data-layout="split"] .hero-side-img{display:none;}}
 body[data-layout="split"] .products-grid .product-card:nth-child(3n+1){transform:translateY(-10px);}
