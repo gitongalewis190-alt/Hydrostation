@@ -130,7 +130,7 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 }
 .preloader-brand{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;opacity:0;animation:brandIn .6s var(--spring) forwards;animation-delay:.85s;}
 @keyframes brandIn{from{opacity:0;transform:scale(.7);}to{opacity:1;transform:scale(1);}}
-#preloader-logo{width:64px;height:64px;border-radius:16px;object-fit:cover;}
+#preloader-logo{max-width:64px;max-height:64px;width:auto;height:auto;border-radius:16px;object-fit:contain;}
 #preloader-fallback-mark{width:56px;height:56px;color:var(--accent);}
 #preloader-name{font-family:var(--font-display);font-weight:800;font-size:22px;letter-spacing:-.01em;color:var(--text);}
 
@@ -1031,8 +1031,19 @@ function renderBrand(){
   const preloaderLogo=document.getElementById('preloader-logo');
   const preloaderMark=document.getElementById('preloader-fallback-mark');
   if(preloaderLogo && preloaderMark){
-    if(CONFIG.identity.logo_b64){ preloaderLogo.src=CONFIG.identity.logo_b64; preloaderLogo.hidden=false; preloaderMark.hidden=true; }
-    else { preloaderLogo.hidden=true; preloaderMark.hidden=false; }
+    /* preloaderMark is an <svg>: SVGElement has no reflected .hidden IDL property
+       (only HTMLElement/MathMLElement do), so toggling el.hidden=true/false silently
+       no-ops on it and never hides it. Use the hidden attribute directly instead,
+       which works for both the <img> and the <svg>. */
+    if(CONFIG.identity.logo_b64){
+      preloaderLogo.src=CONFIG.identity.logo_b64;
+      preloaderLogo.removeAttribute('hidden');
+      preloaderMark.setAttribute('hidden','');
+    } else {
+      preloaderLogo.setAttribute('hidden','');
+      preloaderLogo.removeAttribute('src');
+      preloaderMark.removeAttribute('hidden');
+    }
   }
   applyFavicon();
 }
