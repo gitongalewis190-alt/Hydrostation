@@ -138,11 +138,13 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 /* ============ NAV ============ */
 .site-nav{position:sticky;top:0;z-index:500;background:rgba(255,255,255,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);}
 .nav-inner{height:var(--header-h);display:flex;align-items:center;gap:18px;}
-.hamburger-btn{display:flex;flex-direction:column;justify-content:center;gap:5px;width:38px;height:38px;border-radius:10px;flex-shrink:0;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
+.hamburger-btn{display:flex;flex-direction:column;justify-content:center;gap:5px;width:38px;height:38px;border-radius:10px;flex-shrink:0;-webkit-user-select:none;user-select:none;touch-action:none;}
 .hamburger-btn span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px;transition:transform .25s var(--ease), opacity .2s ease, background .3s ease;}
 .hamburger-btn.pressing span{background:var(--accent-bright);}
 .hamburger-btn.pressing span:nth-child(1){transform:translateY(1px) rotate(8deg);}
 .hamburger-btn.pressing span:nth-child(3){transform:translateY(-1px) rotate(-8deg);}
+.hamburger-btn.armed{transition:transform .08s linear;}
+.hamburger-btn.armed span{background:var(--accent-glow);box-shadow:0 0 6px var(--accent-glow);}
 .nav-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:800;font-size:18px;flex:0 1 auto;min-width:0;overflow:hidden;}
 .nav-brand span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .nav-logo{width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;}
@@ -442,6 +444,11 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .theme-color-swatch input[type="color"]::-webkit-color-swatch-wrapper{padding:0;}
 .theme-color-swatch input[type="color"]::-webkit-color-swatch{border:1px solid rgba(255,255,255,.18);border-radius:7px;}
 .theme-color-swatch input[type="text"]{flex:1;min-width:0;padding:8px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#fff;font-size:13px;font-family:var(--font-mono);}
+/* Generic icon-color hook: only takes effect once an owner sets --icon-color via the
+   Appearance > Theme Colors picker. More specific per-context rules (.toast svg,
+   .package-includes svg, etc.) outrank this on specificity, so intentionally-colored
+   icons (accent checkmarks, error glyphs) are unaffected by an icon-color override. */
+.icon-svg{color:var(--icon-color,currentColor);}
 .theme-color-swatch input[type="text"]:focus{outline:none;border-color:var(--accent-bright);}
 @media (max-width:760px){
   .admin-dashboard{flex-direction:column;}
@@ -526,7 +533,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
       </nav>
       <a id="nav-cta" class="btn btn-primary nav-cta" href="#contact">Order Now</a>
       <button class="nav-cart-btn" id="cart-float" aria-label="View cart" type="button">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L20.5 8H6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg class="icon-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L20.5 8H6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span class="cart-badge" id="cart-badge" hidden>0</span>
       </button>
     </div>
@@ -535,7 +542,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
   <div class="catalog-bar" id="catalog-bar" hidden>
     <div class="container catalog-bar-inner">
       <div class="search-bar">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>
+        <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>
         <input type="search" id="catalog-search" placeholder="Search products…" aria-label="Search products">
       </div>
       <div class="category-tabs" id="category-tabs" hidden></div>
@@ -682,7 +689,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
   <div class="quick-drawer-scrim" id="cart-drawer-scrim"></div>
   <div class="quick-drawer-panel">
     <button class="icon-btn" id="cart-drawer-close" style="float:right;" aria-label="Close cart" type="button">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+      <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
     </button>
     <h3>Your Order</h3>
     <div id="cart-items"></div>
@@ -701,7 +708,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
   <div class="quick-drawer-scrim" id="quick-drawer-scrim"></div>
   <div class="quick-drawer-panel">
     <button class="icon-btn" id="quick-drawer-close" style="float:right;" aria-label="Close" type="button">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+      <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
     </button>
     <h3 id="quick-drawer-title">Good to Know</h3>
     <div id="quick-drawer-content"></div>
@@ -743,7 +750,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
 <div class="modal-overlay" id="qr-modal" hidden>
   <div class="modal-panel qr-panel">
     <button class="icon-btn" id="qr-modal-close" aria-label="Close" type="button" style="position:absolute;top:14px;right:14px;color:rgba(255,255,255,.6);">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+      <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
     </button>
     <h3>Scan to Visit</h3>
     <p class="hint">Point a phone camera at this code</p>
@@ -775,14 +782,14 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
 
 <div class="lightbox-overlay" id="lightbox-overlay" hidden>
   <button class="lb-close icon-btn" id="lightbox-close" aria-label="Close" type="button">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+    <svg class="icon-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
   </button>
   <button class="lb-nav lb-prev" id="lightbox-prev" aria-label="Previous" type="button">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
   <img id="lightbox-img" alt="">
   <button class="lb-nav lb-next" id="lightbox-next" aria-label="Next" type="button">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
 </div>
 
@@ -819,7 +826,7 @@ const DEFAULT_CONFIG={
     layout:'classic',
     sections_visible:{products:true,packages:true,about:true,gallery:true,testimonials:true,contact:true},
     whatsapp_btn:true, cta_label:'Order Now', cta_anchor:'#contact', footer_tagline:'',
-    product_sort:'newest', theme:{}, qr_style:{fg:'',bg:'',quiet_zone:8}
+    product_sort:'newest', theme:{}, fonts:{display:'',body:''}, qr_style:{fg:'',bg:'',quiet_zone:8}
   },
   orders:[],
   notifications:[],
@@ -1090,7 +1097,7 @@ const ICONS={
   chart:'<path d="M3 21h18" stroke-linecap="round"/><path d="M6 21V12M11.5 21V6M17 21v-9" stroke-linecap="round" stroke-linejoin="round"/>',
   bell:'<path d="M6 10a6 6 0 1 1 12 0v4l1.7 3.2H4.3L6 14Z" stroke-linejoin="round"/><path d="M10 19.5a2 2 0 0 0 4 0" stroke-linecap="round"/>'
 };
-function icon(name,size=18){ return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="currentColor" stroke-width="1.7">'+(ICONS[name]||'')+'</svg>'; }
+function icon(name,size=18){ return '<svg class="icon-svg" viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="currentColor" stroke-width="1.7">'+(ICONS[name]||'')+'</svg>'; }
 const SOCIAL_ICONS={
   facebook:'<path d="M14 8.5h2.5V5.3h-2.7C11.3 5.3 10 6.9 10 9v2H8v3h2v7h3v-7h2.4l.6-3H13V9c0-.5.3-.5.5-.5Z"/>',
   instagram:'<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1"/>',
@@ -1100,7 +1107,7 @@ const SOCIAL_ICONS={
   linkedin:'<rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M8 10.5V17M8 7.5v.01M12 17v-4a2 2 0 0 1 4 0v4M12 13v4" stroke-linecap="round"/>',
   whatsapp:'<path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.8L4 20.5l4.4-1.2A8.5 8.5 0 1 0 12 3.5Z" stroke-linejoin="round"/><path d="M9 9.8c0 3.6 2.7 6.3 6.3 6.3.5-.7.9-1.7.6-2-.4-.4-1.8-1-2.1-.7-.2.2-.4.5-.8.4-1-.3-2.4-1.7-2.7-2.7-.1-.4.2-.6.4-.8.3-.3-.3-1.7-.7-2.1-.3-.3-1.3.1-2 .6Z"/>'
 };
-function socialIcon(name){ return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5">'+(SOCIAL_ICONS[name]||'')+'</svg>'; }
+function socialIcon(name){ return '<svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5">'+(SOCIAL_ICONS[name]||'')+'</svg>'; }
 
 /* ============ SPATIAL TILT (interactive glass) ============ */
 const tiltBound=new WeakSet();
@@ -1141,15 +1148,17 @@ function applyFavicon(){
 /* ============ THEME CUSTOMIZER ============ */
 /* Maps CONFIG.appearance.theme.<key> -> CSS custom property name on :root.
    Covers every public-facing solid-color token (bg/bg-soft/accent/accent-bright/
-   accent-glow/text/text-soft/border) — structural tokens (radius, shadow, spring,
-   fonts) and admin-internal/alpha-channel tokens (admin-bg, glass-bg, glass-border)
-   are intentionally untouched: the former aren't colors, the latter are rgba()
-   values that don't map cleanly onto a plain <input type="color">.
+   accent-glow/text/text-soft/border) plus a virtual --icon-color token (consumed
+   by the .icon-svg class, not declared in :root, so it cleanly falls back to
+   currentColor until an owner picks an override) — structural tokens (radius,
+   shadow, spring, fonts) and admin-internal/alpha-channel tokens (admin-bg,
+   glass-bg, glass-border) are intentionally untouched: the former aren't colors,
+   the latter are rgba() values that don't map cleanly onto a plain <input type="color">.
    --heading-gradient derives from --accent/--accent-bright/--accent-glow via var()
    in the :root rule, so overriding those three alone cascades into the gradient too. */
 const THEME_COLOR_KEYS={
   bg:'--bg', bg_soft:'--bg-soft', accent:'--accent', accent_bright:'--accent-bright', accent_glow:'--accent-glow',
-  text:'--text', text_soft:'--text-soft', border:'--border'
+  text:'--text', text_soft:'--text-soft', border:'--border', icon:'--icon-color'
 };
 function applyTheme(){
   const theme=(CONFIG.appearance&&CONFIG.appearance.theme)||{};
@@ -1162,6 +1171,44 @@ function applyTheme(){
   }
 }
 function applyLayout(){ document.body.dataset.layout=CONFIG.appearance.layout||'classic'; }
+
+/* ============ FONT CUSTOMIZER ============ */
+/* Curated, safe Google Fonts list. Picking a non-default font overrides --font-display/
+   --font-body (consumed everywhere headings/body text already reference those vars) and
+   lazy-loads just that family via a single dynamic <link>, so sites that never touch
+   Typography pay zero extra network cost beyond the static Inter/DM Sans link in <head>. */
+const FONT_CHOICES=[
+  {key:'inter',label:'Inter',family:'Inter',stack:"'Inter',sans-serif",weights:'400;500;600;700;800'},
+  {key:'dmsans',label:'DM Sans',family:'DM Sans',stack:"'DM Sans',sans-serif",weights:'500;700;800'},
+  {key:'poppins',label:'Poppins',family:'Poppins',stack:"'Poppins',sans-serif",weights:'400;600;700;800'},
+  {key:'montserrat',label:'Montserrat',family:'Montserrat',stack:"'Montserrat',sans-serif",weights:'500;700;800'},
+  {key:'playfair',label:'Playfair Display',family:'Playfair Display',stack:"'Playfair Display',serif",weights:'500;700;800'},
+  {key:'lora',label:'Lora',family:'Lora',stack:"'Lora',serif",weights:'500;600;700'},
+  {key:'spacegrotesk',label:'Space Grotesk',family:'Space Grotesk',stack:"'Space Grotesk',sans-serif",weights:'500;600;700'},
+  {key:'nunito',label:'Nunito',family:'Nunito',stack:"'Nunito',sans-serif",weights:'500;700;800'}
+];
+function loadGoogleFonts(fonts){
+  let link=document.getElementById('dynamic-font-link');
+  if(!fonts.length){ if(link) link.remove(); return; }
+  const families=fonts.map(f=>'family='+f.family.replace(/ /g,'+')+':wght@'+f.weights);
+  const href='https://fonts.googleapis.com/css2?'+families.join('&')+'&display=swap';
+  if(!link){
+    link=document.createElement('link');
+    link.id='dynamic-font-link';
+    link.rel='stylesheet';
+    document.head.appendChild(link);
+  }
+  if(link.href!==href) link.href=href;
+}
+function applyFonts(){
+  const f=(CONFIG.appearance&&CONFIG.appearance.fonts)||{};
+  const root=document.documentElement.style;
+  const display=FONT_CHOICES.find(c=>c.key===f.display);
+  const body=FONT_CHOICES.find(c=>c.key===f.body);
+  if(display) root.setProperty('--font-display',display.stack); else root.removeProperty('--font-display');
+  if(body) root.setProperty('--font-body',body.stack); else root.removeProperty('--font-body');
+  loadGoogleFonts([display,body].filter(Boolean));
+}
 function applySectionVisibility(){
   const map={products:'#products',packages:'#packages',about:'#about',gallery:'#gallery',testimonials:'#testimonials',contact:'#contact'};
   for(const k in map){
@@ -1571,6 +1618,7 @@ function renderQuickDrawer(){
 /* ============ RENDER ALL ============ */
 function renderAll(){
   applyTheme();
+  applyFonts();
   renderBrand();
   applyLayout();
   applySectionVisibility();
@@ -1631,33 +1679,59 @@ function closeDrawer(){
 }
 function initHamburger(){
   const btn=document.getElementById('hamburger-btn');
-  /* Secret admin trigger: 3 taps within TRIPLE_TAP_MS of each other.
-     A lone tap still opens the public quick-info drawer immediately-ish; we only
-     hold a single tap back briefly (TRIPLE_TAP_MS) to see if it turns into a
-     deliberate triple-tap. Taps spaced further apart than the window are treated
-     as independent single taps (normal drawer toggles), not progress toward admin. */
-  const TRIPLE_TAP_MS=650;
-  let tapCount=0, tapTimer=null, drawerTimer=null;
-  const resetTaps=()=>{ tapCount=0; clearTimeout(tapTimer); tapTimer=null; };
-  const onTap=()=>{
-    tapCount++;
-    clearTimeout(tapTimer);
-    if(tapCount>=3){
-      clearTimeout(drawerTimer);
-      resetTaps();
-      if(CONFIG.password_hash){ openAdminLogin(); } else { openAdminDashboard(); }
-      return;
-    }
-    if(tapCount===1){
-      /* Briefly hold the single-tap drawer action so a fast 2nd/3rd tap can cancel it.
-         The delay is imperceptible to a normal single tap but enough to catch a triple-tap. */
-      clearTimeout(drawerTimer);
-      drawerTimer=setTimeout(()=>{ openDrawer(); },180);
-    }
-    tapTimer=setTimeout(resetTaps,TRIPLE_TAP_MS);
+  /* Secret admin trigger: hold the menu icon still for ARM_MS, then drag it downward
+     past PULL_PX before releasing ("long-press and pull down"). This replaced an
+     earlier triple-tap trigger that proved unreliable on touch devices (taps easily
+     missed the timing window). A plain tap (released quickly, no hold, no drag) still
+     opens the public quick-info drawer — normal visitors never see anything different. */
+  const ARM_MS=450, PULL_PX=56, MAX_VISUAL_PULL=80;
+  let pointerId=null, startX=0, startY=0, startT=0, armed=false, triggered=false, armTimer=null;
+
+  const reset=()=>{
+    btn.style.transform='';
+    btn.classList.remove('pressing','armed');
+    clearTimeout(armTimer);
+    pointerId=null; armed=false; triggered=false;
   };
-  btn.addEventListener('click',onTap);
+
+  btn.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    pointerId=e.pointerId; startX=e.clientX; startY=e.clientY; startT=Date.now();
+    armed=false; triggered=false;
+    btn.classList.add('pressing');
+    try{ btn.setPointerCapture(pointerId); }catch(_){}
+    clearTimeout(armTimer);
+    armTimer=setTimeout(()=>{ if(pointerId!==null){ armed=true; btn.classList.add('armed'); } },ARM_MS);
+  });
+
+  btn.addEventListener('pointermove',e=>{
+    if(e.pointerId!==pointerId || triggered || !armed) return;
+    const dy=e.clientY-startY, dx=Math.abs(e.clientX-startX);
+    if(dy>4 && dy>dx){
+      btn.style.transform='translateY('+Math.min(dy,MAX_VISUAL_PULL)+'px)';
+      if(dy>=PULL_PX){
+        triggered=true;
+        const hadPassword=!!CONFIG.password_hash;
+        try{ btn.releasePointerCapture(pointerId); }catch(_){}
+        reset();
+        if(navigator.vibrate) navigator.vibrate(15);
+        if(hadPassword){ openAdminLogin(); } else { openAdminDashboard(); }
+      }
+    }
+  });
+
+  const onRelease=e=>{
+    if(e.pointerId!==pointerId) return;
+    const elapsed=Date.now()-startT;
+    const dy=e.clientY-startY;
+    const wasTriggered=triggered, wasArmed=armed;
+    reset();
+    if(!wasTriggered && !wasArmed && elapsed<ARM_MS && Math.abs(dy)<8){ openDrawer(); }
+  };
+  btn.addEventListener('pointerup',onRelease);
+  btn.addEventListener('pointercancel',reset);
   btn.addEventListener('contextmenu',e=>e.preventDefault());
+  btn.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openDrawer(); } });
 
   document.getElementById('quick-drawer-close').addEventListener('click',closeDrawer);
   document.getElementById('quick-drawer-scrim').addEventListener('click',closeDrawer);
@@ -2367,10 +2441,11 @@ const LAYOUT_OPTIONS=[
 ];
 /* Built-in default hex values, mirrored from the :root CSS block — shown as picker
    placeholders/fallbacks when no per-site override is stored in CONFIG.appearance.theme. */
-const THEME_COLOR_DEFAULTS={bg:'#FFFFFF',bg_soft:'#F7FBFC',accent:'#0B6E7A',accent_bright:'#23B5C8',accent_glow:'#5EEAD4',text:'#111827',text_soft:'#6B7280',border:'#E5F4F6'};
+const THEME_COLOR_DEFAULTS={bg:'#FFFFFF',bg_soft:'#F7FBFC',accent:'#0B6E7A',accent_bright:'#23B5C8',accent_glow:'#5EEAD4',text:'#111827',text_soft:'#6B7280',border:'#E5F4F6',icon:'#111827'};
 function panelAppearance(){
   const a=CONFIG.appearance;
   const theme=a.theme||{};
+  const fonts=a.fonts||{};
   const sections=[['products','Products'],['packages','Packages'],['about','About'],['gallery','Gallery'],['testimonials','Testimonials'],['contact','Contact']];
   return '<div class="admin-panel-section">'
     +'<div class="admin-card"><h4>Layout</h4><div class="layout-options">'
@@ -2388,9 +2463,22 @@ function panelAppearance(){
     +colorField('Text','appearance.theme.text','--text',THEME_COLOR_DEFAULTS.text,theme.text)
     +colorField('Text (Soft)','appearance.theme.text_soft','--text-soft',THEME_COLOR_DEFAULTS.text_soft,theme.text_soft)
     +colorField('Border','appearance.theme.border','--border',THEME_COLOR_DEFAULTS.border,theme.border)
+    +colorField('Icon Color','appearance.theme.icon','--icon-color',THEME_COLOR_DEFAULTS.icon,theme.icon)
     +'</div>'
     +'<button class="btn btn-ghost" id="theme-reset-btn" type="button" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18);color:#fff;align-self:flex-start;">Reset to default theme</button>'
     +'</div>'
+    +'<div class="admin-card"><h4>Typography</h4>'
+    +'<p class="cap-note">Pick a heading font and a body font. Loads instantly from Google Fonts.</p>'
+    +'<div class="a-row">'
+    +'<div class="a-field"><label>Display / Heading Font</label><select data-font-slot="display">'
+    +'<option value="">Default (DM Sans)</option>'
+    +FONT_CHOICES.map(c=>'<option value="'+c.key+'"'+(fonts.display===c.key?' selected':'')+'>'+escapeHTML(c.label)+'</option>').join('')
+    +'</select></div>'
+    +'<div class="a-field"><label>Body Font</label><select data-font-slot="body">'
+    +'<option value="">Default (Inter)</option>'
+    +FONT_CHOICES.map(c=>'<option value="'+c.key+'"'+(fonts.body===c.key?' selected':'')+'>'+escapeHTML(c.label)+'</option>').join('')
+    +'</select></div>'
+    +'</div></div>'
     +'<div class="admin-card"><h4>Section Visibility</h4>'
     +sections.map(([k,label])=>(
       '<div class="a-toggle"><span>Show '+label+'</span><div class="switch'+(a.sections_visible[k]?' on':'')+'" data-path="appearance.sections_visible.'+k+'"></div></div>'
@@ -2431,13 +2519,19 @@ function bindAppearanceActions(){
     applyTheme();
     rerenderAdminBody();
   });
+  document.querySelectorAll('[data-font-slot]').forEach(sel=>sel.addEventListener('change',()=>{
+    CONFIG.appearance.fonts=CONFIG.appearance.fonts||{};
+    CONFIG.appearance.fonts[sel.dataset.fontSlot]=sel.value;
+    commitNow('Font updated');
+    applyFonts();
+  }));
 }
 
 /* ============ ADMIN PANEL: Password ============ */
 function panelPassword(){
   const hasPassword=!!CONFIG.password_hash;
   return '<div class="admin-panel-section">'
-    +(hasPassword?'':'<div class="admin-card danger-zone"><h4>Admin Is Currently Unlocked</h4><p class="cap-note">No password has been set yet — anyone who long-presses the menu icon can open this dashboard. Set a password now to lock it down.</p></div>')
+    +(hasPassword?'':'<div class="admin-card danger-zone"><h4>Admin Is Currently Unlocked</h4><p class="cap-note">No password has been set yet — anyone who long-presses and pulls down the menu icon can open this dashboard. Set a password now to lock it down.</p></div>')
     +'<div class="admin-card"><h4>'+(hasPassword?'Change Admin Password':'Set Admin Password')+'</h4>'
     +(hasPassword?'<div class="a-field"><label>Current Password</label><div class="pw-field"><input type="password" id="pw-current" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>':'')
     +'<div class="a-field"><label>New Password</label><div class="pw-field"><input type="password" id="pw-new" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
@@ -3057,6 +3151,24 @@ async function runSelfTests(){
     CONFIG.notifications=before;
     assert('notification push/read/clear lifecycle works', pushedUnread && readClearsUnread && clearEmpties);
   }catch(e){ assert('notification push/read/clear lifecycle works', false); }
+
+  try{
+    const beforeTheme=JSON.parse(JSON.stringify(CONFIG.appearance.theme));
+    const beforeFonts=JSON.parse(JSON.stringify(CONFIG.appearance.fonts));
+    CONFIG.appearance.theme={icon:'#FF0000'};
+    CONFIG.appearance.fonts={display:'poppins',body:'lora'};
+    applyTheme(); applyFonts();
+    const iconApplied=document.documentElement.style.getPropertyValue('--icon-color')==='#FF0000';
+    const fontApplied=document.documentElement.style.getPropertyValue('--font-display')===FONT_CHOICES.find(c=>c.key==='poppins').stack;
+    const fontLinkInjected=!!document.getElementById('dynamic-font-link');
+    CONFIG.appearance.theme={}; CONFIG.appearance.fonts={};
+    applyTheme(); applyFonts();
+    const iconCleared=document.documentElement.style.getPropertyValue('--icon-color')==='';
+    const fontLinkRemoved=!document.getElementById('dynamic-font-link');
+    CONFIG.appearance.theme=beforeTheme; CONFIG.appearance.fonts=beforeFonts;
+    applyTheme(); applyFonts();
+    assert('icon-color + font tokens apply and clear via applyTheme()/applyFonts()', iconApplied && fontApplied && fontLinkInjected && iconCleared && fontLinkRemoved);
+  }catch(e){ assert('icon-color + font tokens apply and clear via applyTheme()/applyFonts()', false); }
 
   const pass=results.filter(r=>r.pass).length;
   console.log('%cHydroBiz self-test: '+pass+'/'+results.length+' passed','font-weight:bold;font-size:13px;');

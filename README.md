@@ -7,8 +7,8 @@ A single-file, zero-build business website template for water/hydroponics busine
 1. **Create your repo.** Click "Use this template" (or fork/copy this repo) into a new repository under your own GitHub account, e.g. `yourbusiness-site`.
 2. **Enable GitHub Pages.** In your new repo: Settings → Pages → Source: "Deploy from a branch" → Branch: `main` (or `master`) → folder `/ (root)` → Save.
 3. **Visit your site.** GitHub will give you a URL like `https://yourusername.github.io/yourbusiness-site/`. It may take a minute to go live after enabling Pages.
-4. **Open the admin dashboard.** Triple-tap (or triple-click) the menu/hamburger icon in the top-left of the nav bar, in quick succession. Since no password has been set yet, this opens the admin dashboard directly. (A single tap instead opens the public quick-info drawer.)
-5. **Set your password immediately.** In the dashboard sidebar, go to **Password** and set one right away — until you do, anyone who knows the triple-tap gesture can open your dashboard. Once a password is set, the same triple-tap will ask for it instead of opening straight in. The dashboard also auto-locks after 5 minutes of inactivity, and destructive actions (like Reset) ask you to re-enter your password.
+4. **Open the admin dashboard.** Press and hold the menu/hamburger icon in the top-left of the nav bar (about half a second, until it glows), then — still holding — drag it downward. Since no password has been set yet, this opens the admin dashboard directly. (A plain tap instead opens the public quick-info drawer.)
+5. **Set your password immediately.** In the dashboard sidebar, go to **Password** and set one right away — until you do, anyone who knows the hold-and-pull gesture can open your dashboard. Once a password is set, the same gesture will ask for it instead of opening straight in. The dashboard also auto-locks after 5 minutes of inactivity, and destructive actions (like Reset) ask you to re-enter your password.
 6. **Fill in your business.** Go through each section in the sidebar — Business Identity, Social Links, Products, Packages, Gallery, Testimonials, About, Appearance — and replace the demo content with your own. Every change autosaves to your browser's local storage and shows a "Saved" confirmation.
 7. **Exit admin** via the button in the top-right of the dashboard to return to your live public site and see your changes.
 
@@ -24,8 +24,8 @@ That's it — no code, no terminal, no deployment pipeline. Repeat for each of y
 - **Gallery** — photo gallery with lightbox (up to 12 images).
 - **Testimonials** — customer quotes with name/photo.
 - **About** — your story and team.
-- **Drawer** — the short highlights (plus your business hours) shown when someone taps (not triple-taps) the menu icon.
-- **Appearance** — switch between 3 page layouts (Classic, Split Showcase, Bold Editorial), toggle section visibility, edit your call-to-action button, toggle the floating WhatsApp button, set a footer tagline, and customize your theme colors live.
+- **Drawer** — the short highlights (plus your business hours) shown when someone gives the menu icon a plain tap (not the hold-and-pull admin gesture).
+- **Appearance** — switch between 3 page layouts (Classic, Split Showcase, Bold Editorial), toggle section visibility, edit your call-to-action button, toggle the floating WhatsApp button, set a footer tagline, and customize your theme colors, fonts, and icon color live.
 - **QR Code** — a styleable, printable QR code (admin preview and a public modal) that always points at your site's own live URL.
 - **Orders** — every enquiry and cart checkout is logged here, filterable by customer name and date range, showing items, total, and which channel (WhatsApp/SMS/Email/Call) was used.
 - **Password** — set/change your admin password (with a show/hide eye toggle on every password field, on both the login screen and here). Forgotten passwords can't be recovered; use Data → Reset to start over.
