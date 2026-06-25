@@ -139,15 +139,24 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .hamburger-btn.pressing span{background:var(--accent-bright);}
 .hamburger-btn.pressing span:nth-child(1){transform:translateY(1px) rotate(8deg);}
 .hamburger-btn.pressing span:nth-child(3){transform:translateY(-1px) rotate(-8deg);}
-.nav-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:800;font-size:18px;flex-shrink:0;}
-.nav-logo{width:32px;height:32px;border-radius:8px;object-fit:cover;}
+.nav-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:800;font-size:18px;flex:0 1 auto;min-width:0;overflow:hidden;}
+.nav-brand span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nav-logo{width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;}
 .nav-links{display:flex;align-items:center;gap:28px;margin-left:8px;font-weight:600;font-size:14.5px;flex:1;}
 .nav-links a{color:var(--text-soft);transition:color .2s ease;position:relative;}
 .nav-links a:hover{color:var(--accent);}
 .nav-cta{margin-left:auto;padding:11px 20px;font-size:14px;flex-shrink:0;}
+.nav-cart-btn{position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--accent);flex-shrink:0;transition:transform .2s var(--spring),background .2s ease;cursor:pointer;}
+.nav-cart-btn:hover{transform:translateY(-2px) scale(1.05);background:rgba(11,110,122,.1);}
+.nav-cart-btn.bump{animation:cartBump .35s var(--spring);}
+@keyframes cartBump{0%{transform:scale(1);}40%{transform:scale(1.22);}100%{transform:scale(1);}}
 @media (max-width:860px){
   .nav-links{display:none;}
   .nav-cta{padding:9px 14px;font-size:13px;}
+}
+@media (max-width:400px){
+  .nav-inner{gap:10px;}
+  .nav-cta{padding:8px 11px;font-size:12.5px;}
 }
 
 /* ============ HERO ============ */
@@ -182,6 +191,26 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .cart-add-btn:hover{transform:translateY(-2px);background:var(--glass-bg-strong,var(--glass-bg));}
 .pc-stock{font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;background:#ECFDF5;color:#059669;text-transform:uppercase;letter-spacing:.04em;}
 .pc-stock.out{background:#FEF2F2;color:#DC2626;}
+.pc-qty{font-size:12.5px;font-weight:600;color:var(--text-soft);background:var(--bg-soft);align-self:flex-start;padding:3px 9px;border-radius:8px;}
+.cart-add-btn.added{background:var(--accent);color:#fff;transform:scale(.94);}
+.cart-add-btn[disabled]{pointer-events:none;opacity:.7;}
+
+/* ============ CATALOG SEARCH + CATEGORY TABS ============ */
+.catalog-bar{position:sticky;top:var(--header-h);z-index:300;background:rgba(255,255,255,.85);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:14px 0;}
+.catalog-bar-inner{display:flex;flex-direction:column;gap:12px;}
+.search-bar{display:flex;align-items:center;gap:10px;background:var(--bg-soft);border:1.5px solid var(--border);border-radius:12px;padding:10px 16px;max-width:480px;color:var(--text-soft);transition:border-color .2s ease;}
+.search-bar:focus-within{border-color:var(--accent-bright);color:var(--text);}
+.search-bar svg{flex-shrink:0;}
+.search-bar input{flex:1;border:none;background:none;font-size:14.5px;color:var(--text);min-width:0;}
+.search-bar input:focus{outline:none;}
+.category-tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+.category-tabs::-webkit-scrollbar{display:none;}
+.cat-tab{flex-shrink:0;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--text-soft);white-space:nowrap;transition:background .2s ease,color .2s ease,transform .2s var(--spring);}
+.cat-tab:hover{transform:translateY(-1px);}
+.cat-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+@media (max-width:600px){
+  .search-bar{max-width:none;}
+}
 
 .packages-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
 @media (max-width:980px){.packages-grid{grid-template-columns:1fr;}}
@@ -251,11 +280,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .whatsapp-float:hover{transform:scale(1.08) translateY(-2px);}
 .whatsapp-float svg{width:28px;height:28px;}
 
-/* ============ CART FLOAT + DRAWER ============ */
-.cart-float{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(11,110,122,.4);z-index:400;transition:transform .25s var(--spring);border:none;cursor:pointer;}
-.cart-float:hover{transform:scale(1.08) translateY(-2px);}
-.cart-float svg{width:26px;height:26px;}
-.cart-badge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:10px;background:#F87171;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;}
+/* ============ CART BUTTON + DRAWER ============ */
+.cart-badge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:10px;background:#F87171;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--bg);}
 .cart-drawer .quick-drawer-panel{left:auto;right:0;border-right:none;border-left:1px solid var(--glass-border);transform:translateX(100%);}
 .cart-item-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--glass-border);}
 .cart-item-row img,.cart-item-row .cart-item-noimg{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--bg-soft);}
@@ -268,9 +294,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .cart-total-row{display:flex;justify-content:space-between;align-items:center;font-size:16px;margin:14px 0;font-weight:700;}
 #cart-summary .btn-block{margin-top:8px;}
 @media (max-width:480px){
-  .whatsapp-float,.cart-float{width:50px;height:50px;bottom:16px;}
-  .whatsapp-float{left:16px;}
-  .cart-float{right:16px;}
+  .whatsapp-float{width:50px;height:50px;bottom:16px;left:16px;}
+  .nav-cart-btn{width:36px;height:36px;}
 }
 
 /* ============ QUICK DRAWER ============ */
@@ -438,8 +463,22 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
         <a href="#contact">Contact</a>
       </nav>
       <a id="nav-cta" class="btn btn-primary nav-cta" href="#contact">Order Now</a>
+      <button class="nav-cart-btn" id="cart-float" aria-label="View cart" type="button">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L20.5 8H6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="cart-badge" id="cart-badge" hidden>0</span>
+      </button>
     </div>
   </header>
+
+  <div class="catalog-bar" id="catalog-bar" hidden>
+    <div class="container catalog-bar-inner">
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>
+        <input type="search" id="catalog-search" placeholder="Search products…" aria-label="Search products">
+      </div>
+      <div class="category-tabs" id="category-tabs" hidden></div>
+    </div>
+  </div>
 
   <main>
     <section id="hero" class="hero">
@@ -559,10 +598,6 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
     <svg viewBox="0 0 32 32" fill="currentColor"><path d="M16.02 3C9.4 3 4.04 8.36 4.04 14.98c0 2.36.7 4.55 1.9 6.4L4 29l7.83-1.9a12.9 12.9 0 0 0 4.2.7c6.62 0 11.98-5.36 11.98-11.98C27.99 8.36 22.64 3 16.02 3Zm0 21.78c-1.5 0-2.93-.4-4.18-1.1l-.3-.17-4.43 1.08 1.13-4.3-.2-.32a9.7 9.7 0 0 1-1.5-5.2c0-5.4 4.4-9.78 9.5-9.78 5.07 0 9.46 4.38 9.46 9.78 0 5.4-4.4 10.01-9.48 10.01Zm5.4-7.32c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.61.15-.15.34-.4.5-.6.17-.2.22-.34.34-.57.12-.22.06-.42-.04-.57-.1-.15-.55-1.33-.76-1.82-.2-.48-.4-.42-.56-.42-.15 0-.42 0-.65.02-.22.02-.59.1-.84.4-.26.3-.99 1.03-.99 2.4 0 1.36 1 2.7 1.15 2.9.15.2 1.93 2.96 4.7 4.04 2.76 1.08 2.76.72 3.26.67.5-.05 1.75-.7 2-1.4.25-.7.25-1.3.17-1.42-.07-.13-.28-.2-.58-.35Z"/></svg>
   </button>
 
-  <button class="cart-float" id="cart-float" aria-label="View cart" type="button" style="position:relative;">
-    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L20.5 8H6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span class="cart-badge" id="cart-badge" hidden>0</span>
-  </button>
 </div>
 
 <div class="quick-drawer cart-drawer" id="cart-drawer" hidden>
@@ -643,51 +678,42 @@ const CONFIG_KEY='hydrobiz_config';
 const MAX_PACKAGES=20, MAX_GALLERY=12, MAX_DRAWER=4;
 
 const DEFAULT_CONFIG={
-  version:1,
+  version:2,
   identity:{
-    name:'HydroBiz', tagline:'Pure water, every drop.', logo_b64:'', favicon_b64:'',
-    email:'hello@hydrobiz.example', phone:'+254700000000',
-    hours:'Mon - Sat: 8:00 AM - 6:00 PM\nSunday: Closed',
-    hero_headline:'Clean water, delivered with care.',
-    hero_sub:'Premium hydroponic produce and purified water, sourced responsibly and delivered fresh to your door.',
-    hero_bg_mode:'gradient', hero_image_b64:'', maps_embed:'', formspree_url:''
+    name:'', tagline:'', logo_b64:'', favicon_b64:'',
+    email:'', phone:'',
+    hours:'',
+    hero_headline:'', hero_sub:'',
+    hero_bg_mode:'gradient', hero_image_b64:'', maps_embed:'', maps_url:'', location_address:'', formspree_url:''
   },
   socials:{
     facebook:'', instagram:'', twitter:'', tiktok:'', youtube:'', linkedin:'', whatsapp:'',
     visibility:{facebook:true,instagram:true,twitter:true,tiktok:true,youtube:true,linkedin:true,whatsapp:true}
   },
-  products:[
-    {id:'p1',name:'5L Purified Water Jug',description:'Triple-filtered, mineral-balanced drinking water.',price:350,currency:'KES',image_b64:'',video_url:'',in_stock:true},
-    {id:'p2',name:'19L Refill Bottle',description:'Our best-selling refill size for home dispensers.',price:900,currency:'KES',image_b64:'',video_url:'',in_stock:true},
-    {id:'p3',name:'Hydroponic Lettuce Pack',description:'Pesticide-free lettuce grown in our water-based farm.',price:150,currency:'KES',image_b64:'',video_url:'',in_stock:true}
-  ],
-  packages:[
-    {id:'k1',name:'Home Refill Plan',subtitle:'Monthly',description:'Never run out of clean water again.',includes:['4x 19L refills monthly','Free delivery','Priority support'],price:3200,currency:'KES',cta_label:'Choose Plan',cta_href:'#contact'},
-    {id:'k2',name:'Office Hydration',subtitle:'Monthly',description:'Keep your whole team hydrated.',includes:['Dispenser included','8x 19L refills monthly','Free maintenance'],price:7800,currency:'KES',cta_label:'Choose Plan',cta_href:'#contact'}
-  ],
+  products:[],
+  packages:[],
   gallery:[],
-  testimonials:[
-    {id:'t1',name:'Amina W.',quote:'Reliable delivery and the water tastes incredibly clean. Switched permanently.',stars:5,date:'2025-03-12'}
-  ],
+  testimonials:[],
   about:{
-    story:'We started HydroBiz to bring genuinely clean, responsibly sourced water and hydroponic produce to every home and office nearby. Every drop is filtered, tested, and delivered with care.',
-    team:[{id:'m1',name:'Founder',role:'Operations Lead',photo_b64:''}]
+    story:'',
+    team:[]
   },
   drawer:{
-    highlights:[
-      {id:'d1',title:'How We Filter Our Water',body:'Multi-stage reverse osmosis and UV purification for every batch.'},
-      {id:'d2',title:'Why Choose Us',body:'Locally trusted, fast delivery, transparent pricing.'},
-      {id:'d3',title:'Sustainably Sourced',body:'Low-waste hydroponic growing, reusable bottle program.'}
-    ]
+    highlights:[]
   },
   appearance:{
     layout:'classic',
     sections_visible:{products:true,packages:true,about:true,gallery:true,testimonials:true,contact:true},
-    whatsapp_btn:true, cta_label:'Order Now', cta_anchor:'#contact', footer_tagline:'Pure water, every drop.'
+    whatsapp_btn:true, cta_label:'Order Now', cta_anchor:'#contact', footer_tagline:'',
+    product_sort:'newest', theme:{}
   },
   integrations:{
     firebase_enabled:false, firebase_config:''
   },
+  orders:[],
+  trash:[],
+  notifications:[],
+  admin_security:{idle_timeout_min:5},
   password_hash:null
 };
 
@@ -802,6 +828,19 @@ function cartAdd(item){
   saveCart();
   renderCart();
   toast(item.name+' added to cart');
+  const cartBtn=document.getElementById('cart-float');
+  if(cartBtn){ cartBtn.classList.remove('bump'); requestAnimationFrame(()=>cartBtn.classList.add('bump')); }
+}
+function cartAddBtnFeedback(btn){
+  const original=btn.innerHTML;
+  btn.disabled=true;
+  btn.classList.add('added');
+  btn.innerHTML=icon('check',20);
+  setTimeout(()=>{
+    btn.disabled=false;
+    btn.classList.remove('added');
+    btn.innerHTML=original;
+  },900);
 }
 function cartSetQty(id,type,qty){
   const it=CART.find(c=>c.id===id && c.type===type);
@@ -911,13 +950,14 @@ function applySectionVisibility(){
 
 /* ============ RENDER: nav / footer / brand ============ */
 function renderBrand(){
-  document.getElementById('page-title').textContent=CONFIG.identity.name+' | '+CONFIG.identity.tagline;
-  document.getElementById('nav-business-name').textContent=CONFIG.identity.name;
-  document.getElementById('footer-business-name').textContent=CONFIG.identity.name;
-  document.getElementById('footer-business-name-2').textContent=CONFIG.identity.name;
+  const name=CONFIG.identity.name||'Your Business Name';
+  document.getElementById('page-title').textContent=name+(CONFIG.identity.tagline?' | '+CONFIG.identity.tagline:'');
+  document.getElementById('nav-business-name').textContent=name;
+  document.getElementById('footer-business-name').textContent=name;
+  document.getElementById('footer-business-name-2').textContent=name;
   const preloaderName=document.getElementById('preloader-name');
-  if(preloaderName) preloaderName.textContent=CONFIG.identity.name;
-  document.getElementById('footer-tagline').textContent=CONFIG.appearance.footer_tagline||CONFIG.identity.tagline;
+  if(preloaderName) preloaderName.textContent=name;
+  document.getElementById('footer-tagline').textContent=CONFIG.appearance.footer_tagline||CONFIG.identity.tagline||'';
   setImg(document.getElementById('nav-logo'),CONFIG.identity.logo_b64);
   setImg(document.getElementById('footer-logo'),CONFIG.identity.logo_b64);
   const preloaderLogo=document.getElementById('preloader-logo');
@@ -937,8 +977,8 @@ function renderFooterYear(){ document.getElementById('footer-year').textContent=
 
 /* ============ RENDER: hero ============ */
 function renderHero(){
-  document.getElementById('hero-headline').textContent=CONFIG.identity.hero_headline;
-  document.getElementById('hero-sub').textContent=CONFIG.identity.hero_sub;
+  document.getElementById('hero-headline').textContent=CONFIG.identity.hero_headline||'Welcome to your new site';
+  document.getElementById('hero-sub').textContent=CONFIG.identity.hero_sub||'Add your hero headline and description in the admin panel under Business Identity.';
   const bg=document.getElementById('hero-bg');
   bg.className='hero-bg';
   bg.style.backgroundImage='';
@@ -960,21 +1000,64 @@ function renderHero(){
 }
 
 /* ============ RENDER: products ============ */
+let productSearchQuery='', productActiveCategory='all';
+function productCategory(p){ return (p.category||'').trim()||'General'; }
+function getProductCategories(){
+  const set=new Set(CONFIG.products.map(productCategory));
+  return ['all',...Array.from(set).sort()];
+}
+function sortedProducts(){
+  const arr=CONFIG.products.slice();
+  const sort=CONFIG.appearance.product_sort||'newest';
+  if(sort==='newest') arr.sort((a,b)=>(b.created_at||0)-(a.created_at||0));
+  else if(sort==='oldest') arr.sort((a,b)=>(a.created_at||0)-(b.created_at||0));
+  else if(sort==='price_low') arr.sort((a,b)=>(a.price||0)-(b.price||0));
+  else if(sort==='price_high') arr.sort((a,b)=>(b.price||0)-(a.price||0));
+  else if(sort==='name_az') arr.sort((a,b)=>a.name.localeCompare(b.name));
+  return arr;
+}
+function filteredProducts(){
+  const q=productSearchQuery.trim().toLowerCase();
+  return sortedProducts().filter(p=>{
+    if(productActiveCategory!=='all' && productCategory(p)!==productActiveCategory) return false;
+    if(q && !(p.name.toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+function renderCategoryTabs(){
+  const wrap=document.getElementById('category-tabs');
+  if(!wrap) return;
+  const cats=getProductCategories();
+  if(!CONFIG.products.length || cats.length<2){ wrap.hidden=true; wrap.innerHTML=''; return; }
+  wrap.hidden=false;
+  wrap.innerHTML=cats.map(c=>(
+    '<button class="cat-tab'+(productActiveCategory===c?' active':'')+'" type="button" data-cat="'+escapeHTML(c)+'">'+(c==='all'?'All':escapeHTML(c))+'</button>'
+  )).join('');
+}
 function renderProducts(){
+  renderCategoryTabs();
+  const catalogBar=document.getElementById('catalog-bar');
+  if(catalogBar) catalogBar.hidden=!CONFIG.products.length || !CONFIG.appearance.sections_visible.products;
   const grid=document.getElementById('products-grid');
   if(!CONFIG.products.length){
     grid.innerHTML='<div class="empty-state">No products added yet. Visit the admin panel to add your catalogue.</div>';
     return;
   }
-  grid.innerHTML=CONFIG.products.map(p=>{
+  const list=filteredProducts();
+  if(!list.length){
+    grid.innerHTML='<div class="empty-state">No products match your search or filter.</div>';
+    return;
+  }
+  grid.innerHTML=list.map(p=>{
     const ytEmbed=youtubeEmbedUrl(p.video_url);
     const media=ytEmbed
       ? '<div class="pc-video"><iframe src="'+escapeHTML(ytEmbed)+'" loading="lazy" title="'+escapeHTML(p.name)+'" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe></div>'
       : (p.image_b64?'<img class="pc-img" src="'+p.image_b64+'" alt="'+escapeHTML(p.name)+'" loading="lazy">':'<div class="pc-img"></div>');
     return (
-    '<div class="card product-card">'
+    '<div class="card product-card" data-category="'+escapeHTML(productCategory(p))+'">'
     +media
     +'<div class="pc-body"><h3>'+escapeHTML(p.name)+'</h3><p>'+escapeHTML(p.description)+'</p>'
+    +(p.qty_value?'<span class="pc-qty">'+escapeHTML(String(p.qty_value))+escapeHTML(p.qty_unit||'')+'</span>':'')
     +'<div class="pc-meta"><span class="pc-price mono">'+(p.currency==='KES'?'KES ':'$')+Number(p.price||0).toLocaleString()+'</span>'
     +'<span class="pc-stock'+(p.in_stock?'':' out')+'">'+(p.in_stock?'Available':'Out of Stock')+'</span></div>'
     +'<div class="pc-actions">'
@@ -985,6 +1068,16 @@ function renderProducts(){
     );
   }).join('');
   enhanceTilt(grid);
+}
+function initCatalogFilters(){
+  const search=document.getElementById('catalog-search');
+  if(search) search.addEventListener('input',debounce(()=>{ productSearchQuery=search.value; renderProducts(); },150));
+  const tabs=document.getElementById('category-tabs');
+  if(tabs) tabs.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-cat]'); if(!btn) return;
+    productActiveCategory=btn.dataset.cat;
+    renderProducts();
+  });
 }
 
 /* ============ RENDER: packages ============ */
@@ -1063,7 +1156,7 @@ function renderTestimonials(){
 
 /* ============ RENDER: contact / footer ============ */
 function renderContact(){
-  document.getElementById('contact-hours').textContent=CONFIG.identity.hours;
+  document.getElementById('contact-hours').textContent=CONFIG.identity.hours||'Add your business hours in the admin panel.';
   renderSocialIcons(document.getElementById('contact-socials'),CONFIG.socials);
   renderSocialIcons(document.getElementById('footer-socials'),CONFIG.socials);
   const mapWrap=document.getElementById('contact-map');
@@ -1387,6 +1480,9 @@ function panelProducts(){
     +'<div class="a-field"><label>Description</label><textarea id="pf-desc">'+escapeHTML(editing?editing.description:'')+'</textarea></div>'
     +'<div class="a-row"><div class="a-field"><label>Price</label><input id="pf-price" type="number" min="0" value="'+(editing?editing.price:'')+'"></div>'
     +'<div class="a-field"><label>Currency</label><select id="pf-currency"><option value="KES"'+(editing&&editing.currency==='USD'?'':' selected')+'>KES</option><option value="USD"'+(editing&&editing.currency==='USD'?' selected':'')+'>USD ($)</option></select></div></div>'
+    +'<div class="a-row"><div class="a-field"><label>Quantity / Volume <span style="color:#F87171;">*</span></label><input id="pf-qty-value" type="number" min="0" step="any" placeholder="e.g. 5, 19, 500" value="'+(editing&&editing.qty_value!=null?editing.qty_value:'')+'"></div>'
+    +'<div class="a-field"><label>Unit</label><select id="pf-qty-unit">'+['L','mL','kg','g','pcs','pack','box','custom'].map(u=>'<option value="'+u+'"'+(editing&&editing.qty_unit===u?' selected':'')+'>'+u+'</option>').join('')+'</select></div></div>'
+    +'<div class="a-field"><label>Category</label><input id="pf-category" placeholder="e.g. Water, Produce, Merch, Digital Ads" value="'+escapeHTML(editing?(editing.category||''):'')+'"></div>'
     +'<div class="a-field"><label>Image</label><div class="upload-box">'+(productImageDraft?'<img src="'+productImageDraft+'" alt="">':icon('upload',54))+'<div style="flex:1;"><input type="file" id="pf-image" accept="image/*"><div class="cap-note">High-resolution JPG/PNG, up to 6MB.</div></div></div></div>'
     +'<div class="a-field"><label>YouTube Video URL (optional, shown instead of the image)</label><input id="pf-video" placeholder="https://youtube.com/watch?v=..." value="'+escapeHTML(editing?(editing.video_url||''):'')+'"></div>'
     +'<div class="a-toggle"><span>Stock Status: '+(productStockDraft?'Available':'Out of Stock')+'</span><div class="switch'+(productStockDraft?' on':'')+'" id="pf-stock-switch"></div></div>'
@@ -1394,11 +1490,17 @@ function panelProducts(){
     +'<button class="btn btn-primary" id="pf-save">'+(editing?'Update Product':'Add Product')+'</button>'
     +(editing?'<button class="btn btn-ghost" id="pf-cancel" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Cancel</button>':'')
     +'</div></div>'
+    +'<div class="admin-card"><h4>Sorting</h4><div class="a-field"><label>Default product order on your site</label>'
+    +'<select data-path="appearance.product_sort"><option value="newest"'+(CONFIG.appearance.product_sort==='newest'?' selected':'')+'>Newest to Oldest</option>'
+    +'<option value="oldest"'+(CONFIG.appearance.product_sort==='oldest'?' selected':'')+'>Oldest to Newest</option>'
+    +'<option value="price_low"'+(CONFIG.appearance.product_sort==='price_low'?' selected':'')+'>Price: Low to High</option>'
+    +'<option value="price_high"'+(CONFIG.appearance.product_sort==='price_high'?' selected':'')+'>Price: High to Low</option>'
+    +'<option value="name_az"'+(CONFIG.appearance.product_sort==='name_az'?' selected':'')+'>Name: A to Z</option></select></div></div>'
     +'<div class="admin-card"><h4>Product List ('+CONFIG.products.length+') &mdash; unlimited</h4>'
     +(CONFIG.products.length?CONFIG.products.map(p=>(
       '<div class="list-row" draggable="true" data-id="'+p.id+'">'+icon('drag',16)
       +(p.image_b64?'<img src="'+p.image_b64+'" alt="">':'')
-      +'<div class="lr-main"><strong>'+escapeHTML(p.name)+'</strong><span>'+(p.currency==='USD'?'$':'KES ')+Number(p.price||0).toLocaleString()+(p.in_stock?'':' • Out of stock')+'</span></div>'
+      +'<div class="lr-main"><strong>'+escapeHTML(p.name)+'</strong><span>'+(p.currency==='USD'?'$':'KES ')+Number(p.price||0).toLocaleString()+' • '+(p.qty_value?p.qty_value+(p.qty_unit||''):'')+(p.in_stock?'':' • Out of stock')+'</span></div>'
       +'<div class="lr-actions"><button class="icon-btn" data-edit="'+p.id+'" style="color:#fff;" aria-label="Edit '+escapeHTML(p.name)+'">'+icon('edit',16)+'</button><button class="icon-btn" data-delete="'+p.id+'" style="color:#F87171;" aria-label="Delete '+escapeHTML(p.name)+'">'+icon('trash',16)+'</button></div></div>'
     )).join(''):'<div class="admin-empty">No products yet.</div>')
     +'</div></div>';
@@ -1418,15 +1520,22 @@ function bindProductsActions(){
   document.getElementById('pf-save').addEventListener('click',()=>{
     const name=document.getElementById('pf-name').value.trim();
     if(!name){ toast('Product name is required',true); return; }
+    const qtyValue=document.getElementById('pf-qty-value').value.trim();
+    if(qtyValue===''){ toast('Quantity / Volume is required',true); return; }
+    const existing=editingProductId?CONFIG.products.find(p=>p.id===editingProductId):null;
     const data={
       id:editingProductId||uid(),
       name,
       description:document.getElementById('pf-desc').value.trim(),
       price:Number(document.getElementById('pf-price').value)||0,
       currency:document.getElementById('pf-currency').value,
+      qty_value:Number(qtyValue),
+      qty_unit:document.getElementById('pf-qty-unit').value,
+      category:document.getElementById('pf-category').value.trim(),
       image_b64:productImageDraft,
       video_url:document.getElementById('pf-video').value.trim(),
-      in_stock:productStockDraft
+      in_stock:productStockDraft,
+      created_at:existing&&existing.created_at?existing.created_at:Date.now()
     };
     if(editingProductId){
       const i=CONFIG.products.findIndex(p=>p.id===editingProductId);
@@ -2044,14 +2153,16 @@ function initCart(){
     else if(e.target.closest('[data-remove]')) cartRemove(id,type);
   });
   document.getElementById('products-grid').addEventListener('click',e=>{
-    const btn=e.target.closest('[data-cart-add]'); if(!btn) return;
+    const btn=e.target.closest('[data-cart-add]'); if(!btn || btn.disabled) return;
     const p=CONFIG.products.find(x=>x.id===btn.dataset.cartAdd); if(!p) return;
     cartAdd({id:p.id,type:'product',name:p.name,price:p.price,currency:p.currency,image_b64:p.image_b64});
+    cartAddBtnFeedback(btn);
   });
   document.getElementById('packages-grid').addEventListener('click',e=>{
-    const btn=e.target.closest('[data-cart-add]'); if(!btn) return;
+    const btn=e.target.closest('[data-cart-add]'); if(!btn || btn.disabled) return;
     const k=CONFIG.packages.find(x=>x.id===btn.dataset.cartAdd); if(!k) return;
     cartAdd({id:k.id,type:'package',name:k.name,price:k.price,currency:k.currency,image_b64:''});
+    cartAddBtnFeedback(btn);
   });
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape' && document.getElementById('cart-drawer').classList.contains('open')) closeCartDrawer();
@@ -2122,6 +2233,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   initContactForm();
   initLightbox();
   initCart();
+  initCatalogFilters();
   document.getElementById('admin-exit-btn').addEventListener('click',closeAdminDashboard);
   if(new URLSearchParams(location.search).get('selftest')==='1'){
     runSelfTests();
