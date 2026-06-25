@@ -410,6 +410,15 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .layout-opt.selected svg{color:var(--accent-bright);}
 .layout-opt span{font-size:12.5px;font-weight:600;}
 .danger-zone{border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.06);}
+.theme-color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;}
+.theme-color-field{display:flex;flex-direction:column;gap:8px;}
+.theme-color-field label{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.55);}
+.theme-color-swatch{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);}
+.theme-color-swatch input[type="color"]{width:34px;height:34px;padding:0;border:none;border-radius:8px;background:none;cursor:pointer;flex-shrink:0;}
+.theme-color-swatch input[type="color"]::-webkit-color-swatch-wrapper{padding:0;}
+.theme-color-swatch input[type="color"]::-webkit-color-swatch{border:1px solid rgba(255,255,255,.18);border-radius:7px;}
+.theme-color-swatch input[type="text"]{flex:1;min-width:0;padding:8px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#fff;font-size:13px;font-family:var(--font-mono);}
+.theme-color-swatch input[type="text"]:focus{outline:none;border-color:var(--accent-bright);}
 @media (max-width:760px){
   .admin-dashboard{flex-direction:column;}
   .admin-sidebar{width:100%;height:auto;flex-direction:row;overflow-x:auto;overflow-y:visible;padding:10px 10px;border-right:none;border-bottom:1px solid var(--glass-border);gap:6px;-webkit-overflow-scrolling:touch;}
@@ -1007,6 +1016,25 @@ function applyFavicon(){
   const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%230B6E7A" d="M12 2.5C12 2.5 5 11 5 15.5C5 19.09 8.13 22 12 22C15.87 22 19 19.09 19 15.5C19 11 12 2.5 12 2.5Z"/></svg>';
   link.href='data:image/svg+xml,'+svg;
 }
+/* ============ THEME CUSTOMIZER ============ */
+/* Maps CONFIG.appearance.theme.<key> -> CSS custom property name on :root.
+   Only the color tokens are in scope (bg/accent/accent-bright/accent-glow/text) —
+   structural tokens (radius, shadow, spring, fonts) are intentionally untouched.
+   --heading-gradient derives from --accent/--accent-bright/--accent-glow via var()
+   in the :root rule, so overriding those three alone cascades into the gradient too. */
+const THEME_COLOR_KEYS={
+  bg:'--bg', accent:'--accent', accent_bright:'--accent-bright', accent_glow:'--accent-glow', text:'--text'
+};
+function applyTheme(){
+  const theme=(CONFIG.appearance&&CONFIG.appearance.theme)||{};
+  const root=document.documentElement.style;
+  for(const key in THEME_COLOR_KEYS){
+    const cssVar=THEME_COLOR_KEYS[key];
+    const val=theme[key];
+    if(val){ root.setProperty(cssVar,val); }
+    else{ root.removeProperty(cssVar); }
+  }
+}
 function applyLayout(){ document.body.dataset.layout=CONFIG.appearance.layout||'classic'; }
 function applySectionVisibility(){
   const map={products:'#products',packages:'#packages',about:'#about',gallery:'#gallery',testimonials:'#testimonials',contact:'#contact'};
@@ -1342,6 +1370,7 @@ function renderQuickDrawer(){
 
 /* ============ RENDER ALL ============ */
 function renderAll(){
+  applyTheme();
   renderBrand();
   applyLayout();
   applySectionVisibility();
@@ -1632,6 +1661,18 @@ function uploadBox(label,path,value){
   return '<div class="a-field"><label>'+escapeHTML(label)+'</label><div class="upload-box">'
     +(value?'<img src="'+value+'" alt="">':icon('upload',54))
     +'<div style="flex:1;"><input type="file" accept="image/*" data-path="'+path+'"><div class="cap-note">High-resolution PNG/JPG, up to 6MB.</div></div></div></div>';
+}
+/* Theme color picker: live-applies the CSS custom property on every drag/pick tick (see
+   the 'input' delegate in bindAppearanceActions), and persists to CONFIG via the normal
+   commitField path. `cssVar` is the --custom-property name; `fallback` is the built-in
+   default (from :root) shown when no override is stored yet. */
+function colorField(label,path,cssVar,fallback,value){
+  const current=value||fallback;
+  return '<div class="theme-color-field"><label>'+escapeHTML(label)+'</label>'
+    +'<div class="theme-color-swatch">'
+    +'<input type="color" data-path="'+path+'" data-css-var="'+cssVar+'" value="'+escapeHTML(current)+'">'
+    +'<input type="text" data-path="'+path+'" data-css-var="'+cssVar+'" data-text-twin="1" value="'+escapeHTML(value||'')+'" placeholder="'+escapeHTML(fallback)+'">'
+    +'</div></div>';
 }
 
 /* ============ ADMIN PANEL: Products ============ */
@@ -2031,14 +2072,29 @@ const LAYOUT_OPTIONS=[
   {key:'split',label:'Split Showcase',icon:'layers'},
   {key:'editorial',label:'Bold Editorial',icon:'image'}
 ];
+/* Built-in default hex values, mirrored from the :root CSS block — shown as picker
+   placeholders/fallbacks when no per-site override is stored in CONFIG.appearance.theme. */
+const THEME_COLOR_DEFAULTS={bg:'#FFFFFF',accent:'#0B6E7A',accent_bright:'#23B5C8',accent_glow:'#5EEAD4',text:'#111827'};
 function panelAppearance(){
   const a=CONFIG.appearance;
+  const theme=a.theme||{};
   const sections=[['products','Products'],['packages','Packages'],['about','About'],['gallery','Gallery'],['testimonials','Testimonials'],['contact','Contact']];
   return '<div class="admin-panel-section">'
     +'<div class="admin-card"><h4>Layout</h4><div class="layout-options">'
     +LAYOUT_OPTIONS.map(o=>(
       '<div class="layout-opt'+(a.layout===o.key?' selected':'')+'" data-layout-opt="'+o.key+'">'+icon(o.icon,32)+'<span>'+o.label+'</span></div>'
     )).join('')+'</div></div>'
+    +'<div class="admin-card"><h4>Theme Colors</h4>'
+    +'<p class="cap-note">Drag or pick a color and the site updates instantly. Leave a swatch untouched to keep the built-in default.</p>'
+    +'<div class="theme-color-grid">'
+    +colorField('Background','appearance.theme.bg','--bg',THEME_COLOR_DEFAULTS.bg,theme.bg)
+    +colorField('Accent','appearance.theme.accent','--accent',THEME_COLOR_DEFAULTS.accent,theme.accent)
+    +colorField('Accent Bright','appearance.theme.accent_bright','--accent-bright',THEME_COLOR_DEFAULTS.accent_bright,theme.accent_bright)
+    +colorField('Accent Glow','appearance.theme.accent_glow','--accent-glow',THEME_COLOR_DEFAULTS.accent_glow,theme.accent_glow)
+    +colorField('Text','appearance.theme.text','--text',THEME_COLOR_DEFAULTS.text,theme.text)
+    +'</div>'
+    +'<button class="btn btn-ghost" id="theme-reset-btn" type="button" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18);color:#fff;align-self:flex-start;">Reset to default theme</button>'
+    +'</div>'
     +'<div class="admin-card"><h4>Section Visibility</h4>'
     +sections.map(([k,label])=>(
       '<div class="a-toggle"><span>Show '+label+'</span><div class="switch'+(a.sections_visible[k]?' on':'')+'" data-path="appearance.sections_visible.'+k+'"></div></div>'
@@ -2056,6 +2112,29 @@ function bindAppearanceActions(){
     commitNow('Layout updated');
     rerenderAdminBody();
   }));
+  /* Live theme color application: set the CSS custom property synchronously on every
+     'input' tick (continuous while dragging a native color picker) so the public page
+     behind the dashboard — and the admin chrome itself — updates with zero lag, well
+     ahead of the debounced commitField()->saveConfig() persistence handled by the
+     generic delegated listener in DOMContentLoaded. Keeps the paired color-swatch and
+     hex-text inputs for the same field in sync with each other as the user edits either. */
+  const body=document.getElementById('admin-body');
+  body.querySelectorAll('[data-css-var]').forEach(el=>{
+    el.addEventListener('input',()=>{
+      const val=el.value;
+      document.documentElement.style.setProperty(el.dataset.cssVar,val);
+      body.querySelectorAll('[data-path="'+el.dataset.path+'"]').forEach(twin=>{
+        if(twin!==el) twin.value=val;
+      });
+    });
+  });
+  const resetBtn=document.getElementById('theme-reset-btn');
+  if(resetBtn) resetBtn.addEventListener('click',()=>{
+    CONFIG.appearance.theme={};
+    commitNow('Theme reset to default');
+    applyTheme();
+    rerenderAdminBody();
+  });
 }
 
 /* ============ ADMIN PANEL: Integrations ============ */
