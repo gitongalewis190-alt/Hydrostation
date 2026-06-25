@@ -715,6 +715,22 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
   </div>
 </div>
 
+<div class="modal-overlay" id="confirm-password-modal" hidden>
+  <div class="modal-panel">
+    <h3>Confirm Password</h3>
+    <p class="hint" id="confirm-password-label">Re-enter your password to continue.</p>
+    <div class="pw-field">
+      <input type="password" id="confirm-password-input" placeholder="Password" autocomplete="off">
+      <button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button>
+    </div>
+    <p class="error-text" id="confirm-password-error" hidden>Incorrect password</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="confirm-password-cancel" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Cancel</button>
+      <button class="btn btn-primary" id="confirm-password-submit" type="button">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="qr-modal" hidden>
   <div class="modal-panel qr-panel">
     <button class="icon-btn" id="qr-modal-close" aria-label="Close" type="button" style="position:absolute;top:14px;right:14px;color:rgba(255,255,255,.6);">
@@ -1497,30 +1513,32 @@ function closeDrawer(){
 }
 function initHamburger(){
   const btn=document.getElementById('hamburger-btn');
-  const LONG_PRESS_MS=2500;
-  let timer=null, longPressFired=false, pressStart=0;
-  const start=e=>{
-    longPressFired=false; pressStart=Date.now();
-    btn.classList.add('pressing');
-    timer=setTimeout(()=>{
-      longPressFired=true;
-      btn.classList.remove('pressing');
+  /* Secret admin trigger: 3 taps within TRIPLE_TAP_MS of each other.
+     A lone tap still opens the public quick-info drawer immediately-ish; we only
+     hold a single tap back briefly (TRIPLE_TAP_MS) to see if it turns into a
+     deliberate triple-tap. Taps spaced further apart than the window are treated
+     as independent single taps (normal drawer toggles), not progress toward admin. */
+  const TRIPLE_TAP_MS=650;
+  let tapCount=0, tapTimer=null, drawerTimer=null;
+  const resetTaps=()=>{ tapCount=0; clearTimeout(tapTimer); tapTimer=null; };
+  const onTap=()=>{
+    tapCount++;
+    clearTimeout(tapTimer);
+    if(tapCount>=3){
+      clearTimeout(drawerTimer);
+      resetTaps();
       if(CONFIG.password_hash){ openAdminLogin(); } else { openAdminDashboard(); }
-    },LONG_PRESS_MS);
+      return;
+    }
+    if(tapCount===1){
+      /* Briefly hold the single-tap drawer action so a fast 2nd/3rd tap can cancel it.
+         The delay is imperceptible to a normal single tap but enough to catch a triple-tap. */
+      clearTimeout(drawerTimer);
+      drawerTimer=setTimeout(()=>{ openDrawer(); },180);
+    }
+    tapTimer=setTimeout(resetTaps,TRIPLE_TAP_MS);
   };
-  const cancel=()=>{
-    clearTimeout(timer);
-    btn.classList.remove('pressing');
-  };
-  const end=e=>{
-    const wasLong=longPressFired;
-    cancel();
-    if(!wasLong && Date.now()-pressStart<LONG_PRESS_MS){ openDrawer(); }
-  };
-  btn.addEventListener('pointerdown',start);
-  btn.addEventListener('pointerup',end);
-  btn.addEventListener('pointerleave',cancel);
-  btn.addEventListener('pointercancel',cancel);
+  btn.addEventListener('click',onTap);
   btn.addEventListener('contextmenu',e=>e.preventDefault());
 
   document.getElementById('quick-drawer-close').addEventListener('click',closeDrawer);
@@ -1568,11 +1586,66 @@ function initAdminLogin(){
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){
       if(!document.getElementById('admin-login-modal').hidden) closeAdminLogin();
+      if(!document.getElementById('confirm-password-modal').hidden) closeConfirmPasswordModal();
       if(document.getElementById('quick-drawer').classList.contains('open')) closeDrawer();
       if(!document.getElementById('lightbox-overlay').hidden) closeLightbox();
       if(!document.getElementById('qr-modal').hidden) closeQRModal();
     }
   });
+}
+
+/* ============ REUSABLE PASSWORD RE-CONFIRMATION ============
+   confirmWithPassword(actionLabel, onConfirmed)
+   Opens a modal asking the owner to re-type their current admin password before
+   proceeding with a destructive/sensitive action. Verifies the entry against
+   CONFIG.password_hash via sha256() (never compares plaintext). On a match, hides
+   the modal and invokes onConfirmed() (no args). On a mismatch, shows an inline
+   error and keeps the modal open so the owner can retry (matches the existing
+   admin-login-modal UX) — onConfirmed() is never called for a wrong password.
+   If no admin password has been set yet (CONFIG.password_hash is falsy), there is
+   nothing to verify against, so onConfirmed() fires immediately without a modal.
+   actionLabel: short human-readable string describing the action, shown in the
+   modal body, e.g. "reset all data to default" or "permanently delete this item".
+   Safe to call from any future destructive-action flow (e.g. trash/permanent
+   delete) — each call is self-contained and does not depend on call-site state. */
+let confirmPasswordPendingCallback=null;
+function openConfirmPasswordModal(actionLabel,onConfirmed){
+  confirmPasswordPendingCallback=onConfirmed;
+  const modal=document.getElementById('confirm-password-modal');
+  const input=document.getElementById('confirm-password-input');
+  document.getElementById('confirm-password-label').textContent=actionLabel
+    ? ('Re-enter your password to '+actionLabel+'.')
+    : 'Re-enter your password to continue.';
+  document.getElementById('confirm-password-error').hidden=true;
+  input.value='';
+  modal.hidden=false;
+  setTimeout(()=>input.focus(),50);
+}
+function closeConfirmPasswordModal(){
+  document.getElementById('confirm-password-modal').hidden=true;
+  confirmPasswordPendingCallback=null;
+}
+async function attemptConfirmPassword(){
+  const input=document.getElementById('confirm-password-input');
+  const hash=await sha256(input.value);
+  if(CONFIG.password_hash && hash===CONFIG.password_hash){
+    const cb=confirmPasswordPendingCallback;
+    closeConfirmPasswordModal();
+    if(cb) cb();
+  } else {
+    document.getElementById('confirm-password-error').hidden=false;
+    input.value=''; input.focus();
+  }
+}
+function confirmWithPassword(actionLabel,onConfirmed){
+  if(!CONFIG.password_hash){ onConfirmed(); return; }
+  openConfirmPasswordModal(actionLabel,onConfirmed);
+}
+function initConfirmPasswordModal(){
+  document.getElementById('confirm-password-submit').addEventListener('click',attemptConfirmPassword);
+  document.getElementById('confirm-password-cancel').addEventListener('click',closeConfirmPasswordModal);
+  document.getElementById('confirm-password-input').addEventListener('keydown',e=>{ if(e.key==='Enter') attemptConfirmPassword(); });
+  bindPasswordEyeToggles(document.getElementById('confirm-password-modal'));
 }
 
 /* ============ ADMIN DASHBOARD: shell ============ */
@@ -1599,11 +1672,52 @@ function openAdminDashboard(){
   selectAdminSection('identity');
   document.getElementById('admin-dashboard').hidden=false;
   document.body.classList.add('no-scroll');
+  startAdminIdleWatchdog();
 }
 function closeAdminDashboard(){
   document.getElementById('admin-dashboard').hidden=true;
   document.body.classList.remove('no-scroll');
+  stopAdminIdleWatchdog();
   renderAll();
+}
+
+/* ============ ADMIN IDLE WATCHDOG ============
+   Auto-locks (closes) the admin dashboard after ADMIN_IDLE_MS of no activity.
+   Only runs while #admin-dashboard is actually open; never runs for public visitors.
+   Activity signals are throttled (ADMIN_IDLE_THROTTLE_MS) so we don't reset a timer
+   on every single mousemove event. */
+const ADMIN_IDLE_MS=300000;
+const ADMIN_IDLE_THROTTLE_MS=1000;
+const ADMIN_IDLE_EVENTS=['mousemove','keydown','click','touchstart','scroll'];
+let adminIdleTimer=null, adminIdleLastReset=0, adminIdleBound=false;
+function adminIdleLock(){
+  stopAdminIdleWatchdog();
+  closeAdminDashboard();
+  toast('Session timed out — please log in again',true);
+}
+function resetAdminIdleTimer(){
+  const now=Date.now();
+  if(now-adminIdleLastReset<ADMIN_IDLE_THROTTLE_MS) return;
+  adminIdleLastReset=now;
+  clearTimeout(adminIdleTimer);
+  adminIdleTimer=setTimeout(adminIdleLock,ADMIN_IDLE_MS);
+}
+function startAdminIdleWatchdog(){
+  adminIdleLastReset=0;
+  clearTimeout(adminIdleTimer);
+  adminIdleTimer=setTimeout(adminIdleLock,ADMIN_IDLE_MS);
+  if(!adminIdleBound){
+    ADMIN_IDLE_EVENTS.forEach(evt=>document.addEventListener(evt,resetAdminIdleTimer,{passive:true}));
+    adminIdleBound=true;
+  }
+}
+function stopAdminIdleWatchdog(){
+  clearTimeout(adminIdleTimer);
+  adminIdleTimer=null;
+  if(adminIdleBound){
+    ADMIN_IDLE_EVENTS.forEach(evt=>document.removeEventListener(evt,resetAdminIdleTimer));
+    adminIdleBound=false;
+  }
 }
 function renderAdminSidebar(){
   const sidebar=document.getElementById('admin-sidebar');
@@ -2310,10 +2424,12 @@ function bindDataActions(){
   if(resetBtn) resetBtn.addEventListener('click',()=>{
     const val=document.getElementById('data-reset-confirm').value;
     if(val!=='RESET'){ toast('Type RESET exactly to confirm',true); return; }
-    CONFIG=JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-    commitNow('Reset to default');
-    rerenderAdminBody();
-    renderAll();
+    confirmWithPassword('reset all data to default',()=>{
+      CONFIG=JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+      commitNow('Reset to default');
+      rerenderAdminBody();
+      renderAll();
+    });
   });
 }
 
@@ -2681,6 +2797,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   runPreloader();
   initHamburger();
   initAdminLogin();
+  initConfirmPasswordModal();
   initContactForm();
   initLightbox();
   initCart();
