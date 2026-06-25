@@ -262,6 +262,10 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .field{display:flex;flex-direction:column;gap:6px;}
 .field label{font-size:13px;font-weight:600;color:var(--text-soft);}
 .field input,.field textarea,.field select{padding:12px 14px;border:1.5px solid var(--border);border-radius:9px;background:var(--bg-soft);transition:border-color .2s ease;}
+.channel-pills{display:flex;gap:8px;flex-wrap:wrap;}
+.channel-pill{padding:9px 18px;border-radius:20px;font-size:13.5px;font-weight:600;background:var(--bg-soft);border:1.5px solid var(--border);color:var(--text-soft);transition:background .2s ease,color .2s ease,transform .2s var(--spring);}
+.channel-pill:hover{transform:translateY(-1px);}
+.channel-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent-bright);}
 .field textarea{resize:vertical;min-height:90px;}
 
@@ -624,6 +628,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
           <div class="field"><label for="cf-email">Email</label><input id="cf-email" name="email" type="email" required></div>
           <div class="field"><label for="cf-interest">Interested In</label><select id="cf-interest" name="interest"></select></div>
           <div class="field"><label for="cf-message">Message</label><textarea id="cf-message" name="message"></textarea></div>
+          <div class="field"><label>Send via</label><div class="channel-pills" id="cf-channel-pills"></div></div>
           <button class="btn btn-primary btn-block" type="submit">Send Message</button>
         </form>
       </div>
@@ -683,6 +688,8 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
     <div id="cart-summary" hidden>
       <div class="cart-total-row"><span>Total</span><strong id="cart-total-text"></strong></div>
       <a class="btn btn-primary btn-block" id="cart-checkout-wa" target="_blank" rel="noopener" hidden>Order via WhatsApp</a>
+      <a class="btn btn-ghost btn-block" id="cart-checkout-sms" hidden>Order via SMS</a>
+      <a class="btn btn-ghost btn-block" id="cart-checkout-email" hidden>Order via Email</a>
       <a class="btn btn-ghost btn-block" id="cart-checkout-call" hidden>Call to Order</a>
     </div>
   </div>
@@ -812,9 +819,6 @@ const DEFAULT_CONFIG={
     whatsapp_btn:true, cta_label:'Order Now', cta_anchor:'#contact', footer_tagline:'',
     product_sort:'newest', theme:{}, qr_style:{fg:'',bg:'',quiet_zone:8}
   },
-  integrations:{
-    firebase_enabled:false, firebase_config:''
-  },
   orders:[],
   trash:[],
   notifications:[],
@@ -841,7 +845,7 @@ async function sha256(message){
 }
 function fileToBase64(file){
   return new Promise((resolve,reject)=>{
-    if(file.size>6*1024*1024){ reject(new Error('Image too large (max 6MB). Please choose a smaller file, or enable the Firebase integration in Data settings for unlimited high-resolution storage.')); return; }
+    if(file.size>6*1024*1024){ reject(new Error('Image too large (max 6MB). Please choose a smaller file.')); return; }
     const reader=new FileReader();
     reader.onload=e=>resolve(e.target.result);
     reader.onerror=()=>reject(new Error('Could not read file.'));
@@ -905,7 +909,7 @@ function saveConfig(){
     localStorage.setItem(CONFIG_KEY,JSON.stringify(CONFIG));
   }catch(e){
     console.error('saveConfig failed (storage full?)',e);
-    toast('Storage is full — remove some images/videos or enable the Firebase integration in Data settings.',true);
+    toast('Storage is full — remove some images/videos to free up space.',true);
   }
 }
 const debouncedSaveAndToast=debounce(()=>{ saveConfig(); toast('Saved'); },500);
@@ -1442,6 +1446,26 @@ function renderContact(){
 
   const fabLocation=document.getElementById('fab-location');
   if(fabLocation) fabLocation.hidden=!(CONFIG.identity.maps_url || CONFIG.identity.location_address);
+
+  renderContactChannelPills();
+}
+const CONTACT_CHANNEL_LABELS={whatsapp:'WhatsApp',sms:'SMS',email:'Email'};
+let contactChannelChoice='';
+function availableContactChannels(){
+  const channels=[];
+  if(CONFIG.socials.whatsapp||CONFIG.identity.phone) channels.push('whatsapp');
+  if(CONFIG.identity.phone) channels.push('sms');
+  if(CONFIG.identity.email) channels.push('email');
+  return channels;
+}
+function renderContactChannelPills(){
+  const wrap=document.getElementById('cf-channel-pills');
+  if(!wrap) return;
+  const channels=availableContactChannels();
+  if(!channels.includes(contactChannelChoice)) contactChannelChoice=channels[0]||'';
+  wrap.innerHTML=channels.length
+    ? channels.map(c=>'<button type="button" class="channel-pill'+(c===contactChannelChoice?' active':'')+'" data-channel="'+c+'">'+CONTACT_CHANNEL_LABELS[c]+'</button>').join('')
+    : '<span class="cap-note">Add a phone number or email in Business Identity to enable sending.</span>';
 }
 
 function renderQuickDrawer(){
@@ -1665,7 +1689,6 @@ const ADMIN_SECTIONS=[
   {key:'drawer',label:'Quick Menu',icon:'menu'},
   {key:'appearance',label:'Appearance',icon:'sliders'},
   {key:'qrcode',label:'QR Code',icon:'qrcode'},
-  {key:'integrations',label:'Integrations',icon:'cloud'},
   {key:'orders',label:'Orders',icon:'cart'},
   {key:'password',label:'Password',icon:'lock'},
   {key:'data',label:'Data',icon:'database'}
@@ -2324,32 +2347,6 @@ function bindAppearanceActions(){
   });
 }
 
-/* ============ ADMIN PANEL: Integrations ============ */
-function panelIntegrations(){
-  const i=CONFIG.integrations||{firebase_enabled:false,firebase_config:''};
-  return '<div class="admin-panel-section">'
-    +'<div class="admin-card"><h4>Real-Time Orders (Firebase)</h4>'
-    +'<p class="cap-note">Optional. If you have a Firebase project, paste its config below and turn this on — every contact-form submission will also be saved in real time to a Firestore "orders" collection. If this is off or left blank, submissions go out by email as usual.</p>'
-    +'<div class="a-toggle"><span>Enable Firebase order sync</span><div class="switch'+(i.firebase_enabled?' on':'')+'" data-path="integrations.firebase_enabled"></div></div>'
-    +'<div class="a-field" style="margin-top:12px;"><label>Firebase Config (JSON from your Firebase Console &rarr; Project Settings)</label>'
-    +'<textarea id="fb-config" rows="6" placeholder=\'{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}\'>'+escapeHTML(i.firebase_config)+'</textarea></div>'
-    +'<button class="btn btn-primary" id="fb-save" type="button">Save Config</button>'
-    +'</div></div>';
-}
-function bindIntegrationsActions(){
-  const btn=document.getElementById('fb-save');
-  if(!btn) return;
-  btn.addEventListener('click',()=>{
-    const raw=document.getElementById('fb-config').value.trim();
-    if(raw){
-      try{ JSON.parse(raw); }
-      catch(e){ toast('That does not look like valid JSON',true); return; }
-    }
-    CONFIG.integrations.firebase_config=raw;
-    commitNow('Integration config saved');
-  });
-}
-
 /* ============ ADMIN PANEL: Password ============ */
 function panelPassword(){
   const hasPassword=!!CONFIG.password_hash;
@@ -2491,12 +2488,12 @@ function bindQRCodeActions(){
 const ADMIN_RENDERERS={
   identity:panelIdentity, socials:panelSocials, products:panelProducts, packages:panelPackages,
   gallery:panelGallery, testimonials:panelTestimonials, about:panelAbout, drawer:panelDrawer,
-  appearance:panelAppearance, qrcode:panelQRCode, orders:panelOrders, integrations:panelIntegrations, password:panelPassword, data:panelData
+  appearance:panelAppearance, qrcode:panelQRCode, orders:panelOrders, password:panelPassword, data:panelData
 };
 const ADMIN_BINDERS={
   identity:bindIdentityActions, socials:()=>{}, products:bindProductsActions, packages:bindPackagesActions,
   gallery:bindGalleryActions, testimonials:bindTestimonialsActions, about:bindAboutActions, drawer:bindDrawerActions,
-  appearance:bindAppearanceActions, qrcode:bindQRCodeActions, orders:bindOrdersActions, integrations:bindIntegrationsActions, password:bindPasswordActions, data:bindDataActions
+  appearance:bindAppearanceActions, qrcode:bindQRCodeActions, orders:bindOrdersActions, password:bindPasswordActions, data:bindDataActions
 };
 function bindAdminPanelActions(key){
   const fn=ADMIN_BINDERS[key];
@@ -2504,23 +2501,6 @@ function bindAdminPanelActions(key){
 }
 
 /* ============ CONTACT FORM + LIGHTBOX WIRING ============ */
-async function sendOrderToFirebase(order){
-  const integ=CONFIG.integrations;
-  const raw=(integ&&integ.firebase_config||'').trim();
-  if(!integ||!integ.firebase_enabled||!raw) return false;
-  try{
-    const fbConfig=JSON.parse(raw);
-    const {initializeApp}=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-    const {getFirestore,collection,addDoc,serverTimestamp}=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-    const app=initializeApp(fbConfig,'hydrobiz-'+Date.now());
-    const db=getFirestore(app);
-    await addDoc(collection(db,'orders'),Object.assign({},order,{created_at:serverTimestamp()}));
-    return true;
-  }catch(err){
-    console.error('Firebase order sync failed, falling back to email.',err);
-    return false;
-  }
-}
 function openMailto(name,phone,email,interest,message){
   const subject='New enquiry from '+name+' ('+interest+')';
   const body='Name: '+name+'\nPhone: '+phone+'\nEmail: '+email+'\nInterest: '+interest+'\n\n'+message;
@@ -2537,7 +2517,7 @@ function openMailto(name,phone,email,interest,message){
  *                          // use a single descriptive entry with price:0, currency:''
  *   total: number,         // numeric sum, 0 if not applicable
  *   currency: string,      // currency of `total` (e.g. 'KES','USD', or '' if N/A)
- *   channel: 'email'|'whatsapp'|'sms'|'formspree'|'firebase',
+ *   channel: 'email'|'whatsapp'|'sms'|'call'|'formspree',
  *   source: 'contact_form'|'cart_checkout',
  *   created_at: number     // Date.now() timestamp (plain number, not a Date object)
  * }
@@ -2564,7 +2544,12 @@ function saveOrderRecord(record){
 }
 function initContactForm(){
   const form=document.getElementById('contact-form');
-  form.addEventListener('submit',async e=>{
+  document.getElementById('cf-channel-pills').addEventListener('click',e=>{
+    const btn=e.target.closest('[data-channel]'); if(!btn) return;
+    contactChannelChoice=btn.dataset.channel;
+    renderContactChannelPills();
+  });
+  form.addEventListener('submit',e=>{
     e.preventDefault();
     const name=document.getElementById('cf-name').value.trim();
     const phone=document.getElementById('cf-phone').value.trim();
@@ -2572,31 +2557,32 @@ function initContactForm(){
     const interest=document.getElementById('cf-interest').value;
     const message=document.getElementById('cf-message').value.trim();
     if(!name||!phone||!email){ toast('Please fill in name, phone and email',true); return; }
-    const order={name,phone,email,interest,message};
-
-    const savedToFirebase=await sendOrderToFirebase(order);
-    if(savedToFirebase){ saveOrderRecord({name,contact:phone||email,items:[{label:'General enquiry: '+interest,qty:1,price:0,currency:''}],total:0,currency:'',channel:'firebase',source:'contact_form'}); toast('Order received — we will be in touch shortly.'); form.reset(); return; }
 
     const endpoint=(CONFIG.identity.formspree_url||'').trim();
     if(endpoint){
       fetch(endpoint,{
         method:'POST',
         headers:{'Content-Type':'application/json','Accept':'application/json'},
-        body:JSON.stringify(order)
-      }).then(res=>{
-        if(!res.ok) throw new Error('send failed');
-        saveOrderRecord({name,contact:phone||email,items:[{label:'General enquiry: '+interest,qty:1,price:0,currency:''}],total:0,currency:'',channel:'formspree',source:'contact_form'});
-        toast('Message sent — we will get back to you soon.');
-        form.reset();
-      }).catch(()=>{
-        toast('Could not send automatically — opening email instead.',true);
-        saveOrderRecord({name,contact:phone||email,items:[{label:'General enquiry: '+interest,qty:1,price:0,currency:''}],total:0,currency:'',channel:'email',source:'contact_form'});
-        openMailto(name,phone,email,interest,message);
-      });
-    } else {
-      saveOrderRecord({name,contact:phone||email,items:[{label:'General enquiry: '+interest,qty:1,price:0,currency:''}],total:0,currency:'',channel:'email',source:'contact_form'});
-      openMailto(name,phone,email,interest,message);
+        body:JSON.stringify({name,phone,email,interest,message})
+      }).catch(()=>{});
     }
+
+    const channel=contactChannelChoice;
+    if(channel==='whatsapp'){
+      const phoneSrc=CONFIG.socials.whatsapp||CONFIG.identity.phone;
+      window.open(waLink(phoneSrc,'New enquiry from '+name+' ('+interest+')\nPhone: '+phone+'\nEmail: '+email+'\n\n'+message),'_blank');
+    } else if(channel==='sms'){
+      const digits=String(CONFIG.identity.phone).replace(/[^\d+]/g,'');
+      window.location.href='sms:'+digits+'?body='+encodeURIComponent('New enquiry from '+name+' ('+interest+')\n'+message);
+    } else if(channel==='email'){
+      openMailto(name,phone,email,interest,message);
+    } else {
+      toast('This business has not set up a contact method yet.',true);
+      return;
+    }
+    saveOrderRecord({name,contact:phone||email,items:[{label:'General enquiry: '+interest,qty:1,price:0,currency:''}],total:0,currency:'',channel:channel||'email',source:'contact_form'});
+    toast('Opening '+(CONTACT_CHANNEL_LABELS[channel]||'message')+'…');
+    form.reset();
   });
 }
 
@@ -2691,14 +2677,39 @@ function renderCart(){
   )).join('');
   const totals=cartTotals();
   document.getElementById('cart-total-text').textContent=formatTotals(totals);
-  const waMsg='Hi '+CONFIG.identity.name+', I would like to order:\n'
+  const orderMsg='Hi '+CONFIG.identity.name+', I would like to order:\n'
     +CART.map(c=>'- '+c.qty+'x '+c.name+' ('+formatMoney(c.currency,c.price)+' each)').join('\n')
     +'\nTotal: '+formatTotals(totals);
   const waBtn=document.getElementById('cart-checkout-wa');
+  const smsBtn=document.getElementById('cart-checkout-sms');
+  const emailBtn=document.getElementById('cart-checkout-email');
   const callBtn=document.getElementById('cart-checkout-call');
   const phoneSrc=CONFIG.socials.whatsapp||CONFIG.identity.phone;
-  if(phoneSrc){ waBtn.href=waLink(phoneSrc,waMsg); waBtn.hidden=false; } else { waBtn.hidden=true; }
-  if(CONFIG.identity.phone){ callBtn.href='tel:'+String(CONFIG.identity.phone).replace(/[^\d+]/g,''); callBtn.hidden=false; } else { callBtn.hidden=true; }
+  if(phoneSrc){ waBtn.href=waLink(phoneSrc,orderMsg); waBtn.hidden=false; } else { waBtn.hidden=true; }
+  if(CONFIG.identity.phone){
+    const digits=String(CONFIG.identity.phone).replace(/[^\d+]/g,'');
+    smsBtn.href='sms:'+digits+'?body='+encodeURIComponent(orderMsg);
+    smsBtn.hidden=false;
+    callBtn.href='tel:'+digits;
+    callBtn.hidden=false;
+  } else { smsBtn.hidden=true; callBtn.hidden=true; }
+  if(CONFIG.identity.email){
+    emailBtn.href='mailto:'+encodeURIComponent(CONFIG.identity.email)+'?subject='+encodeURIComponent('New order from '+(CONFIG.identity.name||'website'))+'&body='+encodeURIComponent(orderMsg);
+    emailBtn.hidden=false;
+  } else { emailBtn.hidden=true; }
+}
+function logCartCheckout(channel){
+  const totals=cartTotals();
+  const currency=CART[0]?CART[0].currency:'';
+  saveOrderRecord({
+    name:'',
+    contact:'',
+    items:CART.map(c=>({label:c.name,qty:c.qty,price:c.price,currency:c.currency})),
+    total:totals[currency]||0,
+    currency,
+    channel,
+    source:'cart_checkout'
+  });
 }
 function openCartDrawer(){
   const d=document.getElementById('cart-drawer');
@@ -2736,6 +2747,10 @@ function initCart(){
     cartAdd({id:k.id,type:'package',name:k.name,price:k.price,currency:k.currency,image_b64:''});
     cartAddBtnFeedback(btn);
   });
+  document.getElementById('cart-checkout-wa').addEventListener('click',()=>logCartCheckout('whatsapp'));
+  document.getElementById('cart-checkout-sms').addEventListener('click',()=>logCartCheckout('sms'));
+  document.getElementById('cart-checkout-email').addEventListener('click',()=>logCartCheckout('email'));
+  document.getElementById('cart-checkout-call').addEventListener('click',()=>logCartCheckout('call'));
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape' && document.getElementById('cart-drawer').classList.contains('open')) closeCartDrawer();
   });
