@@ -1069,7 +1069,8 @@ const ICONS={
   pin:'<path d="M12 21s7-7.6 7-12.5A7 7 0 0 0 5 8.5C5 13.4 12 21 12 21Z" stroke-linejoin="round"/><circle cx="12" cy="8.5" r="2.4"/>',
   qrcode:'<rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.2"/><path d="M14.3 14.3h2.6v2.6h-2.6Zm3.9 0h2.3M14.3 20.5h2.3m1.6-3.9v2.3m0 1.6v2"/>',
   clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2" stroke-linecap="round" stroke-linejoin="round"/>',
-  restore:'<path d="M4 4v6h6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 14a8 8 0 1 0 2-8.5L4 9" stroke-linecap="round" stroke-linejoin="round"/>'
+  restore:'<path d="M4 4v6h6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 14a8 8 0 1 0 2-8.5L4 9" stroke-linecap="round" stroke-linejoin="round"/>',
+  chart:'<path d="M3 21h18" stroke-linecap="round"/><path d="M6 21V12M11.5 21V6M17 21v-9" stroke-linecap="round" stroke-linejoin="round"/>'
 };
 function icon(name,size=18){ return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="currentColor" stroke-width="1.7">'+(ICONS[name]||'')+'</svg>'; }
 const SOCIAL_ICONS={
@@ -1756,6 +1757,7 @@ const ADMIN_SECTIONS=[
   {key:'appearance',label:'Appearance',icon:'sliders'},
   {key:'qrcode',label:'QR Code',icon:'qrcode'},
   {key:'orders',label:'Orders',icon:'cart'},
+  {key:'analytics',label:'Analytics',icon:'chart'},
   {key:'trash',label:'Trash',icon:'trash'},
   {key:'password',label:'Password',icon:'lock'},
   {key:'data',label:'Data',icon:'database'}
@@ -2539,12 +2541,12 @@ function bindQRCodeActions(){
 const ADMIN_RENDERERS={
   identity:panelIdentity, socials:panelSocials, products:panelProducts, packages:panelPackages,
   gallery:panelGallery, testimonials:panelTestimonials, about:panelAbout, drawer:panelDrawer,
-  appearance:panelAppearance, qrcode:panelQRCode, orders:panelOrders, trash:panelTrash, password:panelPassword, data:panelData
+  appearance:panelAppearance, qrcode:panelQRCode, orders:panelOrders, analytics:panelAnalytics, trash:panelTrash, password:panelPassword, data:panelData
 };
 const ADMIN_BINDERS={
   identity:bindIdentityActions, socials:()=>{}, products:bindProductsActions, packages:bindPackagesActions,
   gallery:bindGalleryActions, testimonials:bindTestimonialsActions, about:bindAboutActions, drawer:bindDrawerActions,
-  appearance:bindAppearanceActions, qrcode:bindQRCodeActions, orders:bindOrdersActions, trash:bindTrashActions, password:bindPasswordActions, data:bindDataActions
+  appearance:bindAppearanceActions, qrcode:bindQRCodeActions, orders:bindOrdersActions, analytics:bindAnalyticsActions, trash:bindTrashActions, password:bindPasswordActions, data:bindDataActions
 };
 function bindAdminPanelActions(key){
   const fn=ADMIN_BINDERS[key];
@@ -2686,6 +2688,82 @@ function bindOrdersActions(){
   nameInput.addEventListener('input',refilter);
   fromInput.addEventListener('change',refilter);
   toInput.addEventListener('change',refilter);
+}
+
+/* ============ ADMIN PANEL: Analytics ============ */
+const ANALYTICS_PERIODS=[
+  {key:'daily',label:'Daily'},
+  {key:'weekly',label:'Weekly'},
+  {key:'monthly',label:'Monthly'},
+  {key:'yearly',label:'Yearly'}
+];
+let analyticsPeriod='daily';
+function isoWeekKey(d){
+  const date=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const dayNum=date.getUTCDay()||7;
+  date.setUTCDate(date.getUTCDate()+4-dayNum);
+  const yearStart=new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  const weekNo=Math.ceil((((date-yearStart)/86400000)+1)/7);
+  return date.getUTCFullYear()+'-W'+String(weekNo).padStart(2,'0');
+}
+function periodKey(ts,period){
+  const d=new Date(ts||Date.now());
+  if(period==='weekly') return isoWeekKey(d);
+  if(period==='monthly') return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  if(period==='yearly') return String(d.getFullYear());
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function periodLabel(key,period){
+  if(period==='weekly'){
+    const [y,w]=key.split('-W');
+    return 'Week '+Number(w)+', '+y;
+  }
+  if(period==='monthly'){
+    const [y,m]=key.split('-');
+    return new Date(Number(y),Number(m)-1,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  }
+  if(period==='yearly') return key;
+  return new Date(key+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+}
+function revenueBuckets(period){
+  const map={};
+  CONFIG.orders.forEach(o=>{
+    const key=periodKey(o.created_at,period);
+    if(!map[key]) map[key]={key,orders:0,revenue:{}};
+    map[key].orders++;
+    if(o.total>0){
+      const cur=o.currency||'KES';
+      map[key].revenue[cur]=(map[key].revenue[cur]||0)+Number(o.total);
+    }
+  });
+  return Object.values(map).sort((a,b)=>b.key.localeCompare(a.key));
+}
+function panelAnalytics(){
+  const buckets=revenueBuckets(analyticsPeriod);
+  const totalRevenue={};
+  CONFIG.orders.forEach(o=>{
+    if(o.total>0){ const cur=o.currency||'KES'; totalRevenue[cur]=(totalRevenue[cur]||0)+Number(o.total); }
+  });
+  return '<div class="admin-panel-section">'
+    +'<div class="admin-card"><h4>Overview</h4>'
+    +'<div class="a-row"><div class="a-field"><label>Total Orders</label><div style="font-size:22px;font-weight:700;">'+CONFIG.orders.length+'</div></div>'
+    +'<div class="a-field"><label>Total Revenue</label><div style="font-size:22px;font-weight:700;">'+escapeHTML(formatTotals(totalRevenue))+'</div></div></div></div>'
+    +'<div class="admin-card"><h4>Revenue by Period</h4>'
+    +'<div class="category-tabs" style="overflow-x:visible;flex-wrap:wrap;margin-bottom:14px;">'+ANALYTICS_PERIODS.map(p=>(
+      '<button type="button" class="cat-tab'+(analyticsPeriod===p.key?' active':'')+'" data-analytics-period="'+p.key+'">'+escapeHTML(p.label)+'</button>'
+    )).join('')+'</div>'
+    +(buckets.length?buckets.map(b=>(
+      '<div class="list-row"><div class="lr-main"><strong>'+escapeHTML(periodLabel(b.key,analyticsPeriod))+'</strong>'
+      +'<span>'+b.orders+' order'+(b.orders===1?'':'s')+'</span></div>'
+      +'<div class="lr-actions" style="font-weight:600;white-space:nowrap;">'+escapeHTML(formatTotals(b.revenue))+'</div></div>'
+    )).join(''):'<div class="admin-empty">No orders yet.</div>')
+    +'</div></div>';
+}
+function bindAnalyticsActions(){
+  document.querySelectorAll('[data-analytics-period]').forEach(b=>b.addEventListener('click',()=>{
+    analyticsPeriod=b.dataset.analyticsPeriod;
+    rerenderAdminBody();
+  }));
 }
 
 /* ============ ADMIN PANEL: Trash ============ */
