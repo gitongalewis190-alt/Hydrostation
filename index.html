@@ -327,6 +327,24 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .qr-image-wrap img{display:block;width:200px;height:200px;}
 .qr-url{font-size:12.5px;color:rgba(255,255,255,.55);word-break:break-all;margin-bottom:18px;}
 
+/* ============ ADMIN: QR CODE GENERATOR ============ */
+.qr-admin-preview{background:#fff;border-radius:14px;padding:18px;display:inline-flex;align-items:center;justify-content:center;margin:6px 0;border:1px solid rgba(255,255,255,.08);}
+.qr-admin-preview img{display:block;width:220px;height:220px;border-radius:6px;}
+.qr-color-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:640px){.qr-color-row{grid-template-columns:1fr;}}
+.qr-color-field{display:flex;flex-direction:column;gap:6px;}
+.qr-color-field label{font-size:13px;color:rgba(255,255,255,.65);}
+.qr-color-field input[type="color"]{width:100%;height:42px;padding:3px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);cursor:pointer;}
+/* Printable QR: hidden in normal view, shown exclusively when body.qr-printing is active */
+#qr-print-area{position:fixed;left:-9999px;top:0;}
+#qr-print-area img{display:block;width:280px;height:280px;}
+@media print{
+  body.qr-printing > *:not(#qr-print-area){display:none!important;}
+  body.qr-printing #qr-print-area{position:static;left:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;padding:40px 0;}
+  body.qr-printing #qr-print-area img{width:320px;height:320px;}
+  body.qr-printing #qr-print-area .qr-print-caption{margin-top:16px;font-size:14px;color:#000;text-align:center;}
+}
+
 /* ============ QUICK DRAWER ============ */
 .quick-drawer{position:fixed;inset:0;z-index:1000;}
 .quick-drawer-scrim{position:absolute;inset:0;background:rgba(7,18,20,.45);}
@@ -708,10 +726,12 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
     <p class="qr-url" id="qr-url-text"></p>
     <div class="modal-actions">
       <button class="btn btn-ghost" id="qr-copy-link" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Copy Link</button>
+      <button class="btn btn-ghost" id="qr-print" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Print</button>
       <a class="btn btn-primary" id="qr-download" download="qr-code.png" target="_blank" rel="noopener">Download</a>
     </div>
   </div>
 </div>
+<div id="qr-print-area" aria-hidden="true"><img id="qr-print-image" alt="Printable QR code"><div class="qr-print-caption" id="qr-print-caption"></div></div>
 
 <div class="admin-dashboard" id="admin-dashboard" hidden>
   <aside class="admin-sidebar" id="admin-sidebar">
@@ -774,7 +794,7 @@ const DEFAULT_CONFIG={
     layout:'classic',
     sections_visible:{products:true,packages:true,about:true,gallery:true,testimonials:true,contact:true},
     whatsapp_btn:true, cta_label:'Order Now', cta_anchor:'#contact', footer_tagline:'',
-    product_sort:'newest', theme:{}
+    product_sort:'newest', theme:{}, qr_style:{fg:'',bg:'',quiet_zone:8}
   },
   integrations:{
     firebase_enabled:false, firebase_config:''
@@ -1251,16 +1271,51 @@ function initFabGroup(){
     try{ await navigator.clipboard.writeText(text); toast('Link copied'); }
     catch(err){ toast('Could not copy link'); }
   });
+  document.getElementById('qr-print').addEventListener('click',()=>{
+    const url=location.href.split('#')[0];
+    printQRCode(qrApiUrl(url,480),(CONFIG.identity.name||'')+(CONFIG.identity.name?' — ':'')+url);
+  });
+}
+/* Builds the api.qrserver.com URL for a given target URL/size, honoring the
+   owner's saved appearance.qr_style (foreground/background/quiet-zone) with
+   sane fallbacks (black-on-white, margin 8) when unset. */
+function qrApiUrl(targetUrl,size){
+  const style=(CONFIG.appearance && CONFIG.appearance.qr_style) || {};
+  const fg=(style.fg||'').replace(/^#/,'') || '000000';
+  const bg=(style.bg||'').replace(/^#/,'') || 'ffffff';
+  const qzNum=Number(style.quiet_zone);
+  const margin=Number.isFinite(qzNum)?qzNum:8;
+  const px=size||240;
+  return 'https://api.qrserver.com/v1/create-qr-code/?size='+px+'x'+px+'&margin='+margin
+    +'&color='+encodeURIComponent(fg)+'&bgcolor='+encodeURIComponent(bg)
+    +'&data='+encodeURIComponent(targetUrl);
 }
 function openQRModal(){
   const url=location.href.split('#')[0];
-  const apiUrl='https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data='+encodeURIComponent(url);
+  const apiUrl=qrApiUrl(url,240);
   document.getElementById('qr-image').src=apiUrl;
   document.getElementById('qr-url-text').textContent=url;
   document.getElementById('qr-download').href=apiUrl;
+  document.getElementById('qr-download').setAttribute('download','qr-code.png');
   document.getElementById('qr-modal').hidden=false;
 }
 function closeQRModal(){ document.getElementById('qr-modal').hidden=true; }
+/* Shared print flow: fills the always-in-DOM #qr-print-area with the given
+   image URL + caption, flips body.qr-printing (which the @media print rule
+   keys off), triggers window.print(), then cleans up afterward. */
+function printQRCode(imgUrl,caption){
+  const img=document.getElementById('qr-print-image');
+  const cap=document.getElementById('qr-print-caption');
+  img.src=imgUrl;
+  cap.textContent=caption||'';
+  document.body.classList.add('qr-printing');
+  function cleanup(){
+    document.body.classList.remove('qr-printing');
+    window.removeEventListener('afterprint',cleanup);
+  }
+  window.addEventListener('afterprint',cleanup);
+  setTimeout(()=>{ window.print(); },60);
+}
 
 /* ============ RENDER: packages ============ */
 function renderPackages(){
@@ -1520,6 +1575,7 @@ const ADMIN_SECTIONS=[
   {key:'about',label:'About',icon:'info'},
   {key:'drawer',label:'Quick Menu',icon:'menu'},
   {key:'appearance',label:'Appearance',icon:'sliders'},
+  {key:'qrcode',label:'QR Code',icon:'qrcode'},
   {key:'integrations',label:'Integrations',icon:'cloud'},
   {key:'password',label:'Password',icon:'lock'},
   {key:'data',label:'Data',icon:'database'}
@@ -2249,16 +2305,65 @@ function bindDataActions(){
   });
 }
 
+/* ============ ADMIN PANEL: QR Code ============ */
+function panelQRCode(){
+  const qs=CONFIG.appearance.qr_style||{};
+  const url=location.href.split('#')[0];
+  const previewUrl=qrApiUrl(url,260);
+  return '<div class="admin-panel-section">'
+    +'<div class="admin-card">'
+    +'<h4>Printable QR Code</h4>'
+    +'<p class="cap-note">This QR code points visitors to your live site. Customize its colors below — the same styling is used here, on the public "QR Code" button, and in printed/downloaded copies.</p>'
+    +'<div class="qr-admin-preview"><img id="qr-admin-preview-img" src="'+previewUrl+'" alt="QR code linking to this site" width="220" height="220"></div>'
+    +'<p class="qr-url">'+escapeHTML(url)+'</p>'
+    +'<div class="qr-color-row">'
+    +'<div class="qr-color-field"><label>Foreground Color</label><input type="color" id="qr-fg" data-path="appearance.qr_style.fg" value="'+escapeHTML(qs.fg||'#000000')+'"></div>'
+    +'<div class="qr-color-field"><label>Background Color</label><input type="color" id="qr-bg" data-path="appearance.qr_style.bg" value="'+escapeHTML(qs.bg||'#ffffff')+'"></div>'
+    +'</div>'
+    +'<div class="a-field" style="margin-top:14px;"><label>Quiet Zone / Margin (modules)</label><input type="number" id="qr-quiet-zone" min="0" max="40" data-path="appearance.qr_style.quiet_zone" data-type="number" value="'+(qs.quiet_zone!=null?qs.quiet_zone:8)+'"></div>'
+    +'<div class="cap-note">Corner/dot module shape is fixed by the QR API in use (square modules) — only color and margin are styleable here.</div>'
+    +'<div class="modal-actions" style="justify-content:flex-start;margin-top:16px;">'
+    +'<button class="btn btn-ghost" id="qr-admin-reset" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Reset to Black/White</button>'
+    +'<button class="btn btn-ghost" id="qr-admin-print" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Print</button>'
+    +'<a class="btn btn-primary" id="qr-admin-download" href="'+qrApiUrl(url,512)+'" download="qr-code.png" target="_blank" rel="noopener">Download PNG (Print Quality)</a>'
+    +'</div>'
+    +'</div></div>';
+}
+function bindQRCodeActions(){
+  if(!document.getElementById('qr-admin-preview-img')) return;
+  function refreshPreview(){
+    const url=location.href.split('#')[0];
+    document.getElementById('qr-admin-preview-img').src=qrApiUrl(url,260);
+    const dl=document.getElementById('qr-admin-download');
+    if(dl) dl.href=qrApiUrl(url,512);
+  }
+  ['qr-fg','qr-bg','qr-quiet-zone'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('input',()=>{ setTimeout(refreshPreview,0); });
+  });
+  const resetBtn=document.getElementById('qr-admin-reset');
+  if(resetBtn) resetBtn.addEventListener('click',()=>{
+    CONFIG.appearance.qr_style={fg:'',bg:'',quiet_zone:8};
+    commitNow('Reset to default colors');
+    rerenderAdminBody();
+  });
+  const printBtn=document.getElementById('qr-admin-print');
+  if(printBtn) printBtn.addEventListener('click',()=>{
+    const url=location.href.split('#')[0];
+    printQRCode(qrApiUrl(url,480),(CONFIG.identity.name||'')+(CONFIG.identity.name?' — ':'')+url);
+  });
+}
+
 /* ============ ADMIN: render/bind dispatch ============ */
 const ADMIN_RENDERERS={
   identity:panelIdentity, socials:panelSocials, products:panelProducts, packages:panelPackages,
   gallery:panelGallery, testimonials:panelTestimonials, about:panelAbout, drawer:panelDrawer,
-  appearance:panelAppearance, integrations:panelIntegrations, password:panelPassword, data:panelData
+  appearance:panelAppearance, qrcode:panelQRCode, integrations:panelIntegrations, password:panelPassword, data:panelData
 };
 const ADMIN_BINDERS={
   identity:bindIdentityActions, socials:()=>{}, products:bindProductsActions, packages:bindPackagesActions,
   gallery:bindGalleryActions, testimonials:bindTestimonialsActions, about:bindAboutActions, drawer:bindDrawerActions,
-  appearance:bindAppearanceActions, integrations:bindIntegrationsActions, password:bindPasswordActions, data:bindDataActions
+  appearance:bindAppearanceActions, qrcode:bindQRCodeActions, integrations:bindIntegrationsActions, password:bindPasswordActions, data:bindDataActions
 };
 function bindAdminPanelActions(key){
   const fn=ADMIN_BINDERS[key];
