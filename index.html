@@ -2590,8 +2590,12 @@ let adminActiveSection='identity';
 const ADMIN_GRACE_KEY='hb_admin_grace_until';
 const ADMIN_GRACE_MINUTES_MAX=5;
 function adminGraceMinutes(){
+  // Floor is 1, never 0: a 0-minute idle timeout means setTimeout(...,0), which fires on the
+  // very next tick and instantly re-locks the dashboard the moment it opens, with no way back
+  // in without the password. Clamping here also self-heals any site whose stored config already
+  // has idle_timeout_min:0 from before this floor existed, with no admin access required.
   const m=Number(CONFIG.admin_security && CONFIG.admin_security.idle_timeout_min);
-  return Math.min(Math.max(Number.isFinite(m)?m:ADMIN_GRACE_MINUTES_MAX,0),ADMIN_GRACE_MINUTES_MAX);
+  return Math.min(Math.max(Number.isFinite(m)&&m>0?m:ADMIN_GRACE_MINUTES_MAX,1),ADMIN_GRACE_MINUTES_MAX);
 }
 function startAdminGrace(){
   const ms=adminGraceMinutes()*60000;
@@ -2705,7 +2709,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   body.addEventListener('input',e=>{
     const t=e.target;
     if(t.dataset.path && t.type!=='file' && t.type!=='checkbox'){
-      const val=t.dataset.type==='number'?Number(t.value):t.value;
+      let val=t.dataset.type==='number'?Number(t.value):t.value;
+      if(t.dataset.type==='number'){
+        if(t.min!==''){ const lo=Number(t.min); if(Number.isFinite(lo) && (!Number.isFinite(val)||val<lo)) val=lo; }
+        if(t.max!==''){ const hi=Number(t.max); if(Number.isFinite(hi) && val>hi) val=hi; }
+        if(String(val)!==t.value) t.value=val;
+      }
       commitField(t.dataset.path,val);
       const warnEl=t.nextElementSibling;
       if(warnEl && warnEl.classList.contains('field-warn')){
@@ -3346,7 +3355,8 @@ function panelPassword(){
     +'</div>'
     +'<div class="admin-card"><h4>Auto-Lock &amp; Re-Entry Grace Period</h4>'
     +'<p class="cap-note">How long the dashboard can sit idle before auto-locking, and how long after you tap "Exit Admin" you can come back in via the hold-and-pull gesture without re-typing your password. Maximum 5 minutes.</p>'
-    +'<div class="a-field"><label>Minutes (0&ndash;5)</label><input type="number" min="0" max="5" step="1" data-path="admin_security.idle_timeout_min" data-type="number" value="'+(CONFIG.admin_security&&CONFIG.admin_security.idle_timeout_min!=null?CONFIG.admin_security.idle_timeout_min:5)+'"></div>'
+    +'<div class="a-field"><label>Minutes (1&ndash;5)</label><input type="number" min="1" max="5" step="1" data-path="admin_security.idle_timeout_min" data-type="number" value="'+(CONFIG.admin_security&&CONFIG.admin_security.idle_timeout_min>0?CONFIG.admin_security.idle_timeout_min:5)+'"></div>'
+    +'<p class="cap-note" style="margin-top:6px;">Zero is not allowed &mdash; it would lock the dashboard the instant it opens with no way back in.</p>'
     +'</div></div>';
 }
 function recoveryQuestionField(idx,currentQ){
