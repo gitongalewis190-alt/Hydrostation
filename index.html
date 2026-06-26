@@ -1054,7 +1054,8 @@ function toast(msg,isError,action){
   toast._t=setTimeout(()=>{ el.hidden=true; },action?5000:2400);
 }
 function waLink(phone,text){
-  const digits=String(phone||'').replace(/[^\d]/g,'');
+  let digits=String(phone||'').replace(/[^\d]/g,'');
+  if(digits.startsWith('00')) digits=digits.slice(2);
   return 'https://wa.me/'+digits+(text?('?text='+encodeURIComponent(text)):'');
 }
 function haversineKm(lat1,lon1,lat2,lon2){
@@ -2075,9 +2076,10 @@ function renderContact(){
   select.innerHTML=opts.map(o=>'<option>'+escapeHTML(o)+'</option>').join('');
 
   const wa=document.getElementById('whatsapp-float');
-  if(CONFIG.appearance.whatsapp_btn && CONFIG.socials.whatsapp){
+  const waPhoneSrc=CONFIG.socials.whatsapp||CONFIG.identity.phone;
+  if(CONFIG.appearance.whatsapp_btn && waPhoneSrc){
     wa.hidden=false;
-    wa.onclick=()=>window.open(waLink(CONFIG.socials.whatsapp,'Hi '+CONFIG.identity.name+', I would like to enquire.'),'_blank');
+    wa.onclick=()=>window.open(waLink(waPhoneSrc,'Hi '+CONFIG.identity.name+', I would like to enquire.'),'_blank');
   } else { wa.hidden=true; }
 
   const fabLocation=document.getElementById('fab-location');
@@ -2532,6 +2534,8 @@ function panelIdentity(){
     +'</div>'
     +'<div class="admin-card"><h4>Contact</h4>'
     +'<div class="a-row">'+field('Contact Email','identity.email',id.email)+field('Phone (also WhatsApp)','identity.phone',id.phone)+'</div>'
+    +'<div class="cap-note">Phone/WhatsApp must include your country code with digits only &mdash; no leading 0, no spaces, no +. Example: <strong>254712345678</strong> for a Kenyan number, not <strong>0712345678</strong>. A wrong format is the #1 cause of "link can\'t be fetched" errors in WhatsApp. Has a different WhatsApp number than this phone? Set it under Social Links &rarr; WhatsApp Number instead.</div>'
+    +'<button class="btn btn-sm btn-ghost" data-action="test-whatsapp-link" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);margin-top:8px;">'+icon('whatsapp',14)+' Test WhatsApp Link</button>'
     +textareaField('Business Hours','identity.hours',id.hours)
     +'</div>'
     +'<div class="admin-card"><h4>Hero Section</h4>'
@@ -2557,6 +2561,12 @@ function bindIdentityActions(){
   if(btn) btn.addEventListener('click',()=>{
     CONFIG.identity.hero_bg_mode=CONFIG.identity.hero_bg_mode==='gradient'?'white':'gradient';
     commitNow(); rerenderAdminBody();
+  });
+  const waTestBtn=document.querySelector('[data-action="test-whatsapp-link"]');
+  if(waTestBtn) waTestBtn.addEventListener('click',()=>{
+    const phoneSrc=CONFIG.socials.whatsapp||CONFIG.identity.phone;
+    if(!phoneSrc){ toast('Enter a phone number above first.',true); return; }
+    window.open(waLink(phoneSrc,'This is a test message from your HydroBiz admin panel — if you can see this, your WhatsApp link works correctly.'),'_blank');
   });
 }
 
@@ -4266,7 +4276,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   initCart();
   initCatalogFilters();
   initFabGroup();
-  document.getElementById('admin-exit-btn').addEventListener('click',closeAdminDashboard);
+  document.getElementById('admin-exit-btn').addEventListener('click',()=>closeAdminDashboard(false));
   initVirtualManual();
   if(new URLSearchParams(location.search).get('selftest')==='1'){
     runSelfTests();
