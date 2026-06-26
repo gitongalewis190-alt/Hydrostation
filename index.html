@@ -1117,6 +1117,13 @@ function escapeHTML(str){
   return String(str==null?'':str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function selectElementText(el){
+  const range=document.createRange();
+  range.selectNodeContents(el);
+  const sel=window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
 function getPath(obj,path){ return path.split('.').reduce((o,k)=>(o==null?undefined:o[k]),obj); }
 function setPath(obj,path,value){
   const keys=path.split('.'); let cur=obj;
@@ -3505,9 +3512,10 @@ function panelCloudSync(){
       +(keysFilled?'':'<p class="field-warn" style="margin-top:8px;">Fill in all six fields above, then press Save &amp; Connect.</p>')
       +'</div>'
       +'<div class="admin-card cs-step-card"><div class="cs-step-badge">Step 6</div><h4>Paste these security rules</h4>'
-      +'<p class="cap-note">"Firestore Database" &rarr; "Rules" tab &rarr; replace everything with this &rarr; click Publish. This keeps your site publicly viewable to visitors but only editable by you once signed in below.</p>'
-      +'<pre class="cs-rules" id="cs-rules-text">rules_version = \'2\';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /hydrobiz/config {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n  }\n}</pre>'
+      +'<p class="cap-note">"Firestore Database" &rarr; "Rules" tab &rarr; click inside the editor &rarr; press Ctrl/Cmd+A then Delete to fully clear the existing default rules &rarr; click "Copy Rules" below and paste (Ctrl/Cmd+V) &rarr; click Publish. This keeps your site publicly viewable to visitors but only editable by you once signed in below.</p>'
+      +'<pre class="cs-rules" id="cs-rules-text" tabindex="0" title="Click to select all">rules_version = \'2\';\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /hydrobiz/config {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n  }\n}</pre>'
       +'<button class="btn btn-ghost" id="cs-copy-rules" type="button">Copy Rules</button>'
+      +'<p class="cap-note" style="margin-top:8px;">See a red <strong>parse error</strong> in the Rules tab after pasting? It almost always means old text got left behind. Click the box above once to select the whole block, copy it again, then in the Rules tab select all (Ctrl/Cmd+A) and delete <em>before</em> pasting &mdash; not after.</p>'
       +'</div>'
       +'<div class="admin-card cs-step-card"><div class="cs-step-badge">Step 7</div><h4>Create your sign-in account, then sign in here</h4>'
       +'<p class="cap-note">"Authentication" &rarr; "Users" tab &rarr; "Add user" &rarr; enter an email and a password (this is separate from your admin dashboard password — pick one you\'ll remember). Then enter those exact same details below and sign in.</p>'
@@ -3555,13 +3563,37 @@ function bindCloudSyncActions(){
     await cloudSignOut();
     rerenderAdminBody();
   });
+  const rulesPre=document.getElementById('cs-rules-text');
+  if(rulesPre) rulesPre.addEventListener('click',()=>selectElementText(rulesPre));
   const copyBtn=document.getElementById('cs-copy-rules');
   if(copyBtn) copyBtn.addEventListener('click',()=>{
-    const text=document.getElementById('cs-rules-text').textContent;
+    const text=rulesPre.textContent;
+    const execCopyFallback=()=>{
+      try{
+        const ta=document.createElement('textarea');
+        ta.value=text;
+        ta.setAttribute('readonly','');
+        ta.style.position='fixed';
+        ta.style.left='-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+      }catch(e){ return false; }
+    };
+    const manualFallback=()=>{
+      selectElementText(rulesPre);
+      toast('Couldn\'t auto-copy — the text is selected, press Ctrl/Cmd+C',true);
+    };
     if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(()=>toast('Rules copied')).catch(()=>toast('Copy failed',true));
+      navigator.clipboard.writeText(text).then(()=>toast('Rules copied')).catch(()=>{
+        if(execCopyFallback()) toast('Rules copied'); else manualFallback();
+      });
+    }else if(execCopyFallback()){
+      toast('Rules copied');
     }else{
-      toast('Copy failed',true);
+      manualFallback();
     }
   });
 }
@@ -4256,7 +4288,8 @@ const ADMIN_HELP={
     faq:[
       {q:'Do I need Cloud Sync?',a:'No — it\'s entirely optional. Without it, your site still works great using your browser\'s local storage.'},
       {q:'Is my data shared with other HydroBiz businesses?',a:'Never. Each business connects to its own separate, free Firebase project.'},
-      {q:'The status pill says "Connection error" — what now?',a:'Double-check the six keys from Step 5 and the rules text from Step 6 — those are the two most common typo spots. Everything else keeps working locally in the meantime.'}
+      {q:'The status pill says "Connection error" — what now?',a:'Double-check the six keys from Step 5 and the rules text from Step 6 — those are the two most common typo spots. Everything else keeps working locally in the meantime.'},
+      {q:'The Rules tab shows a red "parse error" after I paste — what now?',a:'This almost always means old default text got left in the editor alongside the new rules. Click inside the Rules editor, select all (Ctrl/Cmd+A), delete everything, then paste the rules fresh (use the Copy Rules button in Step 6 to avoid missing a character) and click Publish.'}
     ]
   },
   qrcode:{
