@@ -2726,12 +2726,22 @@ function selectAdminSection(key){
 function rerenderAdminBody(){ selectAdminSection(adminActiveSection); }
 
 /* delegated live-binding for simple flat fields + toggles */
+const CLOUD_SYNC_KEY_PATHS=['cloud_sync.api_key','cloud_sync.auth_domain','cloud_sync.project_id','cloud_sync.storage_bucket','cloud_sync.messaging_sender_id','cloud_sync.app_id'];
+function sanitizePastedFieldValue(path,raw){
+  if(CLOUD_SYNC_KEY_PATHS.includes(path)){
+    let v=raw.replace(/\s+/g,'');
+    v=v.replace(/[,;]+$/,'');
+    if((v.startsWith('"')&&v.endsWith('"'))||(v.startsWith("'")&&v.endsWith("'"))) v=v.slice(1,-1);
+    return v;
+  }
+  return raw.trim();
+}
 document.addEventListener('DOMContentLoaded',()=>{
   const body=document.getElementById('admin-body');
   body.addEventListener('input',e=>{
     const t=e.target;
-    if(t.dataset.path && t.type!=='file' && t.type!=='checkbox'){
-      let val=t.dataset.type==='number'?Number(t.value):t.value;
+    if(t.dataset.path && t.type!=='file' && t.type!=='checkbox' && t.type!=='password'){
+      let val=t.dataset.type==='number'?Number(t.value):sanitizePastedFieldValue(t.dataset.path,t.value);
       if(t.dataset.type==='number'){
         if(t.min!==''){ const lo=Number(t.min); if(Number.isFinite(lo) && (!Number.isFinite(val)||val<lo)) val=lo; }
         if(t.max!==''){ const hi=Number(t.max); if(Number.isFinite(hi) && val>hi) val=hi; }
