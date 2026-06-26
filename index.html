@@ -371,6 +371,36 @@ input,textarea,select{font-family:inherit;font-size:15px;}
   body.qr-printing #qr-print-area .qr-brand-card{box-shadow:none;padding:0;}
 }
 
+/* ============ PRINTABLE USER MANUAL ============ */
+.printable-manual{position:fixed;left:-9999px;top:0;background:#fff;color:#111;}
+.pm-page{max-width:760px;margin:0 auto;padding:48px;font-family:'Inter',sans-serif;}
+.pm-header{display:flex;align-items:center;gap:18px;border-bottom:3px solid var(--accent-bright,#2DD4BF);padding-bottom:18px;margin-bottom:6px;}
+.pm-header img{width:64px;height:64px;border-radius:12px;object-fit:cover;flex-shrink:0;}
+.pm-header-text h1{margin:0;font-size:26px;color:#0F1419;}
+.pm-header-text p{margin:4px 0 0;font-size:14px;color:#555;}
+.pm-meta{font-size:12px;color:#888;margin:10px 0 28px;text-transform:uppercase;letter-spacing:.04em;}
+.pm-toc{background:#F4F7F6;border-radius:10px;padding:18px 22px;margin-bottom:32px;break-inside:avoid;}
+.pm-toc h2{margin:0 0 8px;font-size:15px;color:#0F1419;}
+.pm-toc ol{margin:0;padding-left:20px;columns:2;column-gap:24px;font-size:13px;color:#333;}
+.pm-section{break-inside:avoid;page-break-inside:avoid;margin-bottom:26px;border-top:1px solid #e2e6e5;padding-top:18px;}
+.pm-section-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.pm-section-head .icon-svg{color:var(--accent-bright,#2DD4BF);flex-shrink:0;}
+.pm-section-head h3{margin:0;font-size:18px;color:#0F1419;}
+.pm-section-summary{font-size:13.5px;color:#444;margin:0 0 10px;}
+.pm-steps{margin:0 0 10px;padding-left:20px;}
+.pm-steps li{font-size:13px;color:#222;margin-bottom:8px;}
+.pm-steps li strong{display:block;color:#0F1419;font-size:13.5px;}
+.pm-faq{background:#FAFBFA;border-radius:8px;padding:12px 16px;font-size:12.5px;color:#333;}
+.pm-faq p{margin:0 0 6px;}
+.pm-faq strong{color:#0F1419;}
+.pm-footer{margin-top:36px;border-top:1px solid #e2e6e5;padding-top:16px;font-size:11.5px;color:#888;text-align:center;}
+@media print{
+  body.printing-manual > *:not(#printable-manual){display:none!important;}
+  body.printing-manual #printable-manual{position:static;left:auto;display:block;}
+  body.printing-manual .pm-page{padding:0;max-width:none;}
+  body.printing-manual .pm-section{page-break-inside:avoid;}
+}
+
 /* ============ ADMIN: CLOUD SYNC ============ */
 .cs-status-pill{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font-size:12.5px;color:rgba(255,255,255,.8);}
 .cs-dot{width:8px;height:8px;border-radius:50%;background:#6b7780;flex:none;}
@@ -379,6 +409,10 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .cs-status-pill.cs-error .cs-dot{background:#ef4444;}
 @keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.35;}}
 .cs-rules{font-family:var(--font-mono,monospace);font-size:11.5px;line-height:1.5;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px;white-space:pre-wrap;word-break:break-word;color:rgba(255,255,255,.8);margin:10px 0;}
+.cs-step-card{position:relative;border-left:2px solid var(--accent-bright,#2DD4BF);}
+.cs-step-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--accent-bright,#2DD4BF);background:rgba(45,212,191,.12);border-radius:6px;padding:3px 9px;margin-bottom:8px;}
+.cs-step-card h4{margin-top:0;}
+.cs-step-card .cap-note a{color:var(--accent-bright,#2DD4BF);text-decoration:underline;}
 
 /* ============ VIRTUAL MANUAL: help trigger + welcome modal ============ */
 .help-trigger-btn{position:relative;}
@@ -468,6 +502,7 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .modal-actions{display:flex;gap:10px;margin-top:6px;}
 .modal-actions .btn{flex:1;}
 .error-text{color:#F87171;font-size:13px;margin-top:10px;}
+.link-btn{background:none;border:none;color:var(--accent-bright);font-size:13px;cursor:pointer;margin-top:4px;text-decoration:underline;padding:0;}
 .pw-field{position:relative;}
 .pw-field input{padding-right:42px;}
 .modal-panel .pw-field input{margin-bottom:0;}
@@ -520,6 +555,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .bullet-row input{flex:1;}
 .admin-empty{font-size:13px;color:rgba(255,255,255,.4);text-align:center;padding:24px;}
 .cap-note{font-size:12px;color:rgba(255,255,255,.4);}
+.field-warn{font-size:12px;color:#FBBF24;margin-top:4px;display:flex;align-items:center;gap:5px;}
+.field-warn::before{content:'⚠';flex-shrink:0;}
 .gallery-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;}
 .gallery-admin-grid .g-item{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;}
 .gallery-admin-grid .g-item img{width:100%;height:100%;object-fit:cover;}
@@ -821,9 +858,35 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
       <button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button>
     </div>
     <p class="error-text" id="admin-login-error" hidden>Incorrect password</p>
+    <button class="link-btn" id="admin-forgot-link" type="button">Forgot password?</button>
     <div class="modal-actions">
       <button class="btn btn-ghost" id="admin-login-cancel" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Cancel</button>
       <button class="btn btn-primary" id="admin-login-submit" type="button">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="admin-recovery-modal" hidden>
+  <div class="modal-panel">
+    <h3>Recover Admin Access</h3>
+    <div id="recovery-step-questions">
+      <p class="hint">Answer your security questions to verify it's you. Answers aren't case-sensitive.</p>
+      <div class="a-field"><label id="recovery-q1-label">Question 1</label><input type="text" id="recovery-a1" autocomplete="off"></div>
+      <div class="a-field"><label id="recovery-q2-label">Question 2</label><input type="text" id="recovery-a2" autocomplete="off"></div>
+      <p class="error-text" id="recovery-error" hidden>One or both answers are incorrect.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="recovery-cancel" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Cancel</button>
+        <button class="btn btn-primary" id="recovery-verify" type="button">Verify</button>
+      </div>
+    </div>
+    <div id="recovery-step-newpw" hidden>
+      <p class="hint">Identity verified. Set a new password to finish.</p>
+      <div class="a-field"><label>New Password</label><div class="pw-field"><input type="password" id="recovery-new-pw" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>
+      <div class="a-field"><label>Confirm New Password</label><div class="pw-field"><input type="password" id="recovery-confirm-pw" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>
+      <p class="error-text" id="recovery-newpw-error" hidden></p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="recovery-set-pw" type="button">Set New Password &amp; Log In</button>
+      </div>
     </div>
   </div>
 </div>
@@ -927,11 +990,34 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
     </div>
     <div class="manual-body" id="manual-body"></div>
     <div class="manual-foot">
+      <button class="btn btn-sm btn-primary" id="manual-print-btn" type="button">Print / Save as PDF</button>
       <button class="btn btn-sm btn-ghost" id="manual-reset-all" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Reset All Tours</button>
       <div class="a-toggle" style="padding:0;background:none;gap:8px;">
         <span style="font-size:12.5px;color:rgba(255,255,255,.55);">Auto-start tours</span>
         <div class="switch" id="manual-autostart-toggle"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="printable-manual" id="printable-manual" hidden>
+  <div class="pm-page">
+    <div class="pm-header">
+      <img id="pm-logo" alt="" hidden>
+      <div class="pm-header-text">
+        <h1 id="pm-business-name">Business Name</h1>
+        <p id="pm-tagline"></p>
+      </div>
+    </div>
+    <p class="pm-meta">Site Owner's Guide &mdash; printed <span id="pm-print-date"></span></p>
+    <div class="pm-toc">
+      <h2>Contents</h2>
+      <ol id="pm-toc-list"></ol>
+    </div>
+    <div id="pm-sections"></div>
+    <div class="pm-footer">
+      <p>Need a refresher? This same guide lives inside your admin dashboard any time &mdash; tap the <strong>Virtual Manual</strong> (?) icon in the top bar.</p>
+      <p id="pm-footer-business"></p>
     </div>
   </div>
 </div>
@@ -990,6 +1076,7 @@ const DEFAULT_CONFIG={
   notifications:[],
   admin_security:{idle_timeout_min:5},
   password_hash:null,
+  password_recovery:{ q1:'', q2:'', a1_hash:null, a2_hash:null },
   cloud_sync:{
     enabled:false,
     api_key:'', auth_domain:'', project_id:'', storage_bucket:'', messaging_sender_id:'', app_id:'',
@@ -1058,6 +1145,16 @@ function waLink(phone,text){
   if(digits.startsWith('00')) digits=digits.slice(2);
   return 'https://wa.me/'+digits+(text?('?text='+encodeURIComponent(text)):'');
 }
+function phoneFormatWarning(value){
+  const v=String(value||'').trim();
+  if(!v) return '';
+  if(v.startsWith('+')) return 'Remove the + — use digits only, e.g. 254712345678.';
+  if(/\s/.test(v)) return 'Remove spaces — digits only, e.g. 254712345678.';
+  if(/[^\d]/.test(v)) return 'Use digits only — no dashes, brackets, or letters.';
+  if(v.startsWith('0')) return 'Starts with 0 — that looks like a local number. Replace the leading 0 with your country code (e.g. 254712345678, not 0712345678).';
+  if(v.length<10||v.length>15) return 'That looks too '+(v.length<10?'short':'long')+' for a full international number with country code.';
+  return '';
+}
 function haversineKm(lat1,lon1,lat2,lon2){
   const toRad=d=>d*Math.PI/180, R=6371;
   const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
@@ -1088,17 +1185,19 @@ function saveConfig(){
   }catch(e){
     console.error('saveConfig failed (storage full?)',e);
     toast('Storage is full — remove some images/videos to free up space.',true);
+    return false;
   }
   cloudSyncPush();
+  return true;
 }
-const debouncedSaveAndToast=debounce(()=>{ saveConfig(); toast('Saved'); },500);
+const debouncedSaveAndToast=debounce(()=>{ if(saveConfig()) toast('Saved'); },500);
 function commitField(path,value){
   setPath(CONFIG,path,value);
   debouncedSaveAndToast();
 }
 function commitNow(msg){
-  saveConfig();
-  if(msg!==false) toast(msg||'Saved');
+  const ok=saveConfig();
+  if(ok && msg!==false) toast(msg||'Saved');
 }
 
 /* ============ CLOUD SYNC (optional, opt-in Firebase real-time backend) ============
@@ -1821,6 +1920,46 @@ function printQRCode(imgUrl){
   window.addEventListener('afterprint',cleanup);
   setTimeout(()=>{ window.print(); },60);
 }
+/* Printable Owner's Guide: reuses ADMIN_HELP + ADMIN_SECTIONS (the same
+   content that powers the in-app Virtual Manual) as its single source of
+   truth, so the printed booklet and the on-screen help never drift apart.
+   Branded from CONFIG.identity, same hidden-until-print pattern as the QR
+   code above (body.printing-manual + #printable-manual). */
+function renderPrintableManual(){
+  const id=CONFIG.identity;
+  const name=id.name||'Your Business';
+  const logoEl=document.getElementById('pm-logo');
+  if(id.logo_b64){ logoEl.src=id.logo_b64; logoEl.hidden=false; } else { logoEl.hidden=true; }
+  document.getElementById('pm-business-name').textContent=name;
+  document.getElementById('pm-tagline').textContent=id.tagline||'';
+  document.getElementById('pm-print-date').textContent=new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  const toc=ADMIN_SECTIONS.map(s=>'<li>'+escapeHTML(s.label)+'</li>').join('');
+  document.getElementById('pm-toc-list').innerHTML=toc;
+  const sections=ADMIN_SECTIONS.map(s=>{
+    const help=ADMIN_HELP[s.key];
+    if(!help) return '';
+    const steps=(help.steps||[]).map(st=>'<li><strong>'+escapeHTML(st.title)+'</strong>'+escapeHTML(st.body)+'</li>').join('');
+    const faq=(help.faq||[]).map(f=>'<p><strong>Q: '+escapeHTML(f.q)+'</strong></p><p>A: '+escapeHTML(f.a)+'</p>').join('');
+    return '<div class="pm-section">'
+      +'<div class="pm-section-head">'+icon(s.icon,20)+'<h3>'+escapeHTML(s.label)+'</h3></div>'
+      +'<p class="pm-section-summary">'+escapeHTML(help.summary||'')+'</p>'
+      +(steps?'<ol class="pm-steps">'+steps+'</ol>':'')
+      +(faq?'<div class="pm-faq">'+faq+'</div>':'')
+      +'</div>';
+  }).join('');
+  document.getElementById('pm-sections').innerHTML=sections;
+  document.getElementById('pm-footer-business').textContent=name+(id.phone?' · '+id.phone:'')+(id.email?' · '+id.email:'');
+}
+function openPrintableManual(){
+  renderPrintableManual();
+  document.body.classList.add('printing-manual');
+  function cleanup(){
+    document.body.classList.remove('printing-manual');
+    window.removeEventListener('afterprint',cleanup);
+  }
+  window.addEventListener('afterprint',cleanup);
+  setTimeout(()=>{ window.print(); },60);
+}
 /* ============ BRANDED QR DOWNLOAD (canvas composite) ============
    Bakes the logo/name/tagline/QR/caption/contact into one flattened PNG so the
    downloaded file looks like a finished print asset, not a bare QR square.
@@ -2262,6 +2401,80 @@ async function attemptAdminLogin(){
     input.value=''; input.focus();
   }
 }
+/* ============ PASSWORD RECOVERY (security questions) ============
+   Configured by the owner in the Password panel: two questions (picked from a
+   preset list or custom-written) plus answers. Only a SHA-256 hash of each
+   normalized (trimmed, lowercased) answer is ever stored — never the answer
+   itself, same trust model as the password. A correct pair of answers lets the
+   owner bypass the forgotten password and set a brand-new one immediately. */
+const SECURITY_QUESTIONS=[
+  'What was the name of your first employer?',
+  'What is your business registration / license number?',
+  'What was the name of your first business?',
+  'What city were you born in?',
+  'What is the name of your accountant or business advisor?',
+  'What street did you grow up on?'
+];
+function normalizeAnswer(s){ return String(s||'').trim().toLowerCase(); }
+function hasRecoverySetup(){
+  const r=CONFIG.password_recovery;
+  return !!(r && r.a1_hash && r.a2_hash);
+}
+function openAdminRecovery(){
+  if(!hasRecoverySetup()){
+    toast('No recovery questions were set up for this site — use Data → Reset to clear and start over.',true);
+    return;
+  }
+  closeAdminLogin();
+  const r=CONFIG.password_recovery;
+  document.getElementById('recovery-q1-label').textContent=r.q1;
+  document.getElementById('recovery-q2-label').textContent=r.q2;
+  document.getElementById('recovery-a1').value='';
+  document.getElementById('recovery-a2').value='';
+  document.getElementById('recovery-error').hidden=true;
+  document.getElementById('recovery-new-pw').value='';
+  document.getElementById('recovery-confirm-pw').value='';
+  document.getElementById('recovery-newpw-error').hidden=true;
+  document.getElementById('recovery-step-questions').hidden=false;
+  document.getElementById('recovery-step-newpw').hidden=true;
+  document.getElementById('admin-recovery-modal').hidden=false;
+  setTimeout(()=>document.getElementById('recovery-a1').focus(),50);
+}
+function closeAdminRecovery(){ document.getElementById('admin-recovery-modal').hidden=true; }
+async function attemptRecoveryVerify(){
+  const r=CONFIG.password_recovery;
+  const a1=normalizeAnswer(document.getElementById('recovery-a1').value);
+  const a2=normalizeAnswer(document.getElementById('recovery-a2').value);
+  const [h1,h2]=await Promise.all([sha256(a1),sha256(a2)]);
+  if(h1===r.a1_hash && h2===r.a2_hash){
+    document.getElementById('recovery-step-questions').hidden=true;
+    document.getElementById('recovery-step-newpw').hidden=false;
+    setTimeout(()=>document.getElementById('recovery-new-pw').focus(),50);
+  } else {
+    document.getElementById('recovery-error').hidden=false;
+  }
+}
+async function attemptRecoverySetPassword(){
+  const next=document.getElementById('recovery-new-pw').value;
+  const confirmVal=document.getElementById('recovery-confirm-pw').value;
+  const errEl=document.getElementById('recovery-newpw-error');
+  if(next.length<6){ errEl.textContent='New password must be at least 6 characters'; errEl.hidden=false; return; }
+  if(next!==confirmVal){ errEl.textContent='Passwords do not match'; errEl.hidden=false; return; }
+  errEl.hidden=true;
+  CONFIG.password_hash=await sha256(next);
+  commitNow('Password reset — you are now logged in');
+  closeAdminRecovery();
+  openAdminDashboard();
+}
+function initAdminRecovery(){
+  document.getElementById('admin-forgot-link').addEventListener('click',openAdminRecovery);
+  document.getElementById('recovery-cancel').addEventListener('click',closeAdminRecovery);
+  document.getElementById('recovery-verify').addEventListener('click',attemptRecoveryVerify);
+  document.getElementById('recovery-set-pw').addEventListener('click',attemptRecoverySetPassword);
+  document.getElementById('recovery-a2').addEventListener('keydown',e=>{ if(e.key==='Enter') attemptRecoveryVerify(); });
+  document.getElementById('recovery-confirm-pw').addEventListener('keydown',e=>{ if(e.key==='Enter') attemptRecoverySetPassword(); });
+  bindPasswordEyeToggles(document.getElementById('admin-recovery-modal'));
+}
 function bindPasswordEyeToggles(root){
   root.querySelectorAll('[data-pw-toggle]').forEach(btn=>{
     btn.innerHTML=icon('eye',18);
@@ -2282,6 +2495,7 @@ function initAdminLogin(){
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){
       if(!document.getElementById('admin-login-modal').hidden) closeAdminLogin();
+      if(!document.getElementById('admin-recovery-modal').hidden) closeAdminRecovery();
       if(!document.getElementById('confirm-password-modal').hidden) closeConfirmPasswordModal();
       if(document.getElementById('quick-drawer').classList.contains('open')) closeDrawer();
       if(!document.getElementById('lightbox-overlay').hidden) closeLightbox();
@@ -2381,10 +2595,12 @@ function adminGraceMinutes(){
 }
 function startAdminGrace(){
   const ms=adminGraceMinutes()*60000;
-  if(ms<=0){ localStorage.removeItem(ADMIN_GRACE_KEY); return; }
-  localStorage.setItem(ADMIN_GRACE_KEY,String(Date.now()+ms));
+  try{
+    if(ms<=0){ localStorage.removeItem(ADMIN_GRACE_KEY); return; }
+    localStorage.setItem(ADMIN_GRACE_KEY,String(Date.now()+ms));
+  }catch(e){ console.error('startAdminGrace failed',e); }
 }
-function clearAdminGrace(){ localStorage.removeItem(ADMIN_GRACE_KEY); }
+function clearAdminGrace(){ try{ localStorage.removeItem(ADMIN_GRACE_KEY); }catch(e){} }
 function isAdminGraceActive(){
   const until=Number(localStorage.getItem(ADMIN_GRACE_KEY));
   return Number.isFinite(until) && until>Date.now();
@@ -2491,6 +2707,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(t.dataset.path && t.type!=='file' && t.type!=='checkbox'){
       const val=t.dataset.type==='number'?Number(t.value):t.value;
       commitField(t.dataset.path,val);
+      const warnEl=t.nextElementSibling;
+      if(warnEl && warnEl.classList.contains('field-warn')){
+        const msg=phoneFormatWarning(val);
+        warnEl.textContent=msg; warnEl.hidden=!msg;
+      }
     }
   });
   body.addEventListener('change',e=>{
@@ -2533,7 +2754,7 @@ function panelIdentity(){
     +field('Tagline','identity.tagline',id.tagline)
     +'</div>'
     +'<div class="admin-card"><h4>Contact</h4>'
-    +'<div class="a-row">'+field('Contact Email','identity.email',id.email)+field('Phone (also WhatsApp)','identity.phone',id.phone)+'</div>'
+    +'<div class="a-row">'+field('Contact Email','identity.email',id.email)+field('Phone (also WhatsApp)','identity.phone',id.phone,null,'identity-phone-warn')+'</div>'
     +'<div class="cap-note">Phone/WhatsApp must include your country code with digits only &mdash; no leading 0, no spaces, no +. Example: <strong>254712345678</strong> for a Kenyan number, not <strong>0712345678</strong>. A wrong format is the #1 cause of "link can\'t be fetched" errors in WhatsApp. Has a different WhatsApp number than this phone? Set it under Social Links &rarr; WhatsApp Number instead.</div>'
     +'<button class="btn btn-sm btn-ghost" data-action="test-whatsapp-link" type="button" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);margin-top:8px;">'+icon('whatsapp',14)+' Test WhatsApp Link</button>'
     +textareaField('Business Hours','identity.hours',id.hours)
@@ -2577,16 +2798,22 @@ function panelSocials(){
   return '<div class="admin-panel-section"><div class="admin-card"><h4>Social &amp; Messaging Links</h4>'
     +SOCIAL_PLATFORMS.map(p=>(
       '<div class="a-row" style="align-items:end;">'
-      +field(p.charAt(0).toUpperCase()+p.slice(1)+(p==='whatsapp'?' Number':' URL'),'socials.'+p,s[p])
+      +field(p.charAt(0).toUpperCase()+p.slice(1)+(p==='whatsapp'?' Number':' URL'),'socials.'+p,s[p],null,p==='whatsapp'?'socials-whatsapp-warn':null)
       +'<div class="a-toggle"><span>Show on site</span><div class="switch'+(s.visibility[p]?' on':'')+'" data-path="socials.visibility.'+p+'" data-rerender="1"></div></div>'
       +'</div>'
     )).join('')
+    +'<div class="cap-note" style="margin-top:6px;">WhatsApp Number must be digits-only with country code (e.g. <strong>254712345678</strong>), same rule as the Phone field in Business Identity.</div>'
     +'</div></div>';
 }
 
 /* ============ shared field builders ============ */
-function field(label,path,value,type){
-  return '<div class="a-field"><label>'+escapeHTML(label)+'</label><input data-path="'+path+'" value="'+escapeHTML(value)+'"'+(type?' data-type="'+type+'" type="'+type+'"':'')+'></div>';
+function field(label,path,value,type,warnId){
+  let warnHtml='';
+  if(warnId){
+    const msg=phoneFormatWarning(value);
+    warnHtml='<div class="field-warn" id="'+warnId+'"'+(msg?'':' hidden')+'>'+escapeHTML(msg)+'</div>';
+  }
+  return '<div class="a-field"><label>'+escapeHTML(label)+'</label><input data-path="'+path+'" value="'+escapeHTML(value)+'"'+(type?' data-type="'+type+'" type="'+type+'"':'')+'>'+warnHtml+'</div>';
 }
 function textareaField(label,path,value){
   return '<div class="a-field"><label>'+escapeHTML(label)+'</label><textarea data-path="'+path+'">'+escapeHTML(value)+'</textarea></div>';
@@ -3099,6 +3326,8 @@ function bindAppearanceActions(){
 /* ============ ADMIN PANEL: Password ============ */
 function panelPassword(){
   const hasPassword=!!CONFIG.password_hash;
+  const rec=CONFIG.password_recovery||{};
+  const recoverySet=hasRecoverySetup();
   return '<div class="admin-panel-section">'
     +(hasPassword?'':'<div class="admin-card danger-zone"><h4>Admin Is Currently Unlocked</h4><p class="cap-note">No password has been set yet — anyone who long-presses and pulls down the menu icon can open this dashboard. Set a password now to lock it down.</p></div>')
     +'<div class="admin-card"><h4>'+(hasPassword?'Change Admin Password':'Set Admin Password')+'</h4>'
@@ -3106,31 +3335,74 @@ function panelPassword(){
     +'<div class="a-field"><label>New Password</label><div class="pw-field"><input type="password" id="pw-new" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
     +'<div class="a-field"><label>Confirm New Password</label><div class="pw-field"><input type="password" id="pw-confirm" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
     +'<button class="btn btn-primary" id="pw-save" type="button">'+(hasPassword?'Update Password':'Set Password')+'</button>'
-    +'<p class="cap-note" style="margin-top:10px;">Forgotten passwords cannot be recovered &mdash; use Data &rarr; Reset to clear and start over.</p>'
+    +'<p class="cap-note" style="margin-top:10px;">'+(recoverySet?'Forgot your password? Tap "Forgot password?" on the lock screen and answer your security questions below to set a new one — no developer needed.':'Forgotten passwords cannot be recovered unless you set up Security Questions below first &mdash; without them, the only option is Data &rarr; Reset, which clears all content.')+'</p>'
+    +'</div>'
+    +'<div class="admin-card"><h4>Password Recovery — Security Questions</h4>'
+    +'<p class="cap-note">Set two security questions so you can recover access yourself if you ever forget your password. Use professional answers you\'ll remember (not jokes), and keep them as safe as the password itself — anyone who knows both answers can reset it.</p>'
+    +(recoverySet?'<p class="cap-note" style="color:#34D399;margin-top:6px;font-weight:600;">&#10003; Recovery questions are set up.</p>':'<p class="cap-note" style="color:#FBBF24;margin-top:6px;font-weight:600;">Not set up yet — strongly recommended.</p>')
+    +recoveryQuestionField(1,rec.q1)
+    +recoveryQuestionField(2,rec.q2)
+    +'<button class="btn btn-primary" id="rec-save" type="button">'+(recoverySet?'Update Security Questions':'Save Security Questions')+'</button>'
     +'</div>'
     +'<div class="admin-card"><h4>Auto-Lock &amp; Re-Entry Grace Period</h4>'
     +'<p class="cap-note">How long the dashboard can sit idle before auto-locking, and how long after you tap "Exit Admin" you can come back in via the hold-and-pull gesture without re-typing your password. Maximum 5 minutes.</p>'
     +'<div class="a-field"><label>Minutes (0&ndash;5)</label><input type="number" min="0" max="5" step="1" data-path="admin_security.idle_timeout_min" data-type="number" value="'+(CONFIG.admin_security&&CONFIG.admin_security.idle_timeout_min!=null?CONFIG.admin_security.idle_timeout_min:5)+'"></div>'
     +'</div></div>';
 }
+function recoveryQuestionField(idx,currentQ){
+  const isCustom=!!currentQ && !SECURITY_QUESTIONS.includes(currentQ);
+  const options=SECURITY_QUESTIONS.map(q=>'<option value="'+escapeHTML(q)+'"'+(q===currentQ?' selected':'')+'>'+escapeHTML(q)+'</option>').join('');
+  return '<div class="a-field"><label>Security Question '+idx+'</label>'
+    +'<select id="rec-q'+idx+'-select">'+options+'<option value="__custom__"'+(isCustom?' selected':'')+'>Custom question (write your own)</option></select>'
+    +'<input type="text" id="rec-q'+idx+'-custom" placeholder="Type your own question" value="'+escapeHTML(isCustom?currentQ:'')+'" style="margin-top:8px;'+(isCustom?'':'display:none;')+'">'
+    +'</div>'
+    +'<div class="a-field"><label>Answer '+idx+'</label><input type="text" id="rec-a'+idx+'" placeholder="'+(currentQ?'Leave blank to keep your current answer':'Your answer')+'" autocomplete="off"></div>';
+}
+async function attemptSaveRecovery(){
+  const q1Sel=document.getElementById('rec-q1-select').value;
+  const q1=q1Sel==='__custom__'?document.getElementById('rec-q1-custom').value.trim():q1Sel;
+  const q2Sel=document.getElementById('rec-q2-select').value;
+  const q2=q2Sel==='__custom__'?document.getElementById('rec-q2-custom').value.trim():q2Sel;
+  const a1raw=document.getElementById('rec-a1').value;
+  const a2raw=document.getElementById('rec-a2').value;
+  if(!q1||!q2){ toast('Both questions are required',true); return; }
+  if(q1===q2){ toast('Pick two different questions',true); return; }
+  const rec=CONFIG.password_recovery||{};
+  if((q1!==rec.q1||!rec.a1_hash) && !a1raw){ toast('Answer 1 is required',true); return; }
+  if((q2!==rec.q2||!rec.a2_hash) && !a2raw){ toast('Answer 2 is required',true); return; }
+  const a1_hash=a1raw?await sha256(normalizeAnswer(a1raw)):rec.a1_hash;
+  const a2_hash=a2raw?await sha256(normalizeAnswer(a2raw)):rec.a2_hash;
+  CONFIG.password_recovery={ q1, q2, a1_hash, a2_hash };
+  commitNow('Security questions saved');
+  rerenderAdminBody();
+}
 function bindPasswordActions(){
   const btn=document.getElementById('pw-save');
-  if(!btn) return;
-  bindPasswordEyeToggles(document.getElementById('admin-body'));
-  btn.addEventListener('click',async ()=>{
-    const next=document.getElementById('pw-new').value;
-    const confirmVal=document.getElementById('pw-confirm').value;
-    if(CONFIG.password_hash){
-      const cur=document.getElementById('pw-current').value;
-      const curHash=await sha256(cur);
-      if(curHash!==CONFIG.password_hash){ toast('Current password is incorrect',true); return; }
-    }
-    if(next.length<6){ toast('New password must be at least 6 characters',true); return; }
-    if(next!==confirmVal){ toast('New passwords do not match',true); return; }
-    CONFIG.password_hash=await sha256(next);
-    commitNow('Password set');
-    rerenderAdminBody();
+  if(btn){
+    bindPasswordEyeToggles(document.getElementById('admin-body'));
+    btn.addEventListener('click',async ()=>{
+      const next=document.getElementById('pw-new').value;
+      const confirmVal=document.getElementById('pw-confirm').value;
+      if(CONFIG.password_hash){
+        const cur=document.getElementById('pw-current').value;
+        const curHash=await sha256(cur);
+        if(curHash!==CONFIG.password_hash){ toast('Current password is incorrect',true); return; }
+      }
+      if(next.length<6){ toast('New password must be at least 6 characters',true); return; }
+      if(next!==confirmVal){ toast('New passwords do not match',true); return; }
+      CONFIG.password_hash=await sha256(next);
+      commitNow('Password set');
+      rerenderAdminBody();
+    });
+  }
+  [1,2].forEach(idx=>{
+    const sel=document.getElementById('rec-q'+idx+'-select');
+    if(sel) sel.addEventListener('change',()=>{
+      document.getElementById('rec-q'+idx+'-custom').style.display=sel.value==='__custom__'?'':'none';
+    });
   });
+  const recBtn=document.getElementById('rec-save');
+  if(recBtn) recBtn.addEventListener('click',attemptSaveRecovery);
 }
 
 /* ============ ADMIN PANEL: Data ============ */
@@ -3194,15 +3466,25 @@ function panelCloudSync(){
   const status=cloudSyncStatus();
   const statusLabel={off:'Not connected',connecting:'Connecting…',synced:'Live — synced',error:'Connection error'}[status]||'Not connected';
   const user=cloudCurrentUser();
+  const keysFilled=!!(c.api_key&&c.auth_domain&&c.project_id&&c.app_id);
   return '<div class="admin-panel-section">'
-    +'<div class="admin-card"><h4>Real-Time Cloud Sync</h4>'
-    +'<p class="cap-note">Off by default — your site runs fine on localStorage alone. Turn this on and every save on this device pushes instantly to every visitor\'s screen on any device, no refresh needed. Each business connects its own free Firebase project; your data is never shared with other HydroBiz sites. Full setup steps are in README.md.</p>'
-    +'<div class="a-toggle"><span>Enable Cloud Sync</span><div class="switch'+(c.enabled?' on':'')+'" data-path="cloud_sync.enabled" data-rerender="1"></div></div>'
+    +'<div class="admin-card"><h4>Cloud Sync Setup Wizard</h4>'
+    +'<p class="cap-note">Worried about running out of local storage, or want changes to appear instantly on every visitor\'s device? Turn this on and follow the numbered steps below in order — about 5 minutes, completely free, and entirely optional. Your site already works perfectly without it.</p>'
+    +'<div class="a-toggle" style="margin-top:14px;"><span>Step 1 — Enable Cloud Sync</span><div class="switch'+(c.enabled?' on':'')+'" data-path="cloud_sync.enabled" data-rerender="1"></div></div>'
     +'<div class="cs-status-pill cs-'+status+'"><span class="cs-dot"></span>'+statusLabel+'</div>'
     +'</div>'
     +(c.enabled?(
-      '<div class="admin-card"><h4>Firebase Project Keys</h4>'
-      +'<p class="cap-note">From Firebase Console &rarr; Project Settings &rarr; General &rarr; "Your apps" &rarr; Web app config object.</p>'
+      '<div class="admin-card cs-step-card"><div class="cs-step-badge">Step 2</div><h4>Create your free Firebase project</h4>'
+      +'<p class="cap-note">Open <a href="https://console.firebase.google.com/" target="_blank" rel="noopener">console.firebase.google.com</a>, sign in with any Google account, click "Add project", and give it any name — your business name works well. You can skip Google Analytics when asked.</p>'
+      +'</div>'
+      +'<div class="admin-card cs-step-card"><div class="cs-step-badge">Step 3</div><h4>Turn on Firestore Database</h4>'
+      +'<p class="cap-note">In the left sidebar of your new project: "Firestore Database" &rarr; "Create database" &rarr; pick any location close to your customers &rarr; start in <strong>production mode</strong> (the correct rules are in Step 6 below, you\'ll paste them in next).</p>'
+      +'</div>'
+      +'<div class="admin-card cs-step-card"><div class="cs-step-badge">Step 4</div><h4>Turn on Email/Password sign-in</h4>'
+      +'<p class="cap-note">Left sidebar &rarr; "Authentication" &rarr; "Get started" &rarr; "Sign-in method" tab &rarr; enable <strong>Email/Password</strong> &rarr; Save.</p>'
+      +'</div>'
+      +'<div class="admin-card cs-step-card"><div class="cs-step-badge">Step 5</div><h4>Copy your config keys here</h4>'
+      +'<p class="cap-note">Click the gear icon (top-left) &rarr; "Project settings" &rarr; scroll to "Your apps" &rarr; click the Web icon (&lt;/&gt;) &rarr; register an app with any nickname &rarr; copy the six values it shows into the matching fields below.</p>'
       +'<div class="a-field"><label>API Key</label><input data-path="cloud_sync.api_key" autocomplete="off" value="'+escapeHTML(c.api_key||'')+'"></div>'
       +'<div class="a-field"><label>Auth Domain</label><input data-path="cloud_sync.auth_domain" autocomplete="off" placeholder="yourproject.firebaseapp.com" value="'+escapeHTML(c.auth_domain||'')+'"></div>'
       +'<div class="a-field"><label>Project ID</label><input data-path="cloud_sync.project_id" autocomplete="off" value="'+escapeHTML(c.project_id||'')+'"></div>'
@@ -3210,11 +3492,17 @@ function panelCloudSync(){
       +'<div class="a-field"><label>Messaging Sender ID</label><input data-path="cloud_sync.messaging_sender_id" autocomplete="off" value="'+escapeHTML(c.messaging_sender_id||'')+'"></div>'
       +'<div class="a-field"><label>App ID</label><input data-path="cloud_sync.app_id" autocomplete="off" value="'+escapeHTML(c.app_id||'')+'"></div>'
       +'<button class="btn btn-primary" id="cs-save-keys" type="button">Save &amp; Connect</button>'
+      +(keysFilled?'':'<p class="field-warn" style="margin-top:8px;">Fill in all six fields above, then press Save &amp; Connect.</p>')
       +'</div>'
-      +'<div class="admin-card"><h4>Owner Sign-In</h4>'
-      +'<p class="cap-note">Read access is public so visitors always see your live site. Writing updates requires you to sign in — create this account once in Firebase Console &rarr; Authentication &rarr; Sign-in method &rarr; Email/Password.</p>'
+      +'<div class="admin-card cs-step-card"><div class="cs-step-badge">Step 6</div><h4>Paste these security rules</h4>'
+      +'<p class="cap-note">"Firestore Database" &rarr; "Rules" tab &rarr; replace everything with this &rarr; click Publish. This keeps your site publicly viewable to visitors but only editable by you once signed in below.</p>'
+      +'<pre class="cs-rules" id="cs-rules-text">rules_version = \'2\';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /hydrobiz/config {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n  }\n}</pre>'
+      +'<button class="btn btn-ghost" id="cs-copy-rules" type="button">Copy Rules</button>'
+      +'</div>'
+      +'<div class="admin-card cs-step-card"><div class="cs-step-badge">Step 7</div><h4>Create your sign-in account, then sign in here</h4>'
+      +'<p class="cap-note">"Authentication" &rarr; "Users" tab &rarr; "Add user" &rarr; enter an email and a password (this is separate from your admin dashboard password — pick one you\'ll remember). Then enter those exact same details below and sign in.</p>'
       +(user?(
-        '<p class="cap-note" style="color:#6ee7b7;">Signed in as '+escapeHTML(user.email)+'</p>'
+        '<p class="cap-note" style="color:#6ee7b7;font-weight:600;">&#10003; Signed in as '+escapeHTML(user.email)+'</p>'
         +'<button class="btn btn-ghost" id="cs-signout" type="button">Sign Out</button>'
       ):(
         '<div class="a-field"><label>Email</label><input type="email" id="cs-email" autocomplete="off" value="'+escapeHTML(c.owner_email||'')+'"></div>'
@@ -3222,10 +3510,8 @@ function panelCloudSync(){
         +'<button class="btn btn-primary" id="cs-signin" type="button">Sign In</button>'
       ))
       +'</div>'
-      +'<div class="admin-card"><h4>Firestore Security Rules</h4>'
-      +'<p class="cap-note">Paste this into Firebase Console &rarr; Firestore Database &rarr; Rules. Keeps your data publicly readable so the site works, but only writable once you\'re signed in.</p>'
-      +'<pre class="cs-rules" id="cs-rules-text">rules_version = \'2\';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /hydrobiz/config {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n  }\n}</pre>'
-      +'<button class="btn btn-ghost" id="cs-copy-rules" type="button">Copy Rules</button>'
+      +'<div class="admin-card cs-step-card"><div class="cs-step-badge">Step 8 — Done</div><h4>You\'re all set</h4>'
+      +'<p class="cap-note">Once signed in and the status pill at the top says "Live — synced", every save here pushes instantly to every visitor\'s device, on any browser. If it ever says "Connection error", double-check the keys in Step 5 and the rules in Step 6 — those two are the most common typo spots.</p>'
       +'</div>'
     ):'')
     +'</div>';
@@ -3947,15 +4233,20 @@ const ADMIN_HELP={
     ]
   },
   cloudsync:{
-    summary:'Optional real-time sync across every visitor\'s device using your own free Firebase project — off by default.',
+    summary:'Optional real-time sync across every visitor\'s device using your own free Firebase project — off by default, fully guided, about 5 minutes start to finish.',
     steps:[
-      {selector:'.switch[data-path="cloud_sync.enabled"]',title:'Enable Cloud Sync',body:'Turn this on to push every save instantly to all visitors, no refresh needed. Your site works fine without it too.'},
-      {selector:'#cs-save-keys',title:'Connect Your Firebase Project',body:'Paste your Firebase web app config here, then Save & Connect. Full step-by-step setup is in README.md.'},
-      {selector:'#cs-rules-text',title:'Security Rules',body:'Copy this exact text into your Firebase Console\'s Firestore Rules tab so your data stays public-readable but owner-only writable.'}
+      {selector:'.switch[data-path="cloud_sync.enabled"]',title:'Step 1 — Enable Cloud Sync',body:'Turn this on to reveal the guided setup steps below. Your site already works perfectly without it — this is entirely optional.'},
+      {selector:'.cs-step-card:nth-of-type(1)',title:'Step 2 — Create your Firebase project',body:'A free Google account is all you need. Give the project any name — your business name works well.'},
+      {selector:'.cs-step-card:nth-of-type(2)',title:'Step 3 — Turn on Firestore Database',body:'This is the actual storage that holds your synced content. Start it in production mode.'},
+      {selector:'.cs-step-card:nth-of-type(3)',title:'Step 4 — Turn on Email/Password sign-in',body:'This lets only you sign in and make changes, while visitors can still view your site.'},
+      {selector:'#cs-save-keys',title:'Step 5 — Paste your config keys',body:'Six values from your Firebase project settings, then Save & Connect.'},
+      {selector:'#cs-rules-text',title:'Step 6 — Security rules',body:'Copy this exact text into your Firebase Console\'s Firestore Rules tab so your data stays public-readable but owner-only writable.'},
+      {selector:'#cs-signin',title:'Step 7 — Create your account, then sign in',body:'First add yourself as a Firebase "User" (email + password), then enter those same details here to sign in. This password is separate from your admin dashboard password.'}
     ],
     faq:[
       {q:'Do I need Cloud Sync?',a:'No — it\'s entirely optional. Without it, your site still works great using your browser\'s local storage.'},
-      {q:'Is my data shared with other HydroBiz businesses?',a:'Never. Each business connects to its own separate, free Firebase project.'}
+      {q:'Is my data shared with other HydroBiz businesses?',a:'Never. Each business connects to its own separate, free Firebase project.'},
+      {q:'The status pill says "Connection error" — what now?',a:'Double-check the six keys from Step 5 and the rules text from Step 6 — those are the two most common typo spots. Everything else keeps working locally in the meantime.'}
     ]
   },
   qrcode:{
@@ -3995,13 +4286,14 @@ const ADMIN_HELP={
     ]
   },
   password:{
-    summary:'Set or change your admin password, and control how long the dashboard stays unlocked before auto-locking.',
+    summary:'Set or change your admin password, set up security questions so you can recover a forgotten password yourself, and control how long the dashboard stays unlocked before auto-locking.',
     steps:[
-      {selector:'.admin-body .admin-card:nth-last-of-type(2)',title:'Set or Change Password',body:'Choose a password at least 6 characters long. Forgotten passwords can\'t be recovered — only a full Reset (in Data) clears it.'},
+      {selector:'.admin-body .admin-card:nth-last-of-type(3)',title:'Set or Change Password',body:'Choose a password at least 6 characters long.'},
+      {selector:'.admin-body .admin-card:nth-last-of-type(2)',title:'Security Questions (Recovery)',body:'Set two security questions so you can reset a forgotten password yourself, right from the lock screen — no developer needed. Use professional answers only you would know, and keep them as safe as your password.'},
       {selector:'.admin-body .admin-card:nth-last-of-type(1)',title:'Auto-Lock & Re-Entry',body:'Set how long the dashboard can sit idle before locking, and how long you can re-enter afterward without retyping your password.'}
     ],
     faq:[
-      {q:'I forgot my password — now what?',a:'There\'s no recovery. Go to Data and use Reset to Default, which clears the password along with everything else.'}
+      {q:'I forgot my password — now what?',a:'If you set up Security Questions, tap "Forgot password?" on the lock screen, answer them correctly, and you\'ll be able to set a brand-new password immediately. If you never set them up, go to Data and use Reset to Default, which clears the password along with everything else.'}
     ]
   },
   data:{
@@ -4029,7 +4321,7 @@ function loadMastery(){
   }catch(e){ return {welcomed:false,autostart:true,done:{}}; }
 }
 let MASTERY=loadMastery();
-function saveMastery(){ localStorage.setItem(MASTERY_KEY,JSON.stringify(MASTERY)); }
+function saveMastery(){ try{ localStorage.setItem(MASTERY_KEY,JSON.stringify(MASTERY)); }catch(e){ console.error('saveMastery failed',e); } }
 function isMastered(key){ return !!MASTERY.done[key]; }
 function markMastered(key){ MASTERY.done[key]=true; saveMastery(); refreshHelpDot(); }
 function unmasterSection(key){ delete MASTERY.done[key]; saveMastery(); refreshHelpDot(); }
@@ -4229,6 +4521,7 @@ function initVirtualManual(){
     renderManualPanel();
     toast('All tours reset — they\'ll auto-play again');
   });
+  document.getElementById('manual-print-btn').addEventListener('click',openPrintableManual);
   document.getElementById('manual-autostart-toggle').addEventListener('click',()=>{
     MASTERY.autostart=!MASTERY.autostart;
     saveMastery();
@@ -4270,6 +4563,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   cloudSyncInit();
   initHamburger();
   initAdminLogin();
+  initAdminRecovery();
   initConfirmPasswordModal();
   initContactForm();
   initLightbox();
