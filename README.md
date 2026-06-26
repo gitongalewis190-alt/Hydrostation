@@ -1,6 +1,6 @@
-# HydroBiz
+# HydroBiz — Universal Business Website Template
 
-A single-file, zero-build business website template for water/hydroponics businesses, built to run on GitHub Pages with no server, no build step, and no dependencies. Everything — the public site and the hidden admin dashboard — lives in `index.html`.
+A single-file, zero-build business website template built to run on GitHub Pages with no server, no build step, and no dependencies. It works for any kind of business — clothing, produce, water/hydroponics, stationery, electronics, butcheries, and more. Everything — the public site and the hidden admin dashboard — lives in `index.html`.
 
 ## Deploy your site (5 minutes)
 

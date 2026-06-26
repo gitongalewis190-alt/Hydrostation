@@ -4,7 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title id="page-title">Your Business Name</title>
-<meta name="description" content="Clean, reliable water and hydroponic products delivered to your door.">
+<meta name="description" id="page-description" content="Browse our products and place your order online.">
+<meta property="og:title" id="og-title" content="Your Business Name">
+<meta property="og:description" id="og-description" content="Browse our products and place your order online.">
+<meta property="og:type" content="website">
+<meta property="og:image" id="og-image" content="">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" id="twitter-title" content="Your Business Name">
+<meta name="twitter:description" id="twitter-description" content="Browse our products and place your order online.">
 <link rel="icon" id="favicon-link" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -645,8 +652,8 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
   <div class="preloader-droplets" id="preloader-droplets"></div>
   <div class="preloader-brand">
     <img id="preloader-logo" hidden alt="">
-    <svg id="preloader-fallback-mark" viewBox="0 0 24 24" fill="none"><path d="M12 2.5C12 2.5 5 11 5 15.5C5 19.09 8.13 22 12 22C15.87 22 19 19.09 19 15.5C19 11 12 2.5 12 2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-    <span id="preloader-name">HydroBiz</span>
+    <svg id="preloader-fallback-mark" viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span id="preloader-name">Your Business Name</span>
   </div>
 </div>
 
@@ -658,7 +665,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
       </button>
       <a href="#hero" class="nav-brand">
         <img id="nav-logo" class="nav-logo" hidden alt="">
-        <span id="nav-business-name">HydroBiz</span>
+        <span id="nav-business-name">Your Business Name</span>
       </a>
       <nav class="nav-links">
         <a href="#hero">Home</a>
@@ -690,9 +697,9 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
       <div class="hero-bg" id="hero-bg"></div>
       <div class="container">
         <div class="hero-content">
-          <span class="section-eyebrow">Pure. Reliable. Refreshing.</span>
-          <h1 id="hero-headline">Clean water, delivered with care.</h1>
-          <p id="hero-sub">Premium hydroponic produce and purified water, sourced responsibly and delivered fresh to your door.</p>
+          <span class="section-eyebrow" id="hero-eyebrow"></span>
+          <h1 id="hero-headline">Welcome to your new site</h1>
+          <p id="hero-sub">Add your hero headline and description in the admin panel under Business Identity.</p>
           <div class="hero-ctas">
             <a id="hero-cta-primary" class="btn btn-primary" href="#contact">Order Now</a>
             <a id="hero-cta-secondary" class="btn btn-ghost" href="#products">View Products</a>
@@ -783,8 +790,8 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
   <footer class="site-footer" id="site-footer">
     <div class="container footer-inner">
       <div class="footer-brand">
-        <div class="fb-name"><img id="footer-logo" hidden alt=""><span id="footer-business-name">HydroBiz</span></div>
-        <p class="footer-tagline" id="footer-tagline">Pure water, every drop.</p>
+        <div class="fb-name"><img id="footer-logo" hidden alt=""><span id="footer-business-name">Your Business Name</span></div>
+        <p class="footer-tagline" id="footer-tagline"></p>
       </div>
       <nav class="footer-links">
         <a href="#hero">Home</a>
@@ -796,7 +803,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
       <div class="social-icons" id="footer-socials"></div>
     </div>
     <div class="footer-bottom">
-      <span>&copy; <span id="footer-year"></span> <span id="footer-business-name-2">HydroBiz</span>. All rights reserved.</span>
+      <span>&copy; <span id="footer-year"></span> <span id="footer-business-name-2">Your Business Name</span>. All rights reserved.</span>
     </div>
   </footer>
 
@@ -929,7 +936,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
 
 <div class="admin-dashboard" id="admin-dashboard" hidden>
   <aside class="admin-sidebar" id="admin-sidebar">
-    <div class="as-brand">HydroBiz Admin</div>
+    <div class="as-brand">Admin</div>
   </aside>
   <main class="admin-main">
     <div class="admin-topbar">
@@ -1044,6 +1051,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
 /* ============ CONSTANTS ============ */
 const CONFIG_KEY='hydrobiz_config';
 const MAX_PACKAGES=20, MAX_GALLERY=12, MAX_DRAWER=4;
+const QTY_UNITS=['L','mL','kg','g','pcs','pack','box'];
 
 const DEFAULT_CONFIG={
   version:2,
@@ -1560,7 +1568,7 @@ function renderSocialIcons(container,socials){
 function applyFavicon(){
   const link=document.getElementById('favicon-link');
   if(CONFIG.identity.favicon_b64){ link.href=CONFIG.identity.favicon_b64; return; }
-  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%230B6E7A" d="M12 2.5C12 2.5 5 11 5 15.5C5 19.09 8.13 22 12 22C15.87 22 19 19.09 19 15.5C19 11 12 2.5 12 2.5Z"/></svg>';
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="%230B6E7A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 11.5 12 4l8 7.5M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/></svg>';
   link.href='data:image/svg+xml,'+svg;
 }
 /* ============ THEME CUSTOMIZER ============ */
@@ -1645,6 +1653,13 @@ function renderBrand(){
   const preloaderName=document.getElementById('preloader-name');
   if(preloaderName) preloaderName.textContent=name;
   document.getElementById('footer-tagline').textContent=CONFIG.appearance.footer_tagline||CONFIG.identity.tagline||'';
+  const desc=CONFIG.identity.hero_sub||CONFIG.identity.tagline||'Browse our products and place your order online.';
+  const descEl=document.getElementById('page-description'); if(descEl) descEl.setAttribute('content',desc);
+  const ogTitle=document.getElementById('og-title'); if(ogTitle) ogTitle.setAttribute('content',name);
+  const ogDesc=document.getElementById('og-description'); if(ogDesc) ogDesc.setAttribute('content',desc);
+  const ogImg=document.getElementById('og-image'); if(ogImg) ogImg.setAttribute('content',CONFIG.identity.logo_b64||CONFIG.identity.hero_image_b64||'');
+  const twTitle=document.getElementById('twitter-title'); if(twTitle) twTitle.setAttribute('content',name);
+  const twDesc=document.getElementById('twitter-description'); if(twDesc) twDesc.setAttribute('content',desc);
   setImg(document.getElementById('nav-logo'),CONFIG.identity.logo_b64);
   setImg(document.getElementById('footer-logo'),CONFIG.identity.logo_b64);
   const preloaderLogo=document.getElementById('preloader-logo');
@@ -1675,6 +1690,7 @@ function renderFooterYear(){ document.getElementById('footer-year').textContent=
 
 /* ============ RENDER: hero ============ */
 function renderHero(){
+  document.getElementById('hero-eyebrow').textContent=CONFIG.identity.tagline||'';
   document.getElementById('hero-headline').textContent=CONFIG.identity.hero_headline||'Welcome to your new site';
   document.getElementById('hero-sub').textContent=CONFIG.identity.hero_sub||'Add your hero headline and description in the admin panel under Business Identity.';
   const bg=document.getElementById('hero-bg');
@@ -1883,7 +1899,7 @@ function qrApiUrl(targetUrl,size){
     +'&data='+encodeURIComponent(targetUrl);
 }
 function qrFileName(){
-  return (CONFIG.identity.name||'hydrobiz').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-qr-code.png';
+  return (CONFIG.identity.name||'my-business').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-qr-code.png';
 }
 /* Best available owner contact line for the branded QR card: phone, else
    WhatsApp, else email, else blank (card just omits the contact row). */
@@ -2727,8 +2743,14 @@ function rerenderAdminBody(){ selectAdminSection(adminActiveSection); }
 
 /* delegated live-binding for simple flat fields + toggles */
 const CLOUD_SYNC_KEY_PATHS=['cloud_sync.api_key','cloud_sync.auth_domain','cloud_sync.project_id','cloud_sync.storage_bucket','cloud_sync.messaging_sender_id','cloud_sync.app_id'];
+/* Contact/link fields are routinely pasted from contact cards, spreadsheets, or
+   code snippets that wrap the value in quotes or leave a trailing comma/semicolon
+   — same paste-artifact class as the Cloud Sync keys above, so they get the same
+   strict cleanup (full whitespace strip is safe here since none of these values
+   ever legitimately contain spaces). */
+const STRICT_PASTE_KEY_PATHS=CLOUD_SYNC_KEY_PATHS.concat(['identity.email','identity.phone','identity.maps_url','identity.formspree_url','socials.facebook','socials.instagram','socials.twitter','socials.tiktok','socials.youtube','socials.linkedin','socials.whatsapp']);
 function sanitizePastedFieldValue(path,raw){
-  if(CLOUD_SYNC_KEY_PATHS.includes(path)){
+  if(STRICT_PASTE_KEY_PATHS.includes(path)){
     let v=raw.replace(/\s+/g,'');
     v=v.replace(/[,;]+$/,'');
     if((v.startsWith('"')&&v.endsWith('"'))||(v.startsWith("'")&&v.endsWith("'"))) v=v.slice(1,-1);
@@ -2828,7 +2850,7 @@ function bindIdentityActions(){
   if(waTestBtn) waTestBtn.addEventListener('click',()=>{
     const phoneSrc=CONFIG.socials.whatsapp||CONFIG.identity.phone;
     if(!phoneSrc){ toast('Enter a phone number above first.',true); return; }
-    window.open(waLink(phoneSrc,'This is a test message from your HydroBiz admin panel — if you can see this, your WhatsApp link works correctly.'),'_blank');
+    window.open(waLink(phoneSrc,'This is a test message from your site\'s admin panel — if you can see this, your WhatsApp link works correctly.'),'_blank');
   });
 }
 
@@ -2887,9 +2909,10 @@ function panelProducts(){
     +'<div class="a-field"><label>Description</label><textarea id="pf-desc">'+escapeHTML(editing?editing.description:'')+'</textarea></div>'
     +'<div class="a-row"><div class="a-field"><label>Price</label><input id="pf-price" type="number" min="0" value="'+(editing?editing.price:'')+'"></div>'
     +'<div class="a-field"><label>Currency</label><select id="pf-currency"><option value="KES"'+(editing&&editing.currency==='USD'?'':' selected')+'>KES</option><option value="USD"'+(editing&&editing.currency==='USD'?' selected':'')+'>USD ($)</option></select></div></div>'
-    +'<div class="a-row"><div class="a-field"><label>Quantity / Volume <span style="color:#F87171;">*</span></label><input id="pf-qty-value" type="number" min="0" step="any" placeholder="e.g. 5, 19, 500" value="'+(editing&&editing.qty_value!=null?editing.qty_value:'')+'"></div>'
-    +'<div class="a-field"><label>Unit</label><select id="pf-qty-unit">'+['L','mL','kg','g','pcs','pack','box','custom'].map(u=>'<option value="'+u+'"'+(editing&&editing.qty_unit===u?' selected':'')+'>'+u+'</option>').join('')+'</select></div></div>'
-    +'<div class="a-field"><label>Category</label><input id="pf-category" placeholder="e.g. Water, Produce, Merch, Digital Ads" value="'+escapeHTML(editing?(editing.category||''):'')+'"></div>'
+    +'<div class="a-row"><div class="a-field"><label>Quantity / Unit <span style="color:#F87171;">*</span></label><input id="pf-qty-value" type="number" min="0" step="any" placeholder="e.g. 5, 19, 500" value="'+(editing&&editing.qty_value!=null?editing.qty_value:'')+'"></div>'
+    +'<div class="a-field"><label>Unit</label><select id="pf-qty-unit">'+QTY_UNITS.concat('custom').map(u=>'<option value="'+u+'"'+((editing&&editing.qty_unit!=null&&(QTY_UNITS.includes(editing.qty_unit)?editing.qty_unit===u:u==='custom'))?' selected':'')+'>'+(u==='custom'?'Custom...':u)+'</option>').join('')+'</select>'
+    +'<input id="pf-qty-unit-custom" placeholder="e.g. yards, dozen, bundle" style="margin-top:8px;'+(editing&&editing.qty_unit!=null&&!QTY_UNITS.includes(editing.qty_unit)?'':'display:none;')+'" value="'+escapeHTML(editing&&editing.qty_unit!=null&&!QTY_UNITS.includes(editing.qty_unit)?editing.qty_unit:'')+'"></div></div>'
+    +'<div class="a-field"><label>Category</label><input id="pf-category" placeholder="e.g. Apparel, Produce, Electronics, Stationery" value="'+escapeHTML(editing?(editing.category||''):'')+'"></div>'
     +'<div class="a-field"><label>Image</label><div class="upload-box">'+(productImageDraft?'<img src="'+productImageDraft+'" alt="">':icon('upload',54))+'<div class="upload-box-fields" style="flex:1;"><input type="file" id="pf-image" accept="image/*"><div class="cap-note">High-resolution JPG/PNG, up to 6MB.</div></div></div></div>'
     +'<div class="a-field"><label>YouTube Video URL (optional, shown instead of the image)</label><input id="pf-video" placeholder="https://youtube.com/watch?v=..." value="'+escapeHTML(editing?(editing.video_url||''):'')+'"></div>'
     +'<div class="a-toggle"><span>Stock Status: '+(productStockDraft?'Available':'Out of Stock')+'</span><div class="switch'+(productStockDraft?' on':'')+'" id="pf-stock-switch"></div></div>'
@@ -2931,11 +2954,16 @@ function bindProductsActions(){
     sw.classList.toggle('on',productStockDraft);
     if(sw.previousElementSibling) sw.previousElementSibling.textContent='Stock Status: '+(productStockDraft?'Available':'Out of Stock');
   });
+  document.getElementById('pf-qty-unit').addEventListener('change',e=>{
+    document.getElementById('pf-qty-unit-custom').style.display=e.target.value==='custom'?'':'none';
+  });
   document.getElementById('pf-save').addEventListener('click',()=>{
     const name=document.getElementById('pf-name').value.trim();
     if(!name){ toast('Product name is required',true); return; }
     const qtyValue=document.getElementById('pf-qty-value').value.trim();
-    if(qtyValue===''){ toast('Quantity / Volume is required',true); return; }
+    if(qtyValue===''){ toast('Quantity / Unit is required',true); return; }
+    const qtyUnitSel=document.getElementById('pf-qty-unit').value;
+    const qtyUnit=qtyUnitSel==='custom'?document.getElementById('pf-qty-unit-custom').value.trim():qtyUnitSel;
     const existing=editingProductId?CONFIG.products.find(p=>p.id===editingProductId):null;
     const data={
       id:editingProductId||uid(),
@@ -2944,7 +2972,7 @@ function bindProductsActions(){
       price:Number(document.getElementById('pf-price').value)||0,
       currency:document.getElementById('pf-currency').value,
       qty_value:Number(qtyValue),
-      qty_unit:document.getElementById('pf-qty-unit').value,
+      qty_unit:qtyUnit,
       category:document.getElementById('pf-category').value.trim(),
       image_b64:productImageDraft,
       video_url:document.getElementById('pf-video').value.trim(),
@@ -3231,7 +3259,7 @@ function panelDrawer(){
   const editing=CONFIG.drawer.highlights.find(h=>h.id===editingDrawerId);
   const atCap=activeList('drawer.highlights').length>=MAX_DRAWER && !editing;
   return '<div class="admin-panel-section">'
-    +'<div class="admin-card"><h4>About the Hamburger Quick Menu</h4><p style="font-size:13px;color:rgba(255,255,255,.5);">Tapping the menu icon (top-left) opens a quick-info drawer with up to '+MAX_DRAWER+' short highlights, e.g. "How We Filter Our Water".</p></div>'
+    +'<div class="admin-card"><h4>About the Hamburger Quick Menu</h4><p style="font-size:13px;color:rgba(255,255,255,.5);">Tapping the menu icon (top-left) opens a quick-info drawer with up to '+MAX_DRAWER+' short highlights, e.g. "Same-Day Delivery" or "100% Satisfaction Guarantee".</p></div>'
     +'<div class="admin-card"><h4>'+(editing?'Edit Highlight':'Add Highlight')+'</h4>'
     +'<div class="a-field"><label>Title</label><input id="dr-title" value="'+escapeHTML(editing?editing.title:'')+'"></div>'
     +'<div class="a-field"><label>Body</label><textarea id="dr-body">'+escapeHTML(editing?editing.body:'')+'</textarea></div>'
@@ -3465,7 +3493,7 @@ function bindDataActions(){
     const blob=new Blob([JSON.stringify(CONFIG,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url; a.download=(CONFIG.identity.name||'hydrobiz').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-backup.json';
+    a.href=url; a.download=(CONFIG.identity.name||'my-business').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-backup.json';
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
   });
@@ -3478,7 +3506,7 @@ function bindDataActions(){
       try{
         const parsed=JSON.parse(reader.result);
         if(typeof parsed!=='object'||parsed===null||Array.isArray(parsed)) throw new Error('Invalid file shape');
-        if(!('identity' in parsed) || !('products' in parsed)) throw new Error('This does not look like a HydroBiz backup file.');
+        if(!('identity' in parsed) || !('products' in parsed)) throw new Error('This does not look like a valid backup file for this site.');
         CONFIG=deepMerge(JSON.parse(JSON.stringify(DEFAULT_CONFIG)),parsed);
         commitNow('Data imported');
         rerenderAdminBody();
@@ -4205,7 +4233,7 @@ async function runSelfTests(){
   }catch(e){ assert('icon-color + font tokens apply and clear via applyTheme()/applyFonts()', false); }
 
   const pass=results.filter(r=>r.pass).length;
-  console.log('%cHydroBiz self-test: '+pass+'/'+results.length+' passed','font-weight:bold;font-size:13px;');
+  console.log('%cSite self-test: '+pass+'/'+results.length+' passed','font-weight:bold;font-size:13px;');
   results.forEach(r=>console.log((r.pass?'✓ ':'✗ ')+r.name));
   return results;
 }
@@ -4240,7 +4268,7 @@ const ADMIN_HELP={
   products:{
     summary:'Add, edit, reorder, and manage every product you sell — unlimited products, with drag-and-drop ordering.',
     steps:[
-      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Add a Product',body:'Fill in the name, price, quantity/volume, and an image or YouTube video, then save. Quantity/Volume is required so customers know exactly what they\'re buying.'},
+      {selector:'.admin-body .admin-card:nth-of-type(1)',title:'Add a Product',body:'Fill in the name, price, quantity/unit, and an image or YouTube video, then save. Quantity/Unit is required so customers know exactly what they\'re buying.'},
       {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Sorting',body:'Choose how products are ordered on your public site by default — newest first, price, or name.'},
       {selector:'.admin-body .admin-card:nth-of-type(3)',title:'Product List',body:'Drag the handle on any row to reorder, or use the edit/trash icons. Deleted items go to Trash for 30 days before they\'re gone for good.'}
     ],
@@ -4284,7 +4312,7 @@ const ADMIN_HELP={
     summary:'The hamburger icon in the top-left opens a quick-info drawer with a few short highlights — set them here.',
     steps:[
       {selector:'.admin-body .admin-card:nth-of-type(1)',title:'About the Quick Menu',body:'A short tap on the hamburger icon opens this drawer for visitors. A long-press instead opens the admin login.'},
-      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Add a Highlight',body:'Short, punchy facts work best — e.g. "How We Filter Our Water" or "Same-Day Delivery".'},
+      {selector:'.admin-body .admin-card:nth-of-type(2)',title:'Add a Highlight',body:'Short, punchy facts work best — e.g. "Same-Day Delivery" or "100% Satisfaction Guarantee".'},
       {selector:'.admin-body .admin-card:nth-of-type(3)',title:'Highlights',body:'Up to the highlight limit. Delete and re-add in the order you want them to appear.'}
     ]
   },
@@ -4313,7 +4341,7 @@ const ADMIN_HELP={
     ],
     faq:[
       {q:'Do I need Cloud Sync?',a:'No — it\'s entirely optional. Without it, your site still works great using your browser\'s local storage.'},
-      {q:'Is my data shared with other HydroBiz businesses?',a:'Never. Each business connects to its own separate, free Firebase project.'},
+      {q:'Is my data shared with other businesses using this same site template?',a:'Never. Each business connects to its own separate, free Firebase project.'},
       {q:'The status pill says "Connection error" — what now?',a:'Double-check the six keys from Step 5 and the rules text from Step 6 — those are the two most common typo spots. Everything else keeps working locally in the meantime.'},
       {q:'The Rules tab shows a red "parse error" after I paste — what now?',a:'This almost always means old default text got left in the editor alongside the new rules. Click inside the Rules editor, select all (Ctrl/Cmd+A), delete everything, then paste the rules fresh (use the Copy Rules button in Step 6 to avoid missing a character) and click Publish.'}
     ]
