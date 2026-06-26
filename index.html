@@ -540,9 +540,11 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .switch::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .25s var(--spring);}
 .switch.on{background:var(--accent-bright);}
 .switch.on::after{transform:translateX(18px);}
-.upload-box{border:1.5px dashed rgba(255,255,255,.18);border-radius:9px;padding:18px;display:flex;align-items:center;gap:14px;}
+.upload-box{border:1.5px dashed rgba(255,255,255,.18);border-radius:9px;padding:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
 .upload-box img{width:54px;height:54px;border-radius:8px;object-fit:cover;background:rgba(255,255,255,.05);}
 .upload-box svg{width:54px;height:54px;color:rgba(255,255,255,.2);}
+.upload-box-fields{min-width:0;}
+input[type="file"]{max-width:100%;box-sizing:border-box;}
 .list-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,.03);border-radius:9px;border:1px solid var(--glass-border);}
 .list-row img{width:42px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;}
 .list-row .lr-main{flex:1;min-width:0;}
@@ -2837,7 +2839,7 @@ function textareaField(label,path,value){
 function uploadBox(label,path,value){
   return '<div class="a-field"><label>'+escapeHTML(label)+'</label><div class="upload-box">'
     +(value?'<img src="'+value+'" alt="">':icon('upload',54))
-    +'<div style="flex:1;"><input type="file" accept="image/*" data-path="'+path+'"><div class="cap-note">High-resolution PNG/JPG, up to 6MB.</div></div></div></div>';
+    +'<div class="upload-box-fields" style="flex:1;"><input type="file" accept="image/*" data-path="'+path+'"><div class="cap-note">High-resolution PNG/JPG, up to 6MB.</div></div></div></div>';
 }
 /* Theme color picker: live-applies the CSS custom property on every drag/pick tick (see
    the 'input' delegate in bindAppearanceActions), and persists to CONFIG via the normal
@@ -2865,7 +2867,7 @@ function panelProducts(){
     +'<div class="a-row"><div class="a-field"><label>Quantity / Volume <span style="color:#F87171;">*</span></label><input id="pf-qty-value" type="number" min="0" step="any" placeholder="e.g. 5, 19, 500" value="'+(editing&&editing.qty_value!=null?editing.qty_value:'')+'"></div>'
     +'<div class="a-field"><label>Unit</label><select id="pf-qty-unit">'+['L','mL','kg','g','pcs','pack','box','custom'].map(u=>'<option value="'+u+'"'+(editing&&editing.qty_unit===u?' selected':'')+'>'+u+'</option>').join('')+'</select></div></div>'
     +'<div class="a-field"><label>Category</label><input id="pf-category" placeholder="e.g. Water, Produce, Merch, Digital Ads" value="'+escapeHTML(editing?(editing.category||''):'')+'"></div>'
-    +'<div class="a-field"><label>Image</label><div class="upload-box">'+(productImageDraft?'<img src="'+productImageDraft+'" alt="">':icon('upload',54))+'<div style="flex:1;"><input type="file" id="pf-image" accept="image/*"><div class="cap-note">High-resolution JPG/PNG, up to 6MB.</div></div></div></div>'
+    +'<div class="a-field"><label>Image</label><div class="upload-box">'+(productImageDraft?'<img src="'+productImageDraft+'" alt="">':icon('upload',54))+'<div class="upload-box-fields" style="flex:1;"><input type="file" id="pf-image" accept="image/*"><div class="cap-note">High-resolution JPG/PNG, up to 6MB.</div></div></div></div>'
     +'<div class="a-field"><label>YouTube Video URL (optional, shown instead of the image)</label><input id="pf-video" placeholder="https://youtube.com/watch?v=..." value="'+escapeHTML(editing?(editing.video_url||''):'')+'"></div>'
     +'<div class="a-toggle"><span>Stock Status: '+(productStockDraft?'Available':'Out of Stock')+'</span><div class="switch'+(productStockDraft?' on':'')+'" id="pf-stock-switch"></div></div>'
     +'<div style="display:flex;gap:10px;">'
@@ -3155,7 +3157,7 @@ function panelAbout(){
     +'<div class="admin-card"><h4>'+(editing?'Edit Team Member':'Add Team Member')+'</h4>'
     +'<div class="a-row"><div class="a-field"><label>Name</label><input id="tm-name" value="'+escapeHTML(editing?editing.name:'')+'"></div>'
     +'<div class="a-field"><label>Role</label><input id="tm-role" value="'+escapeHTML(editing?editing.role:'')+'"></div></div>'
-    +'<div class="a-field"><label>Photo (optional)</label><div class="upload-box">'+(teamPhotoDraft?'<img src="'+teamPhotoDraft+'" alt="">':icon('upload',54))+'<div style="flex:1;"><input type="file" id="tm-photo" accept="image/*"></div></div></div>'
+    +'<div class="a-field"><label>Photo (optional)</label><div class="upload-box">'+(teamPhotoDraft?'<img src="'+teamPhotoDraft+'" alt="">':icon('upload',54))+'<div class="upload-box-fields" style="flex:1;"><input type="file" id="tm-photo" accept="image/*"></div></div></div>'
     +'<div style="display:flex;gap:10px;"><button class="btn btn-primary" id="tm-save">'+(editing?'Update':'Add')+' Member</button>'
     +(editing?'<button class="btn btn-ghost" id="tm-cancel" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Cancel</button>':'')+'</div></div>'
     +'<div class="admin-card"><h4>Team List</h4>'
