@@ -1232,7 +1232,19 @@ let cloudPendingRemote=null; // queued remote update while admin dashboard is op
 let cloudLastInitKey='';
 let cloudSyncStatusState='off'; // 'off' | 'connecting' | 'synced' | 'error'
 
-function setCloudStatus(state){ cloudSyncStatusState=state; }
+const CLOUD_STATUS_LABELS={off:'Not connected',connecting:'Connecting…',synced:'Live — synced',error:'Connection error'};
+function setCloudStatus(state){
+  cloudSyncStatusState=state;
+  // The status pill is otherwise only painted once at panel-render time, so without this
+  // it can read "Connecting…" forever even after the async connect/sync/error settles in
+  // the background (e.g. on a returning visit with already-saved keys) — live-patch it in
+  // place whenever it's currently on screen.
+  const pill=document.getElementById('cs-status-pill');
+  if(pill){
+    pill.className='cs-status-pill cs-'+state;
+    pill.innerHTML='<span class="cs-dot"></span>'+(CLOUD_STATUS_LABELS[state]||CLOUD_STATUS_LABELS.off);
+  }
+}
 function cloudSyncStatus(){ return cloudSyncStatusState; }
 function cloudCurrentUser(){ return cloudAuth && cloudAuth.currentUser; }
 function cloudConfigComplete(){
@@ -3483,14 +3495,14 @@ function bindDataActions(){
 function panelCloudSync(){
   const c=CONFIG.cloud_sync||{};
   const status=cloudSyncStatus();
-  const statusLabel={off:'Not connected',connecting:'Connecting…',synced:'Live — synced',error:'Connection error'}[status]||'Not connected';
+  const statusLabel=CLOUD_STATUS_LABELS[status]||CLOUD_STATUS_LABELS.off;
   const user=cloudCurrentUser();
   const keysFilled=!!(c.api_key&&c.auth_domain&&c.project_id&&c.app_id);
   return '<div class="admin-panel-section">'
     +'<div class="admin-card"><h4>Cloud Sync Setup Wizard</h4>'
     +'<p class="cap-note">Worried about running out of local storage, or want changes to appear instantly on every visitor\'s device? Turn this on and follow the numbered steps below in order — about 5 minutes, completely free, and entirely optional. Your site already works perfectly without it.</p>'
     +'<div class="a-toggle" style="margin-top:14px;"><span>Step 1 — Enable Cloud Sync</span><div class="switch'+(c.enabled?' on':'')+'" data-path="cloud_sync.enabled" data-rerender="1"></div></div>'
-    +'<div class="cs-status-pill cs-'+status+'"><span class="cs-dot"></span>'+statusLabel+'</div>'
+    +'<div class="cs-status-pill cs-'+status+'" id="cs-status-pill"><span class="cs-dot"></span>'+statusLabel+'</div>'
     +'</div>'
     +(c.enabled?(
       '<div class="admin-card cs-step-card"><div class="cs-step-badge">Step 2</div><h4>Create your free Firebase project</h4>'
