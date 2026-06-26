@@ -836,6 +836,7 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
       <a class="btn btn-ghost btn-block" id="cart-checkout-sms" hidden>Order via SMS</a>
       <a class="btn btn-ghost btn-block" id="cart-checkout-email" hidden>Order via Email</a>
       <a class="btn btn-ghost btn-block" id="cart-checkout-call" hidden>Call to Order</a>
+      <p class="field-warn" id="cart-checkout-none" hidden>No checkout method is set up yet. Add a phone number, WhatsApp number, or email in Admin → Business Identity so customers can complete orders.</p>
     </div>
   </div>
 </div>
@@ -4039,6 +4040,7 @@ function renderCart(){
     emailBtn.href='mailto:'+encodeURIComponent(CONFIG.identity.email)+'?subject='+encodeURIComponent('New order from '+(CONFIG.identity.name||'website'))+'&body='+encodeURIComponent(orderMsg);
     emailBtn.hidden=false;
   } else { emailBtn.hidden=true; }
+  document.getElementById('cart-checkout-none').hidden=!(waBtn.hidden && smsBtn.hidden && emailBtn.hidden && callBtn.hidden);
 }
 function logCartCheckout(channel){
   const totals=cartTotals();
