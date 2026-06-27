@@ -3650,7 +3650,11 @@ function bindPasswordActions(){
   const recBtn=document.getElementById('rec-save');
   if(recBtn) recBtn.addEventListener('click',attemptSaveRecovery);
   const expBtn=document.getElementById('rec-export');
-  if(expBtn) expBtn.addEventListener('click',exportRecoveryInfo);
+  if(expBtn) expBtn.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    exportRecoveryInfo();
+  });
 }
 
 /* ============ ADMIN PANEL: Data ============ */
