@@ -1336,6 +1336,7 @@ async function cloudSyncInit(){
   }catch(err){
     console.error('Cloud Sync init failed',err);
     setCloudStatus('error');
+    toast('Firebase connection failed. Check your config and security rules.',true);
   }
 }
 function cloudDocRef(){ return cloudDb.collection('hydrobiz').doc('config'); }
@@ -1967,7 +1968,7 @@ function brandedQRCardHTML(imgUrl,size,showUrl){
 function openQRModal(){
   const url=location.href.split('#')[0];
   const apiUrl=qrApiUrl(url,240);
-  document.getElementById('qr-modal-brand').innerHTML=brandedQRCardHTML(apiUrl,220);
+  document.getElementById('qr-modal-brand').innerHTML=brandedQRCardHTML(apiUrl,220,url);
   document.getElementById('qr-url-text').textContent=url;
   document.getElementById('qr-modal').hidden=false;
 }
