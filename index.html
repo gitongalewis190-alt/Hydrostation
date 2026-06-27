@@ -262,6 +262,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .t-quote{font-size:15px;color:var(--text);font-style:italic;}
 .t-name{font-weight:700;font-size:14px;}
 .t-date{font-size:12px;color:var(--text-soft);}
+.t-who{display:flex;align-items:center;gap:10px;}
+.t-photo{width:40px;height:40px;border-radius:50%;object-fit:cover;background:var(--bg-soft);flex-shrink:0;}
 
 /* ============ CONTACT ============ */
 .contact-layout{display:grid;grid-template-columns:1fr 1fr;gap:56px;}
@@ -1156,7 +1158,7 @@ function toast(msg,isError,action){
       clearTimeout(toast._t); el.hidden=true; action.onClick();
     });
   }
-  toast._t=setTimeout(()=>{ el.hidden=true; },action?5000:2400);
+  toast._t=setTimeout(()=>{ el.hidden=true; },action?5000:(isError?4800:2400));
 }
 function waLink(phone,text){
   let digits=String(phone||'').replace(/[^\d]/g,'');
@@ -1205,6 +1207,7 @@ function saveConfig(){
     toast('Storage is full — remove some images/videos to free up space.',true);
     return false;
   }
+  lastLocalEditAt=Date.now();
   cloudSyncPush();
   return true;
 }
@@ -1216,6 +1219,7 @@ function commitField(path,value){
 function commitNow(msg){
   const ok=saveConfig();
   if(ok && msg!==false) toast(msg||'Saved');
+  return ok;
 }
 
 /* ============ CLOUD SYNC (optional, opt-in Firebase real-time backend) ============
@@ -1238,6 +1242,7 @@ const FIREBASE_SDK_VERSION='10.12.2';
 
 let cloudApp=null, cloudDb=null, cloudAuth=null, cloudUnsub=null;
 let cloudPendingRemote=null; // queued remote update while admin dashboard is open with unsaved edits
+let lastLocalEditAt=0; // timestamp of the most recent successful local save, used to discard stale queued remote updates
 let cloudLastInitKey='';
 let cloudSyncStatusState='off'; // 'off' | 'connecting' | 'synced' | 'error'
 
@@ -1322,18 +1327,21 @@ function attachCloudListener(){
     const data=snap.data();
     if(!data || !data.payload) return;
     if(data.client_id===CLOUD_CLIENT_ID) return; // ignore our own echoed write
-    applyRemoteConfig(data.payload);
+    applyRemoteConfig(data.payload,data.updated_at||Date.now());
   }, err=>{
     console.error('Cloud Sync listener error',err);
     setCloudStatus('error');
   });
 }
-function applyRemoteConfig(payload){
+function applyRemoteConfig(payload,updatedAt){
   // Never stomp on in-progress, unsaved admin edits: if the dashboard is open, queue
-  // the update and apply it the moment the owner exits (see closeAdminDashboard) —
-  // same data-loss class as the image-upload-mid-form bug fixed elsewhere in admin.
+  // the update (with its timestamp) and resolve it the moment the owner exits (see
+  // closeAdminDashboard) — same data-loss class as the image-upload-mid-form bug
+  // fixed elsewhere in admin. The timestamp lets the exit handler discard a remote
+  // snapshot that is older than edits the owner already made (and pushed) locally
+  // during this session, instead of blindly clobbering newer local work.
   const dash=document.getElementById('admin-dashboard');
-  if(dash && !dash.hidden){ cloudPendingRemote=payload; return; }
+  if(dash && !dash.hidden){ cloudPendingRemote={payload,updated_at:updatedAt||Date.now()}; return; }
   CONFIG=deepMerge(JSON.parse(JSON.stringify(DEFAULT_CONFIG)),payload);
   try{ localStorage.setItem(CONFIG_KEY,JSON.stringify(CONFIG)); }catch(e){}
   renderAll();
@@ -2232,7 +2240,7 @@ function renderTestimonials(){
   grid.innerHTML=testimonials.map(t=>(
     '<div class="card testimonial-card"><div class="t-stars">'+Array.from({length:5},(_,i)=>'<span style="opacity:'+(i<t.stars?1:.25)+'">'+icon('star',15)+'</span>').join('')+'</div>'
     +'<p class="t-quote">“'+escapeHTML(t.quote)+'”</p>'
-    +'<div><div class="t-name">'+escapeHTML(t.name)+'</div><div class="t-date">'+escapeHTML(t.date||'')+'</div></div></div>'
+    +'<div class="t-who">'+(t.photo_b64?'<img class="t-photo" src="'+t.photo_b64+'" alt="">':'')+'<div><div class="t-name">'+escapeHTML(t.name)+'</div><div class="t-date">'+escapeHTML(t.date||'')+'</div></div></div></div>'
   )).join('');
   enhanceTilt(grid);
 }
@@ -2665,9 +2673,10 @@ function closeAdminDashboard(fromIdleLock){
   stopAdminIdleWatchdog();
   if(fromIdleLock){ clearAdminGrace(); } else { startAdminGrace(); }
   if(cloudPendingRemote){
-    const payload=cloudPendingRemote;
+    const pending=cloudPendingRemote;
     cloudPendingRemote=null;
-    applyRemoteConfig(payload);
+    if(pending.updated_at>=lastLocalEditAt) applyRemoteConfig(pending.payload,pending.updated_at);
+    else renderAll(); // stale remote snapshot predates edits we already made (and pushed) this session — discard it
   } else {
     renderAll();
   }
@@ -2798,8 +2807,9 @@ document.addEventListener('DOMContentLoaded',()=>{
       if(!t.files[0]) return;
       try{
         const b64=await fileToBase64(t.files[0]);
+        const prev=getPath(CONFIG,t.dataset.path);
         setPath(CONFIG,t.dataset.path,b64);
-        commitNow('Image uploaded');
+        if(!commitNow('Image uploaded')) setPath(CONFIG,t.dataset.path,prev);
         rerenderAdminBody();
       }catch(err){ toast(err.message,true); }
     }
@@ -2979,14 +2989,19 @@ function bindProductsActions(){
       in_stock:productStockDraft,
       created_at:existing&&existing.created_at?existing.created_at:Date.now()
     };
+    let idx=-1;
     if(editingProductId){
-      const i=CONFIG.products.findIndex(p=>p.id===editingProductId);
-      CONFIG.products[i]=data;
+      idx=CONFIG.products.findIndex(p=>p.id===editingProductId);
+      CONFIG.products[idx]=data;
     } else {
       CONFIG.products.push(data);
+      idx=CONFIG.products.length-1;
     }
-    editingProductId=null; productImageDraft=''; productStockDraft=true;
-    commitNow('Product saved');
+    if(!commitNow('Product saved')){
+      if(existing) CONFIG.products[idx]=existing; else CONFIG.products.splice(idx,1);
+    } else {
+      editingProductId=null; productImageDraft=''; productStockDraft=true;
+    }
     rerenderAdminBody();
   });
   const cancelBtn=document.getElementById('pf-cancel');
@@ -3088,15 +3103,21 @@ function bindPackagesActions(){
       cta_label:document.getElementById('kf-cta-label').value.trim()||'Choose Plan',
       cta_href:document.getElementById('kf-cta-href').value.trim()||'#contact'
     };
+    const existing=editingPackageId?CONFIG.packages.find(k=>k.id===editingPackageId):null;
+    let idx=-1;
     if(editingPackageId){
-      const i=CONFIG.packages.findIndex(k=>k.id===editingPackageId);
-      CONFIG.packages[i]=data;
+      idx=CONFIG.packages.findIndex(k=>k.id===editingPackageId);
+      CONFIG.packages[idx]=data;
     } else {
       if(activeList('packages').length>=MAX_PACKAGES){ toast('Package limit reached',true); return; }
       CONFIG.packages.push(data);
+      idx=CONFIG.packages.length-1;
     }
-    editingPackageId=null; packageIncludesDraft=[];
-    commitNow('Package saved');
+    if(!commitNow('Package saved')){
+      if(existing) CONFIG.packages[idx]=existing; else CONFIG.packages.splice(idx,1);
+    } else {
+      editingPackageId=null; packageIncludesDraft=[];
+    }
     rerenderAdminBody();
   });
   const cancelBtn=document.getElementById('kf-cancel');
@@ -3133,7 +3154,7 @@ function bindGalleryActions(){
     try{
       const b64=await fileToBase64(e.target.files[0]);
       CONFIG.gallery.push({id:uid(),image_b64:b64});
-      commitNow('Image added');
+      if(!commitNow('Image added')) CONFIG.gallery.pop();
       rerenderAdminBody();
     }catch(err){ toast(err.message,true); }
   });
@@ -3143,7 +3164,7 @@ function bindGalleryActions(){
 }
 
 /* ============ ADMIN PANEL: Testimonials ============ */
-let editingTestimonialId=null, testimonialStarsDraft=5;
+let editingTestimonialId=null, testimonialStarsDraft=5, testimonialPhotoDraft='';
 function panelTestimonials(){
   const editing=CONFIG.testimonials.find(t=>t.id===editingTestimonialId);
   if(editing) testimonialStarsDraft=editing.stars;
@@ -3154,13 +3175,14 @@ function panelTestimonials(){
     +'<div class="a-row"><div class="a-field"><label>Customer Name</label><input id="tf-name" value="'+escapeHTML(editing?editing.name:'')+'"></div>'
     +'<div class="a-field"><label>Date</label><input id="tf-date" type="date" value="'+escapeHTML(editing?editing.date:'')+'"></div></div>'
     +'<div class="a-field"><label>Quote</label><textarea id="tf-quote">'+escapeHTML(editing?editing.quote:'')+'</textarea></div>'
+    +'<div class="a-field"><label>Photo (optional)</label><div class="upload-box">'+(testimonialPhotoDraft?'<img src="'+testimonialPhotoDraft+'" alt="">':icon('upload',54))+'<div class="upload-box-fields" style="flex:1;"><input type="file" id="tf-photo" accept="image/*"></div></div></div>'
     +'<div class="a-field"><label>Star Rating</label><div id="tf-stars" style="display:flex;gap:6px;cursor:pointer;color:#F59E0B;">'
     +Array.from({length:5},(_,i)=>'<span data-star="'+(i+1)+'" style="opacity:'+(i<testimonialStarsDraft?1:.3)+'">'+icon('star',22)+'</span>').join('')+'</div></div>'
     +'<div style="display:flex;gap:10px;"><button class="btn btn-primary" id="tf-save">'+(editing?'Update':'Add')+' Testimonial</button>'
     +(editing?'<button class="btn btn-ghost" id="tf-cancel" style="background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.15);">Cancel</button>':'')+'</div></div>'
     +'<div class="admin-card"><h4>Testimonial List</h4>'
     +(activeList('testimonials').length?activeList('testimonials').map(t=>(
-      '<div class="list-row"><div class="lr-main"><strong>'+escapeHTML(t.name)+'</strong><span>'+'★'.repeat(t.stars)+'</span></div>'
+      '<div class="list-row">'+(t.photo_b64?'<img src="'+t.photo_b64+'" alt="">':'')+'<div class="lr-main"><strong>'+escapeHTML(t.name)+'</strong><span>'+'★'.repeat(t.stars)+'</span></div>'
       +'<div class="lr-actions"><button class="icon-btn" data-edit-test="'+t.id+'" style="color:#fff;" aria-label="Edit testimonial from '+escapeHTML(t.name)+'">'+icon('edit',16)+'</button><button class="icon-btn" data-delete-test="'+t.id+'" style="color:#F87171;" aria-label="Delete testimonial from '+escapeHTML(t.name)+'">'+icon('trash',16)+'</button></div></div>'
     )).join(''):'<div class="admin-empty">No testimonials yet.</div>')
     +'</div></div>';
@@ -3168,29 +3190,54 @@ function panelTestimonials(){
 function bindTestimonialsActions(){
   if(!document.getElementById('tf-name')) return;
   document.querySelectorAll('#tf-stars [data-star]').forEach(s=>s.addEventListener('click',()=>{
-    testimonialStarsDraft=Number(s.dataset.star); rerenderAdminBody();
+    // Update the star widget in place instead of calling rerenderAdminBody() — a full
+    // panel re-render here would regenerate the form from CONFIG/drafts and wipe
+    // whatever the owner had already typed into Name/Quote/Date but not yet saved
+    // (same data-loss class as the image-upload-mid-form bug fixed elsewhere in admin).
+    testimonialStarsDraft=Number(s.dataset.star);
+    document.querySelectorAll('#tf-stars [data-star]').forEach((el,i)=>{ el.style.opacity=(i<testimonialStarsDraft?1:.3); });
   }));
+  document.getElementById('tf-photo').addEventListener('change',async e=>{
+    if(!e.target.files[0]) return;
+    try{
+      testimonialPhotoDraft=await fileToBase64(e.target.files[0]);
+      const box=document.getElementById('tf-photo').closest('.upload-box');
+      box.firstElementChild.outerHTML=testimonialPhotoDraft?'<img src="'+testimonialPhotoDraft+'" alt="">':icon('upload',54);
+    }
+    catch(err){ toast(err.message,true); }
+  });
   document.getElementById('tf-save').addEventListener('click',()=>{
     const name=document.getElementById('tf-name').value.trim();
     if(!name){ toast('Customer name is required',true); return; }
+    const existing=editingTestimonialId?CONFIG.testimonials.find(t=>t.id===editingTestimonialId):null;
     const data={
       id:editingTestimonialId||uid(), name,
       quote:document.getElementById('tf-quote').value.trim(),
       stars:testimonialStarsDraft,
-      date:document.getElementById('tf-date').value
+      date:document.getElementById('tf-date').value,
+      photo_b64:testimonialPhotoDraft
     };
+    let idx=-1;
     if(editingTestimonialId){
-      const i=CONFIG.testimonials.findIndex(t=>t.id===editingTestimonialId);
-      CONFIG.testimonials[i]=data;
-    } else { CONFIG.testimonials.push(data); }
-    editingTestimonialId=null; testimonialStarsDraft=5;
-    commitNow('Testimonial saved');
+      idx=CONFIG.testimonials.findIndex(t=>t.id===editingTestimonialId);
+      CONFIG.testimonials[idx]=data;
+    } else {
+      CONFIG.testimonials.push(data);
+      idx=CONFIG.testimonials.length-1;
+    }
+    if(!commitNow('Testimonial saved')){
+      if(existing) CONFIG.testimonials[idx]=existing; else CONFIG.testimonials.splice(idx,1);
+    } else {
+      editingTestimonialId=null; testimonialStarsDraft=5; testimonialPhotoDraft='';
+    }
     rerenderAdminBody();
   });
   const cancelBtn=document.getElementById('tf-cancel');
-  if(cancelBtn) cancelBtn.addEventListener('click',()=>{ editingTestimonialId=null; testimonialStarsDraft=5; rerenderAdminBody(); });
+  if(cancelBtn) cancelBtn.addEventListener('click',()=>{ editingTestimonialId=null; testimonialStarsDraft=5; testimonialPhotoDraft=''; rerenderAdminBody(); });
   document.querySelectorAll('[data-edit-test]').forEach(b=>b.addEventListener('click',()=>{
-    editingTestimonialId=b.dataset.editTest; rerenderAdminBody();
+    editingTestimonialId=b.dataset.editTest;
+    testimonialPhotoDraft=(CONFIG.testimonials.find(t=>t.id===editingTestimonialId)||{}).photo_b64||'';
+    rerenderAdminBody();
   }));
   document.querySelectorAll('[data-delete-test]').forEach(b=>b.addEventListener('click',()=>{
     softDeleteItem('testimonials',b.dataset.deleteTest,'Testimonial');
@@ -3232,13 +3279,21 @@ function bindAboutActions(){
   document.getElementById('tm-save').addEventListener('click',()=>{
     const name=document.getElementById('tm-name').value.trim();
     if(!name){ toast('Name is required',true); return; }
+    const existing=editingTeamId?CONFIG.about.team.find(m=>m.id===editingTeamId):null;
     const data={id:editingTeamId||uid(),name,role:document.getElementById('tm-role').value.trim(),photo_b64:teamPhotoDraft};
+    let idx=-1;
     if(editingTeamId){
-      const i=CONFIG.about.team.findIndex(m=>m.id===editingTeamId);
-      CONFIG.about.team[i]=data;
-    } else { CONFIG.about.team.push(data); }
-    editingTeamId=null; teamPhotoDraft='';
-    commitNow('Team member saved');
+      idx=CONFIG.about.team.findIndex(m=>m.id===editingTeamId);
+      CONFIG.about.team[idx]=data;
+    } else {
+      CONFIG.about.team.push(data);
+      idx=CONFIG.about.team.length-1;
+    }
+    if(!commitNow('Team member saved')){
+      if(existing) CONFIG.about.team[idx]=existing; else CONFIG.about.team.splice(idx,1);
+    } else {
+      editingTeamId=null; teamPhotoDraft='';
+    }
     rerenderAdminBody();
   });
   const cancelBtn=document.getElementById('tm-cancel');
@@ -3279,15 +3334,21 @@ function bindDrawerActions(){
     const title=document.getElementById('dr-title').value.trim();
     if(!title){ toast('Title is required',true); return; }
     const data={id:editingDrawerId||uid(),title,body:document.getElementById('dr-body').value.trim()};
+    const existing=editingDrawerId?CONFIG.drawer.highlights.find(h=>h.id===editingDrawerId):null;
+    let idx=-1;
     if(editingDrawerId){
-      const i=CONFIG.drawer.highlights.findIndex(h=>h.id===editingDrawerId);
-      CONFIG.drawer.highlights[i]=data;
+      idx=CONFIG.drawer.highlights.findIndex(h=>h.id===editingDrawerId);
+      CONFIG.drawer.highlights[idx]=data;
     } else {
       if(activeList('drawer.highlights').length>=MAX_DRAWER){ toast('Highlight limit reached',true); return; }
       CONFIG.drawer.highlights.push(data);
+      idx=CONFIG.drawer.highlights.length-1;
     }
-    editingDrawerId=null;
-    commitNow('Highlight saved');
+    if(!commitNow('Highlight saved')){
+      if(existing) CONFIG.drawer.highlights[idx]=existing; else CONFIG.drawer.highlights.splice(idx,1);
+    } else {
+      editingDrawerId=null;
+    }
     rerenderAdminBody();
   });
   const cancelBtn=document.getElementById('dr-cancel');
@@ -4081,16 +4142,21 @@ function renderCart(){
   document.getElementById('cart-checkout-none').hidden=!(waBtn.hidden && smsBtn.hidden && emailBtn.hidden && callBtn.hidden);
 }
 function logCartCheckout(channel){
+  // A cart can mix currencies if products were set up in more than one (e.g. some in
+  // KES, some in USD) — log one order record per currency group so revenue analytics
+  // (which buckets by a single order.currency/total) isn't undercounted to whichever
+  // currency happened to be on the first cart item.
   const totals=cartTotals();
-  const currency=CART[0]?CART[0].currency:'';
-  saveOrderRecord({
-    name:'',
-    contact:'',
-    items:CART.map(c=>({label:c.name,qty:c.qty,price:c.price,currency:c.currency})),
-    total:totals[currency]||0,
-    currency,
-    channel,
-    source:'cart_checkout'
+  Object.keys(totals).forEach(currency=>{
+    saveOrderRecord({
+      name:'',
+      contact:'',
+      items:CART.filter(c=>c.currency===currency).map(c=>({label:c.name,qty:c.qty,price:c.price,currency:c.currency})),
+      total:totals[currency]||0,
+      currency,
+      channel,
+      source:'cart_checkout'
+    });
   });
 }
 function openCartDrawer(){
