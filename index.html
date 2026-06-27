@@ -845,10 +845,10 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
     <div id="cart-empty" class="admin-empty" hidden>Your cart is empty.</div>
     <div id="cart-summary" hidden>
       <div class="cart-total-row"><span>Total</span><strong id="cart-total-text"></strong></div>
-      <a class="btn btn-primary btn-block" id="cart-checkout-wa" target="_blank" rel="noopener" hidden>Order via WhatsApp</a>
-      <a class="btn btn-ghost btn-block" id="cart-checkout-sms" hidden>Order via SMS</a>
-      <a class="btn btn-ghost btn-block" id="cart-checkout-email" hidden>Order via Email</a>
-      <a class="btn btn-ghost btn-block" id="cart-checkout-call" hidden>Call to Order</a>
+      <button class="btn btn-primary btn-block" id="cart-checkout-wa" type="button" hidden>Order via WhatsApp</button>
+      <button class="btn btn-ghost btn-block" id="cart-checkout-sms" type="button" hidden>Order via SMS</button>
+      <button class="btn btn-ghost btn-block" id="cart-checkout-email" type="button" hidden>Order via Email</button>
+      <button class="btn btn-ghost btn-block" id="cart-checkout-call" type="button" hidden>Call to Order</button>
       <p class="field-warn" id="cart-checkout-none" hidden>No checkout method is set up yet. Add a phone number, WhatsApp number, or email in Admin → Business Identity so customers can complete orders.</p>
     </div>
   </div>
@@ -1102,7 +1102,8 @@ const DEFAULT_CONFIG={
     layout:'classic',
     sections_visible:{products:true,packages:true,about:true,gallery:true,testimonials:true,contact:true},
     whatsapp_btn:true, cta_label:'Order Now', cta_anchor:'#contact', footer_tagline:'',
-    product_sort:'newest', theme:{}, fonts:{display:'',body:''}, qr_style:{fg:'',bg:'',quiet_zone:8}
+    product_sort:'newest', theme:{}, fonts:{display:'',body:''}, qr_style:{fg:'',bg:'',quiet_zone:8},
+    order_msg_template:'Hi {business}, I would like to order:\n{items}\nTotal: {total}\n\nCustomer: {name}\nDelivery Address: {address}\nPhone: {phone}'
   },
   orders:[],
   notifications:[],
@@ -3432,6 +3433,10 @@ function panelAppearance(){
     +field('CTA Button Label','appearance.cta_label',a.cta_label)
     +field('CTA Link/Anchor','appearance.cta_anchor',a.cta_anchor)+'</div></div>'
     +'<div class="admin-card"><h4>WhatsApp</h4><div class="a-toggle"><span>Show floating WhatsApp button</span><div class="switch'+(a.whatsapp_btn?' on':'')+'" data-path="appearance.whatsapp_btn"></div></div></div>'
+    +'<div class="admin-card"><h4>Order Message Template</h4>'
+    +'<p class="cap-note">Customize the order message sent via WhatsApp, SMS, Email, or Call. Use: {business}, {items}, {total}, {name}, {address}, {phone}</p>'
+    +textareaField('Message Template','appearance.order_msg_template',a.order_msg_template)
+    +'</div>'
     +'<div class="admin-card"><h4>Footer</h4>'+field('Footer Tagline','appearance.footer_tagline',a.footer_tagline)+'</div>'
     +'</div>';
 }
@@ -4157,14 +4162,22 @@ function initCustomerInfoModal(){
     if(e.key==='Escape' && !modal.hidden) closeCustomerInfoModal();
   });
 }
+function buildOrderMessage(){
+  const totals=cartTotals();
+  const itemsText=CART.map(c=>'- '+c.qty+'x '+c.name+' ('+formatMoney(c.currency,c.price)+' each)').join('\n');
+  const template=CONFIG.appearance.order_msg_template||'Hi {business}, I would like to order:\n{items}\nTotal: {total}\n\nCustomer: {name}\nDelivery Address: {address}\nPhone: {phone}';
+  return template
+    .replace('{business}',escapeHTML(CONFIG.identity.name||''))
+    .replace('{items}',itemsText)
+    .replace('{total}',formatTotals(totals))
+    .replace('{name}',escapeHTML(customerInfo.name||''))
+    .replace('{address}',escapeHTML(customerInfo.address||''))
+    .replace('{phone}',escapeHTML(customerInfo.phone||''));
+}
 function proceedToCheckout(channel){
   if(!channel) return;
   logCartCheckout(channel);
-  const totals=cartTotals();
-  const custLine=customerInfo.name?'\nCustomer: '+escapeHTML(customerInfo.name)+'\nDelivery Address: '+escapeHTML(customerInfo.address)+'\nPhone: '+escapeHTML(customerInfo.phone):'';
-  const orderMsg='Hi '+CONFIG.identity.name+', I would like to order:\n'
-    +CART.map(c=>'- '+c.qty+'x '+c.name+' ('+formatMoney(c.currency,c.price)+' each)').join('\n')
-    +'\nTotal: '+formatTotals(totals)+custLine;
+  const orderMsg=buildOrderMessage();
   const phoneSrc=CONFIG.socials.whatsapp||CONFIG.identity.phone;
   if(channel==='whatsapp' && phoneSrc){
     window.open(waLink(phoneSrc,orderMsg),'_blank');
@@ -4206,27 +4219,14 @@ function renderCart(){
   )).join('');
   const totals=cartTotals();
   document.getElementById('cart-total-text').textContent=formatTotals(totals);
-  const custLine=customerInfo.name?'\nCustomer: '+escapeHTML(customerInfo.name)+'\nDelivery Address: '+escapeHTML(customerInfo.address)+'\nPhone: '+escapeHTML(customerInfo.phone):'';
-  const orderMsg='Hi '+CONFIG.identity.name+', I would like to order:\n'
-    +CART.map(c=>'- '+c.qty+'x '+c.name+' ('+formatMoney(c.currency,c.price)+' each)').join('\n')
-    +'\nTotal: '+formatTotals(totals)+custLine;
   const waBtn=document.getElementById('cart-checkout-wa');
   const smsBtn=document.getElementById('cart-checkout-sms');
   const emailBtn=document.getElementById('cart-checkout-email');
   const callBtn=document.getElementById('cart-checkout-call');
   const phoneSrc=CONFIG.socials.whatsapp||CONFIG.identity.phone;
-  if(phoneSrc){ waBtn.href=waLink(phoneSrc,orderMsg); waBtn.hidden=false; } else { waBtn.hidden=true; }
-  if(CONFIG.identity.phone){
-    const digits=String(CONFIG.identity.phone).replace(/[^\d+]/g,'');
-    smsBtn.href='sms:'+digits+'?body='+encodeURIComponent(orderMsg);
-    smsBtn.hidden=false;
-    callBtn.href='tel:'+digits;
-    callBtn.hidden=false;
-  } else { smsBtn.hidden=true; callBtn.hidden=true; }
-  if(CONFIG.identity.email){
-    emailBtn.href='mailto:'+encodeURIComponent(CONFIG.identity.email)+'?subject='+encodeURIComponent('New order from '+(CONFIG.identity.name||'website'))+'&body='+encodeURIComponent(orderMsg);
-    emailBtn.hidden=false;
-  } else { emailBtn.hidden=true; }
+  if(phoneSrc){ waBtn.hidden=false; } else { waBtn.hidden=true; }
+  if(CONFIG.identity.phone){ smsBtn.hidden=false; callBtn.hidden=false; } else { smsBtn.hidden=true; callBtn.hidden=true; }
+  if(CONFIG.identity.email){ emailBtn.hidden=false; } else { emailBtn.hidden=true; }
   document.getElementById('cart-checkout-none').hidden=!(waBtn.hidden && smsBtn.hidden && emailBtn.hidden && callBtn.hidden);
 }
 function logCartCheckout(channel){
