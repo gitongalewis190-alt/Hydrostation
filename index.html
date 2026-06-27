@@ -28,7 +28,10 @@
   --text:#111827;
   --text-soft:#6B7280;
   --border:#E5F4F6;
-  --admin-bg:#0F1419;
+  --admin-bg:#FFFFFF;
+  --admin-text:#111827;
+  --admin-border:#E5E7EB;
+  --admin-accent:rgba(0,0,0,.05);
   --glass-bg:rgba(255,255,255,0.04);
   --glass-border:rgba(255,255,255,0.10);
   --glass-blur:10px;
@@ -526,7 +529,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .pw-eye svg{width:18px;height:18px;display:block;}
 
 /* ============ ADMIN DASHBOARD ============ */
-.admin-dashboard{position:fixed;inset:0;z-index:3000;background:var(--admin-bg);color:#fff;display:flex;}
+.admin-dashboard{position:fixed;inset:0;z-index:3000;background:var(--admin-bg);color:var(--admin-text);display:flex;}
+.admin-dashboard.dark-mode{--admin-bg:#0F1419;--admin-text:#FFFFFF;--admin-border:rgba(255,255,255,.15);--admin-accent:rgba(255,255,255,.05);}
 .admin-sidebar{width:230px;flex-shrink:0;background:rgba(255,255,255,.03);border-right:1px solid var(--glass-border);padding:20px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
 .admin-sidebar .as-brand{font-family:var(--font-display);font-weight:800;font-size:15px;padding:10px 12px 18px;color:var(--accent-bright);}
 .as-btn{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:9px;color:rgba(255,255,255,.65);font-size:14px;font-weight:600;text-align:left;width:100%;transition:background .2s ease,color .2s ease;}
@@ -539,8 +543,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .admin-topbar h2{font-size:18px;}
 .admin-body{padding:28px 32px 80px;max-width:880px;}
 .admin-panel-section{display:flex;flex-direction:column;gap:18px;}
-.admin-card{padding:22px;display:flex;flex-direction:column;gap:16px;}
-.admin-card h4{font-size:14px;color:rgba(255,255,255,.85);}
+.admin-card{padding:22px;display:flex;flex-direction:column;gap:16px;background:var(--admin-accent);border:1px solid var(--admin-border);border-radius:var(--radius);}
+.admin-card h4{font-size:14px;color:var(--admin-text);font-weight:600;}
 .a-field{display:flex;flex-direction:column;gap:6px;}
 .a-field label{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.55);}
 .a-field input,.a-field textarea,.a-field select{padding:11px 13px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#fff;font-size:14px;}
@@ -2718,9 +2722,11 @@ function isAdminGraceActive(){
 }
 
 function openAdminDashboard(){
+  const dash=document.getElementById('admin-dashboard');
+  dash.classList.toggle('dark-mode',!!(CONFIG.appearance && CONFIG.appearance.dark_mode));
   if(!hasRecoverySetup()){
     selectAdminSection('password');
-    document.getElementById('admin-dashboard').hidden=false;
+    dash.hidden=false;
     document.body.classList.add('no-scroll');
     toast('⚠ Set security questions first (required to prevent data loss)',false);
     renderAdminSidebar();
@@ -2730,7 +2736,7 @@ function openAdminDashboard(){
   document.getElementById('admin-sidebar').style.pointerEvents='auto';
   renderAdminSidebar();
   selectAdminSection('identity');
-  document.getElementById('admin-dashboard').hidden=false;
+  dash.hidden=false;
   document.body.classList.add('no-scroll');
   startAdminIdleWatchdog();
   refreshHelpDot();
@@ -2811,6 +2817,8 @@ function selectAdminSection(key){
     markAllNotificationsRead();
     renderAdminSidebar();
   }
+  const dash=document.getElementById('admin-dashboard');
+  dash.classList.toggle('dark-mode',!!(CONFIG.appearance && CONFIG.appearance.dark_mode));
   document.getElementById('admin-sidebar').querySelectorAll('.as-btn').forEach(b=>b.classList.toggle('active',b.dataset.section===key));
   const section=ADMIN_SECTIONS.find(s=>s.key===key);
   document.getElementById('admin-section-title').textContent=section?section.label:'';
@@ -3463,6 +3471,7 @@ function panelAppearance(){
   const fonts=a.fonts||{};
   const sections=[['products','Products'],['packages','Packages'],['about','About'],['gallery','Gallery'],['testimonials','Testimonials'],['contact','Contact']];
   return '<div class="admin-panel-section">'
+    +'<div class="admin-card"><h4>Admin Theme</h4><div class="a-toggle"><span>Dark Mode</span><div class="switch'+(a.dark_mode?' on':'')+'" data-path="appearance.dark_mode" data-rerender="1"></div></div></div>'
     +'<div class="admin-card"><h4>Layout</h4><div class="layout-options">'
     +LAYOUT_OPTIONS.map(o=>(
       '<div class="layout-opt'+(a.layout===o.key?' selected':'')+'" data-layout-opt="'+o.key+'">'+icon(o.icon,32)+'<span>'+o.label+'</span></div>'
