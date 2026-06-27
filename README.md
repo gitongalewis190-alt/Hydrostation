@@ -8,12 +8,12 @@ A single-file, zero-build business website template built to run on GitHub Pages
 2. **Enable GitHub Pages.** In your new repo: Settings → Pages → Source: "Deploy from a branch" → Branch: `main` (or `master`) → folder `/ (root)` → Save.
 3. **Visit your site.** GitHub will give you a URL like `https://yourusername.github.io/yourbusiness-site/`. It may take a minute to go live after enabling Pages.
 4. **Open the admin dashboard.** Press and hold the menu/hamburger icon in the top-left of the nav bar (about half a second, until it glows), then — still holding — drag it downward. (A plain tap instead opens the public quick-info drawer.)
-5. **Set your password & security questions.** The dashboard requires both before you can edit anything:
-   - Go to **Password** and set a strong admin password (minimum 6 characters).
-   - Immediately set up your two **security questions** — these are mandatory for data recovery. Write down your answers somewhere safe (you can copy them to clipboard for backup via the "Save Recovery Info" button).
-   - Once both are set, you'll be able to edit your site content.
-   - If you ever forget your password, tap "Forgot password?" on the lock screen and answer your security questions to reset it instantly — no developer needed.
-   - The dashboard also auto-locks after 5 minutes of inactivity, and destructive actions (like Reset) ask you to re-enter your password.
+5. **Set your security questions.** Recovery questions are mandatory to prevent data loss:
+   - Go to **Password** and set up your two **security questions** (required before you can edit anything).
+   - Write down your answers somewhere safe (you can copy them to clipboard via the "Save Recovery Info" button).
+   - (Optional) Set a strong admin password (minimum 6 characters) to lock your dashboard. This prevents others who know the hold-and-drag gesture from opening it, but recovery questions are the critical backup.
+   - If you ever forget your password, tap "Forgot password?" on the lock screen and answer your security questions to reset it yourself — no developer needed.
+   - The dashboard also auto-locks after 5 minutes of inactivity.
 6. **Fill in your business.** Go through each section in the sidebar — Business Identity, Social Links, Products, Packages, Gallery, Testimonials, About, Appearance — and replace the demo content with your own. Every change autosaves to your browser's local storage and shows a "Saved" confirmation.
 7. **Exit admin** via the button in the top-right of the dashboard to return to your live public site and see your changes.
 
@@ -66,14 +66,14 @@ Once a site is built and content is filled in, handing it to the business owner 
 
 1. **Open the live URL** on their device (the `https://yourusername.github.io/yourbusiness-site/` link from step 3 above) in their normal browser (Chrome/Safari).
 2. **Add it to their home screen** so it opens like an app: browser menu → "Add to Home Screen" (iOS Safari) or "Install app"/"Add to Home Screen" (Android Chrome). This is optional but makes daily use easier.
-3. **Confirm the admin password** — open the admin gesture (hold hamburger icon ~0.5s, then drag down) and log in with the password you set.
-4. **Confirm security questions are set** — on the **Password** section, verify that their two security questions are filled in. Ask them to write down their answers and save them somewhere safe (they can copy them via "Save Recovery Info" button).
+3. **Confirm security questions are set** — on the **Password** section, verify that their two security questions are filled in and they've written down the answers. They can copy answers via "Save Recovery Info" button to clipboard.
+4. **Optional: Set a password** — if they want to lock their dashboard from others who know the hold-and-drag gesture, they can set a password. This is optional but recommended for extra security.
 5. **Walk them through one real edit** (e.g. updating Business Hours or a product) so they see the autosave/"Saved" confirmation.
 6. **Tell them three rules:**
    - Don't clear their browser's site data/history for this site (it deletes their content).
    - If they ever edit from a second device, use **Data → Export / Import** to carry content over — unless Cloud Sync is enabled, in which case every device syncs automatically.
-   - Keep their password and security question answers safe. If the password is lost, they can recover it using their security questions on the lock screen. Without security questions, the only option is Data → Reset (which wipes content back to defaults).
-7. **Leave them:** the admin password, a copy of their security question answers, and a copy of the exported JSON backup (Data → Export) — all stored safely.
+   - Keep their security question answers safe. If they forget their password, they can reset it using their security questions on the lock screen (no developer needed). Without security questions, the only option is Data → Reset (which wipes content back to defaults).
+7. **Leave them:** a copy of their security question answers (CRITICAL for recovery), optionally their password if you set one, and a copy of the exported JSON backup (Data → Export) — all stored safely.
 
 That's the whole handoff — there's nothing to install, no accounts to create, and no ongoing hosting cost.
 
