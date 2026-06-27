@@ -4119,11 +4119,27 @@ function zoomLightbox(delta){
 /* ============ CUSTOMER INFO MODAL ============ */
 let customerInfo={name:'',address:'',phone:''};
 let pendingCheckoutChannel=null;
+const CUSTOMER_PHONE_KEY='hydrobiz_customer_phone';
 
+function normalizePhone(value){
+  let v=String(value||'').replace(/[^\d]/g,'');
+  if(v.startsWith('00')) v=v.slice(2);
+  return v;
+}
+function loadSavedPhone(){
+  const saved=localStorage.getItem(CUSTOMER_PHONE_KEY);
+  return saved||'';
+}
+function savePhone(phone){
+  if(phone) localStorage.setItem(CUSTOMER_PHONE_KEY,phone);
+}
 function openCustomerInfoModal(channel){
   pendingCheckoutChannel=channel;
   document.getElementById('customer-info-modal').hidden=false;
   document.body.classList.add('no-scroll');
+  const savedPhone=loadSavedPhone();
+  const phoneInput=document.getElementById('ci-phone');
+  if(savedPhone && !phoneInput.value) phoneInput.value=savedPhone;
   document.getElementById('ci-name').focus();
 }
 function closeCustomerInfoModal(){
@@ -4134,22 +4150,33 @@ function closeCustomerInfoModal(){
 function validateCustomerInfo(){
   const name=(document.getElementById('ci-name').value||'').trim();
   const address=(document.getElementById('ci-address').value||'').trim();
-  const phone=(document.getElementById('ci-phone').value||'').trim();
+  let phone=(document.getElementById('ci-phone').value||'').trim();
   if(!name){ toast('Full name is required',true); return false; }
   if(!address){ toast('Address is required',true); return false; }
   if(!phone){ toast('Phone is required',true); return false; }
+  phone=normalizePhone(phone);
   const warn=phoneFormatWarning(phone);
   if(warn){ toast('Phone format: '+warn,true); return false; }
   customerInfo={name,address,phone};
+  savePhone(phone);
   return true;
 }
 function initCustomerInfoModal(){
   const modal=document.getElementById('customer-info-modal');
   document.getElementById('ci-cancel').addEventListener('click',closeCustomerInfoModal);
-  document.getElementById('ci-phone').addEventListener('input',e=>{
-    const msg=phoneFormatWarning(e.target.value);
+  const phoneInput=document.getElementById('ci-phone');
+  phoneInput.addEventListener('input',e=>{
+    const normalized=normalizePhone(e.target.value);
+    if(normalized!==normalizePhone(e.target.value.replace(/[^\d]/g,''))) e.target.value=normalized;
+    const msg=phoneFormatWarning(normalized);
     const warnEl=document.getElementById('ci-phone-warn');
-    warnEl.textContent=msg; warnEl.hidden=!msg;
+    if(!msg && normalized.length>0 && normalized.length<10){
+      warnEl.textContent='💡 Add country code for intl format (e.g. 254712345678)';
+      warnEl.hidden=false;
+    } else {
+      warnEl.textContent=msg;
+      warnEl.hidden=!msg;
+    }
   });
   document.getElementById('ci-proceed').addEventListener('click',()=>{
     if(validateCustomerInfo()){
