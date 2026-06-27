@@ -508,6 +508,10 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .modal-panel p.hint{color:rgba(255,255,255,.5);font-size:13px;margin-bottom:22px;}
 .modal-panel input{width:100%;padding:13px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:15px;margin-bottom:14px;}
 .modal-panel input:focus{outline:none;border-color:var(--accent-bright);}
+.modal-panel .field{gap:5px;margin-bottom:12px;}
+.modal-panel .field label{color:rgba(255,255,255,.8);}
+.modal-panel .field input{margin-bottom:0;}
+.modal-panel .field-warn{color:#FBBF24;font-size:12px;margin-top:4px;}
 .modal-actions{display:flex;gap:10px;margin-top:6px;}
 .modal-actions .btn{flex:1;}
 .error-text{color:#F87171;font-size:13px;margin-top:10px;}
@@ -846,6 +850,21 @@ body[data-layout="editorial"] .products-grid .product-card:first-child,body[data
       <a class="btn btn-ghost btn-block" id="cart-checkout-email" hidden>Order via Email</a>
       <a class="btn btn-ghost btn-block" id="cart-checkout-call" hidden>Call to Order</a>
       <p class="field-warn" id="cart-checkout-none" hidden>No checkout method is set up yet. Add a phone number, WhatsApp number, or email in Admin → Business Identity so customers can complete orders.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="customer-info-modal" hidden>
+  <div class="modal-panel">
+    <h3>Delivery Details</h3>
+    <p class="hint">Please provide your information to complete the order.</p>
+    <div class="field"><label for="ci-name">Full Name *</label><input id="ci-name" type="text" placeholder="Your name"></div>
+    <div class="field"><label for="ci-address">Address *</label><input id="ci-address" type="text" placeholder="Delivery address"></div>
+    <div class="field"><label for="ci-phone">Phone *</label><input id="ci-phone" type="tel" placeholder="254712345678"></div>
+    <p class="field-warn" id="ci-phone-warn" hidden></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="ci-cancel" type="button" style="background:rgba(11,110,122,.08);color:var(--accent);border-color:var(--border);">Cancel</button>
+      <button class="btn btn-primary" id="ci-proceed" type="button">Proceed to Order</button>
     </div>
   </div>
 </div>
@@ -4092,6 +4111,74 @@ function zoomLightbox(delta){
   lbImg.classList.toggle('zoomed',next>1);
 }
 
+/* ============ CUSTOMER INFO MODAL ============ */
+let customerInfo={name:'',address:'',phone:''};
+let pendingCheckoutChannel=null;
+
+function openCustomerInfoModal(channel){
+  pendingCheckoutChannel=channel;
+  document.getElementById('customer-info-modal').hidden=false;
+  document.body.classList.add('no-scroll');
+  document.getElementById('ci-name').focus();
+}
+function closeCustomerInfoModal(){
+  document.getElementById('customer-info-modal').hidden=true;
+  document.body.classList.remove('no-scroll');
+  pendingCheckoutChannel=null;
+}
+function validateCustomerInfo(){
+  const name=(document.getElementById('ci-name').value||'').trim();
+  const address=(document.getElementById('ci-address').value||'').trim();
+  const phone=(document.getElementById('ci-phone').value||'').trim();
+  if(!name){ toast('Full name is required',true); return false; }
+  if(!address){ toast('Address is required',true); return false; }
+  if(!phone){ toast('Phone is required',true); return false; }
+  const warn=phoneFormatWarning(phone);
+  if(warn){ toast('Phone format: '+warn,true); return false; }
+  customerInfo={name,address,phone};
+  return true;
+}
+function initCustomerInfoModal(){
+  const modal=document.getElementById('customer-info-modal');
+  document.getElementById('ci-cancel').addEventListener('click',closeCustomerInfoModal);
+  document.getElementById('ci-phone').addEventListener('input',e=>{
+    const msg=phoneFormatWarning(e.target.value);
+    const warnEl=document.getElementById('ci-phone-warn');
+    warnEl.textContent=msg; warnEl.hidden=!msg;
+  });
+  document.getElementById('ci-proceed').addEventListener('click',()=>{
+    if(validateCustomerInfo()){
+      closeCustomerInfoModal();
+      proceedToCheckout(pendingCheckoutChannel);
+    }
+  });
+  modal.addEventListener('click',e=>{ if(e.target===modal) closeCustomerInfoModal(); });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && !modal.hidden) closeCustomerInfoModal();
+  });
+}
+function proceedToCheckout(channel){
+  if(!channel) return;
+  logCartCheckout(channel);
+  const totals=cartTotals();
+  const custLine=customerInfo.name?'\nCustomer: '+escapeHTML(customerInfo.name)+'\nDelivery Address: '+escapeHTML(customerInfo.address)+'\nPhone: '+escapeHTML(customerInfo.phone):'';
+  const orderMsg='Hi '+CONFIG.identity.name+', I would like to order:\n'
+    +CART.map(c=>'- '+c.qty+'x '+c.name+' ('+formatMoney(c.currency,c.price)+' each)').join('\n')
+    +'\nTotal: '+formatTotals(totals)+custLine;
+  const phoneSrc=CONFIG.socials.whatsapp||CONFIG.identity.phone;
+  if(channel==='whatsapp' && phoneSrc){
+    window.open(waLink(phoneSrc,orderMsg),'_blank');
+  } else if(channel==='sms' && CONFIG.identity.phone){
+    const digits=String(CONFIG.identity.phone).replace(/[^\d+]/g,'');
+    window.location.href='sms:'+digits+'?body='+encodeURIComponent(orderMsg);
+  } else if(channel==='email' && CONFIG.identity.email){
+    window.location.href='mailto:'+encodeURIComponent(CONFIG.identity.email)+'?subject='+encodeURIComponent('New order from '+(CONFIG.identity.name||'website'))+'&body='+encodeURIComponent(orderMsg);
+  } else if(channel==='call' && CONFIG.identity.phone){
+    const digits=String(CONFIG.identity.phone).replace(/[^\d+]/g,'');
+    window.location.href='tel:'+digits;
+  }
+}
+
 /* ============ CART UI ============ */
 function renderCart(){
   const itemsEl=document.getElementById('cart-items');
@@ -4119,9 +4206,10 @@ function renderCart(){
   )).join('');
   const totals=cartTotals();
   document.getElementById('cart-total-text').textContent=formatTotals(totals);
+  const custLine=customerInfo.name?'\nCustomer: '+escapeHTML(customerInfo.name)+'\nDelivery Address: '+escapeHTML(customerInfo.address)+'\nPhone: '+escapeHTML(customerInfo.phone):'';
   const orderMsg='Hi '+CONFIG.identity.name+', I would like to order:\n'
     +CART.map(c=>'- '+c.qty+'x '+c.name+' ('+formatMoney(c.currency,c.price)+' each)').join('\n')
-    +'\nTotal: '+formatTotals(totals);
+    +'\nTotal: '+formatTotals(totals)+custLine;
   const waBtn=document.getElementById('cart-checkout-wa');
   const smsBtn=document.getElementById('cart-checkout-sms');
   const emailBtn=document.getElementById('cart-checkout-email');
@@ -4195,10 +4283,11 @@ function initCart(){
     cartAdd({id:k.id,type:'package',name:k.name,price:k.price,currency:k.currency,image_b64:''});
     cartAddBtnFeedback(btn);
   });
-  document.getElementById('cart-checkout-wa').addEventListener('click',()=>logCartCheckout('whatsapp'));
-  document.getElementById('cart-checkout-sms').addEventListener('click',()=>logCartCheckout('sms'));
-  document.getElementById('cart-checkout-email').addEventListener('click',()=>logCartCheckout('email'));
-  document.getElementById('cart-checkout-call').addEventListener('click',()=>logCartCheckout('call'));
+  document.getElementById('cart-checkout-wa').addEventListener('click',e=>{ e.preventDefault(); openCustomerInfoModal('whatsapp'); });
+  document.getElementById('cart-checkout-sms').addEventListener('click',e=>{ e.preventDefault(); openCustomerInfoModal('sms'); });
+  document.getElementById('cart-checkout-email').addEventListener('click',e=>{ e.preventDefault(); openCustomerInfoModal('email'); });
+  document.getElementById('cart-checkout-call').addEventListener('click',e=>{ e.preventDefault(); openCustomerInfoModal('call'); });
+  initCustomerInfoModal();
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape' && document.getElementById('cart-drawer').classList.contains('open')) closeCartDrawer();
   });
