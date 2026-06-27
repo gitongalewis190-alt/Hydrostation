@@ -3552,21 +3552,20 @@ function panelPassword(){
   const rec=CONFIG.password_recovery||{};
   const recoverySet=hasRecoverySetup();
   return '<div class="admin-panel-section">'
-    +(hasPassword?'':'<div class="admin-card"><h4>🔓 Admin Password (Optional)</h4><p class="cap-note" style="color:#60a5fa;">No password set yet. Your dashboard is currently open to anyone who knows the hold-and-drag gesture. Set a password to lock it down, but recovery questions below are mandatory for data protection.</p></div>')
-    +'<div class="admin-card"><h4>'+(hasPassword?'Change Admin Password':'Set Admin Password (Optional)')+'</h4>'
+    +'<div class="admin-card"><h4>🔐 Account Security Setup</h4>'
+    +'<p class="cap-note">Set your security questions (required to protect your data), optionally add a password to lock your dashboard. Fill in below and save once.</p>'
+    +'<h5 style="margin-top:16px;margin-bottom:8px;font-weight:600;font-size:14px;">Password (Optional)</h5>'
     +(hasPassword?'<div class="a-field"><label>Current Password</label><div class="pw-field"><input type="password" id="pw-current" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>':'')
     +'<div class="a-field"><label>New Password</label><div class="pw-field"><input type="password" id="pw-new" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
-    +'<div class="a-field"><label>Confirm New Password</label><div class="pw-field"><input type="password" id="pw-confirm" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
-    +'<button class="btn btn-primary" id="pw-save" type="button">'+(hasPassword?'Update Password':'Set Password')+'</button>'
-    +'<p class="cap-note" style="margin-top:10px;">'+(recoverySet?'✓ Recovery is set up. If you forget your password, tap "Forgot password?" on the lock screen and answer your security questions to reset it yourself — no developer needed.':'⚠ Without Security Questions below, a forgotten password can only be recovered via Data → Reset (which clears all content).')+'</p>'
-    +'</div>'
-    +'<div class="admin-card"><h4>Security Questions ('+(!recoverySet?'⚠ REQUIRED':'✓')+')</h4>'
-    +'<p class="cap-note">Set two security questions so you can recover access yourself if you ever forget your password. Use professional answers you\'ll remember (not jokes), and keep them as safe as the password itself.</p>'
-    +(recoverySet?'<p class="cap-note" style="color:#34D399;margin-top:6px;font-weight:600;">✓ Recovery questions are set up.</p>':'<p class="cap-note" style="color:#FBBF24;margin-top:6px;font-weight:600;">⚠ REQUIRED before you can edit anything.</p>')
+    +'<div class="a-field"><label>Confirm Password</label><div class="pw-field"><input type="password" id="pw-confirm" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
+    +'<p class="cap-note" style="font-size:13px;color:rgba(255,255,255,.5);margin-top:6px;">Leave blank to skip password (security questions alone will protect your data).</p>'
+    +'<h5 style="margin-top:16px;margin-bottom:8px;font-weight:600;font-size:14px;color:'+(recoverySet?'#34D399':'#FBBF24')+';">Security Questions ('+(!recoverySet?'REQUIRED':'✓ SET')+')</h5>'
+    +'<p class="cap-note" style="margin-bottom:12px;">If you forget your password, answer these questions on the lock screen to reset it. Use answers only you know.</p>'
     +recoveryQuestionField(1,rec.q1)
     +recoveryQuestionField(2,rec.q2)
-    +'<button class="btn btn-primary" id="rec-save" type="button">'+(recoverySet?'Update Security Questions':'Set Security Questions')+'</button>'
-    +(recoverySet?'<button class="btn btn-ghost" id="rec-export" type="button" style="background:rgba(255,255,255,.06);color:#34D399;border-color:rgba(255,255,255,.15);margin-left:8px;">Save Recovery Info</button>':'')
+    +'<div style="display:flex;gap:10px;margin-top:16px;"><button class="btn btn-primary" id="pw-rec-save" type="button">Save Password &amp; Security</button>'
+    +(recoverySet?'<button class="btn btn-ghost" id="rec-export" type="button" style="background:rgba(255,255,255,.06);color:#34D399;border-color:rgba(255,255,255,.15);">📋 Copy Backup</button>':'')
+    +'</div>'
     +'</div>'
     +'<div class="admin-card"><h4>Auto-Lock &amp; Re-Entry Grace Period</h4>'
     +'<p class="cap-note">How long the dashboard can sit idle before auto-locking, and how long after you tap "Exit Admin" you can come back in via the hold-and-pull gesture without re-typing your password. Maximum 5 minutes.</p>'
@@ -3623,32 +3622,42 @@ function exportRecoveryInfo(){
   }
 }
 function bindPasswordActions(){
-  const btn=document.getElementById('pw-save');
-  if(btn){
-    bindPasswordEyeToggles(document.getElementById('admin-body'));
-    btn.addEventListener('click',async ()=>{
-      const next=document.getElementById('pw-new').value;
-      const confirmVal=document.getElementById('pw-confirm').value;
-      if(CONFIG.password_hash){
-        const cur=document.getElementById('pw-current').value;
-        const curHash=await sha256(cur);
-        if(curHash!==CONFIG.password_hash){ toast('Current password is incorrect',true); return; }
-      }
-      if(next.length<6){ toast('New password must be at least 6 characters',true); return; }
-      if(next!==confirmVal){ toast('New passwords do not match',true); return; }
-      CONFIG.password_hash=await sha256(next);
-      commitNow('Password set');
-      rerenderAdminBody();
-    });
-  }
+  bindPasswordEyeToggles(document.getElementById('admin-body'));
   [1,2].forEach(idx=>{
     const sel=document.getElementById('rec-q'+idx+'-select');
     if(sel) sel.addEventListener('change',()=>{
       document.getElementById('rec-q'+idx+'-custom').style.display=sel.value==='__custom__'?'':'none';
     });
   });
-  const recBtn=document.getElementById('rec-save');
-  if(recBtn) recBtn.addEventListener('click',attemptSaveRecovery);
+  const saveBtn=document.getElementById('pw-rec-save');
+  if(saveBtn) saveBtn.addEventListener('click',async ()=>{
+    const pwNew=document.getElementById('pw-new').value;
+    const pwConfirm=document.getElementById('pw-confirm').value;
+    if(pwNew && pwNew.length<6){ toast('Password must be at least 6 characters',true); return; }
+    if(pwNew && pwNew!==pwConfirm){ toast('Passwords do not match',true); return; }
+    if(CONFIG.password_hash && pwNew){
+      const pwCur=document.getElementById('pw-current').value;
+      const pwCurHash=await sha256(pwCur);
+      if(pwCurHash!==CONFIG.password_hash){ toast('Current password is incorrect',true); return; }
+    }
+    const q1Sel=document.getElementById('rec-q1-select').value;
+    const q1=q1Sel==='__custom__'?document.getElementById('rec-q1-custom').value.trim():q1Sel;
+    const q2Sel=document.getElementById('rec-q2-select').value;
+    const q2=q2Sel==='__custom__'?document.getElementById('rec-q2-custom').value.trim():q2Sel;
+    const a1raw=document.getElementById('rec-a1').value;
+    const a2raw=document.getElementById('rec-a2').value;
+    if(!q1||!q2){ toast('Both security questions are required',true); return; }
+    if(q1===q2){ toast('Pick two different security questions',true); return; }
+    const rec=CONFIG.password_recovery||{};
+    if((q1!==rec.q1||!rec.a1_hash) && !a1raw){ toast('Answer for question 1 is required',true); return; }
+    if((q2!==rec.q2||!rec.a2_hash) && !a2raw){ toast('Answer for question 2 is required',true); return; }
+    if(pwNew) CONFIG.password_hash=await sha256(pwNew);
+    const a1_hash=a1raw?await sha256(normalizeAnswer(a1raw)):rec.a1_hash;
+    const a2_hash=a2raw?await sha256(normalizeAnswer(a2raw)):rec.a2_hash;
+    CONFIG.password_recovery={ q1, q2, a1_hash, a2_hash };
+    commitNow('Password & security questions saved');
+    rerenderAdminBody();
+  });
   const expBtn=document.getElementById('rec-export');
   if(expBtn) expBtn.addEventListener('click',e=>{
     e.preventDefault();
