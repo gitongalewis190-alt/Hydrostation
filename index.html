@@ -2678,6 +2678,28 @@ function isAdminGraceActive(){
 }
 
 function openAdminDashboard(){
+  if(!CONFIG.password_hash){
+    selectAdminSection('password');
+    document.getElementById('admin-dashboard').hidden=false;
+    document.body.classList.add('no-scroll');
+    document.getElementById('admin-sidebar').style.opacity='.4';
+    document.getElementById('admin-sidebar').style.pointerEvents='none';
+    toast('⚠ Set a password first, then security questions',false);
+    renderAdminSidebar();
+    return;
+  }
+  if(!hasRecoverySetup()){
+    selectAdminSection('password');
+    document.getElementById('admin-dashboard').hidden=false;
+    document.body.classList.add('no-scroll');
+    document.getElementById('admin-sidebar').style.opacity='1';
+    document.getElementById('admin-sidebar').style.pointerEvents='auto';
+    toast('⚠ Security questions required before editing',false);
+    renderAdminSidebar();
+    return;
+  }
+  document.getElementById('admin-sidebar').style.opacity='1';
+  document.getElementById('admin-sidebar').style.pointerEvents='auto';
   renderAdminSidebar();
   selectAdminSection('identity');
   document.getElementById('admin-dashboard').hidden=false;
@@ -2793,6 +2815,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   body.addEventListener('input',e=>{
     const t=e.target;
     if(t.dataset.path && t.type!=='file' && t.type!=='checkbox' && t.type!=='password'){
+      if(!hasRecoverySetup() && adminActiveSection!=='password'){
+        toast('⚠ Set up security questions first',true);
+        return;
+      }
       let val=t.dataset.type==='number'?Number(t.value):sanitizePastedFieldValue(t.dataset.path,t.value);
       if(t.dataset.type==='number'){
         if(t.min!==''){ const lo=Number(t.min); if(Number.isFinite(lo) && (!Number.isFinite(val)||val<lo)) val=lo; }
@@ -2809,11 +2835,21 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   body.addEventListener('change',e=>{
     const t=e.target;
-    if(t.tagName==='SELECT' && t.dataset.path){ commitField(t.dataset.path,t.value); rerenderAdminBody(); }
+    if(t.tagName==='SELECT' && t.dataset.path){
+      if(!hasRecoverySetup() && adminActiveSection!=='password'){
+        toast('⚠ Set up security questions first',true);
+        return;
+      }
+      commitField(t.dataset.path,t.value); rerenderAdminBody();
+    }
   });
   body.addEventListener('click',async e=>{
     const sw=e.target.closest('.switch[data-path]');
     if(sw){
+      if(!hasRecoverySetup() && adminActiveSection!=='password'){
+        toast('⚠ Set up security questions first',true);
+        return;
+      }
       const cur=!!getPath(CONFIG,sw.dataset.path);
       setPath(CONFIG,sw.dataset.path,!cur);
       sw.classList.toggle('on',!cur);
@@ -2825,6 +2861,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   body.addEventListener('change',async e=>{
     const t=e.target;
     if(t.type==='file' && t.dataset.path){
+      if(!hasRecoverySetup() && adminActiveSection!=='password'){
+        toast('⚠ Set up security questions first',true);
+        return;
+      }
       if(!t.files[0]) return;
       try{
         const b64=await fileToBase64(t.files[0]);
@@ -3484,25 +3524,26 @@ function panelPassword(){
   const rec=CONFIG.password_recovery||{};
   const recoverySet=hasRecoverySetup();
   return '<div class="admin-panel-section">'
-    +(hasPassword?'':'<div class="admin-card danger-zone"><h4>Admin Is Currently Unlocked</h4><p class="cap-note">No password has been set yet — anyone who long-presses and pulls down the menu icon can open this dashboard. Set a password now to lock it down.</p></div>')
+    +(hasPassword?'':'<div class="admin-card danger-zone"><h4>🔓 Admin Is Currently Unlocked</h4><p class="cap-note" style="color:#F87171;font-weight:600;">No password has been set yet — anyone who long-presses and pulls down the menu icon can open this dashboard. Set a password now to lock it down.</p></div>')
     +'<div class="admin-card"><h4>'+(hasPassword?'Change Admin Password':'Set Admin Password')+'</h4>'
     +(hasPassword?'<div class="a-field"><label>Current Password</label><div class="pw-field"><input type="password" id="pw-current" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>':'')
     +'<div class="a-field"><label>New Password</label><div class="pw-field"><input type="password" id="pw-new" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
     +'<div class="a-field"><label>Confirm New Password</label><div class="pw-field"><input type="password" id="pw-confirm" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
     +'<button class="btn btn-primary" id="pw-save" type="button">'+(hasPassword?'Update Password':'Set Password')+'</button>'
-    +'<p class="cap-note" style="margin-top:10px;">'+(recoverySet?'Forgot your password? Tap "Forgot password?" on the lock screen and answer your security questions below to set a new one — no developer needed.':'Forgotten passwords cannot be recovered unless you set up Security Questions below first &mdash; without them, the only option is Data &rarr; Reset, which clears all content.')+'</p>'
+    +'<p class="cap-note" style="margin-top:10px;">'+(recoverySet?'✓ Recovery is set up. If you forget your password, tap "Forgot password?" on the lock screen and answer your security questions to reset it yourself — no developer needed.':'⚠ Without Security Questions below, a forgotten password can only be recovered via Data → Reset (which clears all content).')+'</p>'
     +'</div>'
-    +'<div class="admin-card"><h4>Password Recovery — Security Questions</h4>'
-    +'<p class="cap-note">Set two security questions so you can recover access yourself if you ever forget your password. Use professional answers you\'ll remember (not jokes), and keep them as safe as the password itself — anyone who knows both answers can reset it.</p>'
-    +(recoverySet?'<p class="cap-note" style="color:#34D399;margin-top:6px;font-weight:600;">&#10003; Recovery questions are set up.</p>':'<p class="cap-note" style="color:#FBBF24;margin-top:6px;font-weight:600;">Not set up yet — strongly recommended.</p>')
+    +'<div class="admin-card"><h4>Security Questions ('+(!recoverySet?'⚠ REQUIRED':'✓')+')</h4>'
+    +'<p class="cap-note">Set two security questions so you can recover access yourself if you ever forget your password. Use professional answers you\'ll remember (not jokes), and keep them as safe as the password itself.</p>'
+    +(recoverySet?'<p class="cap-note" style="color:#34D399;margin-top:6px;font-weight:600;">✓ Recovery questions are set up.</p>':'<p class="cap-note" style="color:#FBBF24;margin-top:6px;font-weight:600;">⚠ REQUIRED before you can edit anything.</p>')
     +recoveryQuestionField(1,rec.q1)
     +recoveryQuestionField(2,rec.q2)
-    +'<button class="btn btn-primary" id="rec-save" type="button">'+(recoverySet?'Update Security Questions':'Save Security Questions')+'</button>'
+    +'<button class="btn btn-primary" id="rec-save" type="button">'+(recoverySet?'Update Security Questions':'Set Security Questions')+'</button>'
+    +(recoverySet?'<button class="btn btn-ghost" id="rec-export" type="button" style="background:rgba(255,255,255,.06);color:#34D399;border-color:rgba(255,255,255,.15);margin-left:8px;">Save Recovery Info</button>':'')
     +'</div>'
     +'<div class="admin-card"><h4>Auto-Lock &amp; Re-Entry Grace Period</h4>'
     +'<p class="cap-note">How long the dashboard can sit idle before auto-locking, and how long after you tap "Exit Admin" you can come back in via the hold-and-pull gesture without re-typing your password. Maximum 5 minutes.</p>'
     +'<div class="a-field"><label>Minutes (1&ndash;5)</label><input type="number" min="1" max="5" step="1" data-path="admin_security.idle_timeout_min" data-type="number" value="'+(CONFIG.admin_security&&CONFIG.admin_security.idle_timeout_min>0?CONFIG.admin_security.idle_timeout_min:5)+'"></div>'
-    +'<p class="cap-note" style="margin-top:6px;">Zero is not allowed &mdash; it would lock the dashboard the instant it opens with no way back in.</p>'
+    +'<p class="cap-note" style="margin-top:6px;">Zero is not allowed — it would lock the dashboard the instant it opens with no way back in.</p>'
     +'</div></div>';
 }
 function recoveryQuestionField(idx,currentQ){
@@ -3532,6 +3573,27 @@ async function attemptSaveRecovery(){
   commitNow('Security questions saved');
   rerenderAdminBody();
 }
+function exportRecoveryInfo(){
+  const rec=CONFIG.password_recovery||{};
+  const text=`HYDROBIZ ACCOUNT RECOVERY INFO - SAVE THIS SECURELY\n\nBusiness: ${CONFIG.identity.name||'Your Business Name'}\nSaved: ${new Date().toISOString()}\n\nSecurity Question 1: ${rec.q1}\nSecurity Question 2: ${rec.q2}\n\n⚠ Keep this file in a secure location (encrypted cloud storage, password manager, safe box, etc.)\nIf you lose access to this and forget your password, your account cannot be recovered.`;
+  try{
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(text);
+      toast('✓ Copied to clipboard — paste into a notes app or save as .txt file',false);
+    } else {
+      const ta=document.createElement('textarea');
+      ta.value=text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      toast('✓ Copied to clipboard',false);
+    }
+  }catch(e){
+    console.error('Copy failed',e);
+    toast('Copy failed — manually save your recovery questions',true);
+  }
+}
 function bindPasswordActions(){
   const btn=document.getElementById('pw-save');
   if(btn){
@@ -3559,6 +3621,8 @@ function bindPasswordActions(){
   });
   const recBtn=document.getElementById('rec-save');
   if(recBtn) recBtn.addEventListener('click',attemptSaveRecovery);
+  const expBtn=document.getElementById('rec-export');
+  if(expBtn) expBtn.addEventListener('click',exportRecoveryInfo);
 }
 
 /* ============ ADMIN PANEL: Data ============ */
