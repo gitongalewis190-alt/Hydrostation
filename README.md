@@ -7,8 +7,13 @@ A single-file, zero-build business website template built to run on GitHub Pages
 1. **Create your repo.** Click "Use this template" (or fork/copy this repo) into a new repository under your own GitHub account, e.g. `yourbusiness-site`.
 2. **Enable GitHub Pages.** In your new repo: Settings → Pages → Source: "Deploy from a branch" → Branch: `main` (or `master`) → folder `/ (root)` → Save.
 3. **Visit your site.** GitHub will give you a URL like `https://yourusername.github.io/yourbusiness-site/`. It may take a minute to go live after enabling Pages.
-4. **Open the admin dashboard.** Press and hold the menu/hamburger icon in the top-left of the nav bar (about half a second, until it glows), then — still holding — drag it downward. Since no password has been set yet, this opens the admin dashboard directly. (A plain tap instead opens the public quick-info drawer.)
-5. **Set your password immediately.** In the dashboard sidebar, go to **Password** and set one right away — until you do, anyone who knows the hold-and-pull gesture can open your dashboard. Once a password is set, the same gesture will ask for it instead of opening straight in. While you're there, also set up your two **security questions** — that's what lets you recover a forgotten password yourself later (see the Password bullet below). The dashboard also auto-locks after 5 minutes of inactivity, and destructive actions (like Reset) ask you to re-enter your password.
+4. **Open the admin dashboard.** Press and hold the menu/hamburger icon in the top-left of the nav bar (about half a second, until it glows), then — still holding — drag it downward. (A plain tap instead opens the public quick-info drawer.)
+5. **Set your password & security questions.** The dashboard requires both before you can edit anything:
+   - Go to **Password** and set a strong admin password (minimum 6 characters).
+   - Immediately set up your two **security questions** — these are mandatory for data recovery. Write down your answers somewhere safe (you can copy them to clipboard for backup via the "Save Recovery Info" button).
+   - Once both are set, you'll be able to edit your site content.
+   - If you ever forget your password, tap "Forgot password?" on the lock screen and answer your security questions to reset it instantly — no developer needed.
+   - The dashboard also auto-locks after 5 minutes of inactivity, and destructive actions (like Reset) ask you to re-enter your password.
 6. **Fill in your business.** Go through each section in the sidebar — Business Identity, Social Links, Products, Packages, Gallery, Testimonials, About, Appearance — and replace the demo content with your own. Every change autosaves to your browser's local storage and shows a "Saved" confirmation.
 7. **Exit admin** via the button in the top-right of the dashboard to return to your live public site and see your changes.
 
@@ -34,24 +39,26 @@ That's it — no code, no terminal, no deployment pipeline. Repeat for each of y
 
 ## Notes on storage
 
-All content (text, images, settings) is stored in your browser's `localStorage`, which has a small capacity (typically 5-10MB total, shared across everything on the site). Images are the main thing that fills it — an uploaded photo takes up roughly a third more space as stored text (base64) than its original file size.
+All content (text, images, settings) is stored in your browser's `localStorage`, which has a small capacity (typically 5–10MB total, shared across everything on the site). Images are the main thing that fills it — an uploaded photo takes up roughly a third more space as stored text (base64) than its original file size.
 
-**Why "Storage is full" happens:** too many/too-large images saved across Products, Packages, Gallery, About/Team, and your Logo all add up against that one shared limit.
+**Smart image handling:** Images are automatically compressed on upload — resized to 1200px wide and compressed to JPEG quality 85 — so they take up much less space without looking worse. You'll see a warning at 80% storage capacity so you can act before hitting the limit.
 
-**Fix it right now (what worked for you already):**
-1. Go to the section with the most or biggest images first — usually **Gallery** or **Products** — and delete a couple of the largest/least-important ones.
-2. Save. The error clears immediately once you're back under the limit; nothing else is lost.
+**If storage gets full:**
+1. You'll see a warning in **Cloud Sync** section showing your current usage percentage.
+2. Delete a few large images from **Gallery** or **Products** (usually the easiest fix).
+3. If you plan to add many more products/gallery images, turn on **Cloud Sync** (see below) for unlimited storage.
 
-**Avoid hitting it again:**
-- Resize photos to about 1200px wide before uploading (a phone photo straight from the camera is often 5-10x larger than it needs to be on screen).
-- Use JPG for photos (not PNG) — JPG is much smaller for the same look.
-- For product videos, use a **YouTube link** (Products → video field) instead of uploading a video file — videos are by far the fastest way to fill storage, and a YouTube link uses zero local storage.
-- Keep Gallery to your best 8-12 shots rather than everything you have — quality over quantity.
+**Avoid hitting the limit:**
+- The site automatically compresses images on upload.
+- For product videos, use a **YouTube link** (Products → video field) instead of uploading — videos are by far the fastest way to fill storage, and a YouTube link uses zero local storage.
+- Keep Gallery to your best 8–12 shots rather than everything you have — quality over quantity.
 - Uploaded images are hard-capped at 6MB each regardless, as a safety limit.
 
-**Backup before you trim:** if you're not sure you want to delete something permanently, run **Data → Export** first to save a full JSON backup of everything (including the images). You can delete freely knowing you can pull anything back in later via **Data → Import** if needed.
+**Unlimited storage with Cloud Sync:** Turn on **Cloud Sync** in the admin sidebar (completely free, takes 5 minutes) to store everything in your own Firebase project. This gives you unlimited storage, real-time sync across all devices and browsers, and automatic backups. Recommended if you have many products or gallery images.
 
-`localStorage` is also per-browser, per-device — it doesn't sync anywhere by itself. If you edit your site from a different computer or browser, use **Data → Export** on the original device and **Data → Import** on the new one to bring your content along. (If you want changes to appear instantly for visitors across every device without manual export/import, turn on **Cloud Sync** in the admin sidebar — see below.)
+**Backup your data:** Run **Data → Export** to save a full JSON backup of everything (including images as base64). You can delete freely knowing you can restore via **Data → Import** anytime.
+
+**Multi-device editing:** `localStorage` is per-browser, per-device — if you edit your site on Phone A, then Phone B, they won't sync automatically. Use **Data → Export** on Phone A and **Data → Import** on Phone B to carry content over. Or turn on **Cloud Sync** (see above) to sync automatically across all devices.
 
 ## Setting up a client's device (quick checklist)
 
@@ -59,10 +66,14 @@ Once a site is built and content is filled in, handing it to the business owner 
 
 1. **Open the live URL** on their device (the `https://yourusername.github.io/yourbusiness-site/` link from step 3 above) in their normal browser (Chrome/Safari).
 2. **Add it to their home screen** so it opens like an app: browser menu → "Add to Home Screen" (iOS Safari) or "Install app"/"Add to Home Screen" (Android Chrome). This is optional but makes daily use easier.
-3. **Confirm the admin password is the one you handed off** — open the admin gesture (hold the hamburger icon ~0.5s, then drag down) and log in with the password you set for them, not any test/default password.
-4. **Walk them through one real edit** (e.g. updating Business Hours or a product) so they see the autosave/"Saved" confirmation firsthand.
-5. **Tell them two rules:** don't clear their browser's site data/history for this site (it deletes their content, since it's stored locally), and if they ever edit from a second device, use **Data → Export / Import** to carry content over — unless Cloud Sync is enabled (see below), in which case every device stays in sync automatically.
-6. **Leave them the password and a copy of the exported JSON backup** (Data → Export) somewhere safe — if the password is ever lost it cannot be recovered, only reset (which wipes content back to defaults).
+3. **Confirm the admin password** — open the admin gesture (hold hamburger icon ~0.5s, then drag down) and log in with the password you set.
+4. **Confirm security questions are set** — on the **Password** section, verify that their two security questions are filled in. Ask them to write down their answers and save them somewhere safe (they can copy them via "Save Recovery Info" button).
+5. **Walk them through one real edit** (e.g. updating Business Hours or a product) so they see the autosave/"Saved" confirmation.
+6. **Tell them three rules:**
+   - Don't clear their browser's site data/history for this site (it deletes their content).
+   - If they ever edit from a second device, use **Data → Export / Import** to carry content over — unless Cloud Sync is enabled, in which case every device syncs automatically.
+   - Keep their password and security question answers safe. If the password is lost, they can recover it using their security questions on the lock screen. Without security questions, the only option is Data → Reset (which wipes content back to defaults).
+7. **Leave them:** the admin password, a copy of their security question answers, and a copy of the exported JSON backup (Data → Export) — all stored safely.
 
 That's the whole handoff — there's nothing to install, no accounts to create, and no ongoing hosting cost.
 
