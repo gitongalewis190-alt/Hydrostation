@@ -1134,13 +1134,53 @@ async function sha256(message){
   const hashBuffer=await crypto.subtle.digest('SHA-256',buf);
   return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
+function estimateStorageUsed(){
+  try{
+    const cfg=JSON.stringify(CONFIG);
+    return cfg.length*0.75; // base64 overhead ~33%
+  }catch(e){ return 0; }
+}
 function fileToBase64(file){
   return new Promise((resolve,reject)=>{
-    if(file.size>6*1024*1024){ reject(new Error('Image too large (max 6MB). Please choose a smaller file.')); return; }
-    const reader=new FileReader();
-    reader.onload=e=>resolve(e.target.result);
-    reader.onerror=()=>reject(new Error('Could not read file.'));
-    reader.readAsDataURL(file);
+    if(file.size>6*1024*1024){ reject(new Error('Image too large (max 6MB). Please resize to ~1200px wide.')); return; }
+    const used=estimateStorageUsed();
+    const quota=5*1024*1024; // conservative 5MB estimate
+    if(used>quota*0.8){
+      reject(new Error('⚠ Storage nearly full ('+Math.round(used/1024)+'KB). Delete unused images in Gallery or Products first, or enable Cloud Sync for unlimited storage.'));
+      return;
+    }
+    if(file.type.includes('image')){
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        let {width,height}=img;
+        if(width>1200){
+          height=Math.round(height*(1200/width));
+          width=1200;
+        }
+        canvas.width=width; canvas.height=height;
+        canvas.getContext('2d').drawImage(img,0,0,width,height);
+        canvas.toBlob(blob=>{
+          if(blob.size>6*1024*1024){ reject(new Error('Compressed image still too large.')); return; }
+          const reader=new FileReader();
+          reader.onload=e=>resolve(e.target.result);
+          reader.onerror=()=>reject(new Error('Could not read file.'));
+          reader.readAsDataURL(blob);
+        },'image/jpeg',0.85);
+      };
+      img.onerror=()=>{
+        const reader=new FileReader();
+        reader.onload=e=>resolve(e.target.result);
+        reader.onerror=()=>reject(new Error('Could not read file.'));
+        reader.readAsDataURL(file);
+      };
+      img.src=URL.createObjectURL(file);
+    } else {
+      const reader=new FileReader();
+      reader.onload=e=>resolve(e.target.result);
+      reader.onerror=()=>reject(new Error('Could not read file.'));
+      reader.readAsDataURL(file);
+    }
   });
 }
 function debounce(fn,wait){
@@ -3687,9 +3727,13 @@ function panelCloudSync(){
   const statusLabel=CLOUD_STATUS_LABELS[status]||CLOUD_STATUS_LABELS.off;
   const user=cloudCurrentUser();
   const keysFilled=!!(c.api_key&&c.auth_domain&&c.project_id&&c.app_id);
+  const used=estimateStorageUsed();
+  const quota=5*1024*1024;
+  const quotaPct=Math.round((used/quota)*100);
   return '<div class="admin-panel-section">'
+    +(used>quota*0.6?'<div class="admin-card" style="background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3)"><h4>⚠ Storage Getting Full ('+quotaPct+'%)</h4><p class="cap-note" style="color:#fbbf24;">You\'re using '+Math.round(used/1024)+'KB of ~5MB. Enable Cloud Sync below for unlimited storage. After setup, new images sync to Firebase, and local storage becomes a mirror.</p></div>':'')
     +'<div class="admin-card"><h4>Cloud Sync Setup Wizard</h4>'
-    +'<p class="cap-note">Worried about running out of local storage, or want changes to appear instantly on every visitor\'s device? Turn this on and follow the numbered steps below in order — about 5 minutes, completely free, and entirely optional. Your site already works perfectly without it.</p>'
+    +'<p class="cap-note">Sync your site data to Firebase Firestore: unlimited storage, real-time updates across all devices, automatic backups, and a web UI to access your data anytime. About 5 minutes, completely free, entirely optional.</p>'
     +'<div class="a-toggle" style="margin-top:14px;"><span>Step 1 — Enable Cloud Sync</span><div class="switch'+(c.enabled?' on':'')+'" data-path="cloud_sync.enabled" data-rerender="1"></div></div>'
     +'<div class="cs-status-pill cs-'+status+'" id="cs-status-pill"><span class="cs-dot"></span>'+statusLabel+'</div>'
     +'</div>'
