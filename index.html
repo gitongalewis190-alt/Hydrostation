@@ -3656,7 +3656,8 @@ function bindPasswordActions(){
     const a2_hash=a2raw?await sha256(normalizeAnswer(a2raw)):rec.a2_hash;
     CONFIG.password_recovery={ q1, q2, a1_hash, a2_hash };
     commitNow('Password & security questions saved');
-    rerenderAdminBody();
+    selectAdminSection('identity');
+    maybeAutoStartTour('identity');
   });
   const expBtn=document.getElementById('rec-export');
   if(expBtn) expBtn.addEventListener('click',e=>{
