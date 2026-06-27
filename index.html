@@ -287,7 +287,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 
 /* ============ FOOTER ============ */
 .site-footer{background:var(--admin-bg);color:rgba(255,255,255,.7);padding:60px 0 0;}
-.footer-inner{display:flex;flex-wrap:wrap;justify-content:space-between;gap:32px;padding-bottom:36px;border-bottom:1px solid rgba(255,255,255,.08);}
+.footer-inner{display:flex;flex-wrap:wrap;justify-content:space-between;gap:32px;padding-bottom:36px;border-bottom:1px solid #E5E7EB;}
+.admin-dashboard.dark-mode .footer-inner{border-bottom-color:rgba(255,255,255,.08);}
 .footer-brand{display:flex;flex-direction:column;gap:10px;max-width:280px;}
 .footer-brand .fb-name{display:flex;align-items:center;gap:10px;color:#fff;font-family:var(--font-display);font-weight:800;font-size:18px;}
 .footer-brand .fb-name img{width:30px;height:30px;border-radius:7px;}
@@ -343,7 +344,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
   .fab-item-icon{width:25px;height:25px;}
 }
 .qr-panel{max-width:320px;position:relative;}
-.qr-url{font-size:12.5px;color:rgba(255,255,255,.55);word-break:break-all;margin-bottom:18px;}
+.qr-url{font-size:12.5px;color:#6B7280;word-break:break-all;margin-bottom:18px;}
+.admin-dashboard.dark-mode .qr-url{color:rgba(255,255,255,.55);}
 
 /* ============ BRANDED QR CARD (admin preview + public modal + print) ============
    Premium single-card layout: bordered in the business's own accent color (so it
@@ -373,7 +375,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .qr-color-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media (max-width:640px){.qr-color-row{grid-template-columns:1fr;}}
 .qr-color-field{display:flex;flex-direction:column;gap:6px;}
-.qr-color-field label{font-size:13px;color:rgba(255,255,255,.65);}
+.qr-color-field label{font-size:13px;color:#6B7280;}
+.admin-dashboard.dark-mode .qr-color-field label{color:rgba(255,255,255,.65);}
 .qr-color-field input[type="color"]{width:100%;height:42px;padding:3px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);cursor:pointer;}
 /* Printable QR: hidden in normal view, shown exclusively when body.qr-printing is active */
 #qr-print-area{position:fixed;left:-9999px;top:0;}
@@ -432,7 +435,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .vm-welcome-card{max-width:460px;text-align:center;padding:38px 32px;}
 .vm-welcome-icon{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--accent-bright),var(--accent));display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:#fff;box-shadow:var(--shadow-lg);}
 .vm-welcome-card h3{font-size:21px;margin-bottom:10px;}
-.vm-welcome-card p{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:24px;}
+.vm-welcome-card p{font-size:14px;color:#6B7280;line-height:1.6;margin-bottom:24px;}
+.admin-dashboard.dark-mode .vm-welcome-card p{color:rgba(255,255,255,.6);}
 .vm-welcome-actions{display:flex;flex-direction:column;gap:10px;}
 
 /* ============ VIRTUAL MANUAL: spotlight coachmark tour ============ */
@@ -446,7 +450,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .tour-card.show{opacity:1;transform:scale(1) translateY(0);}
 .tour-card .tc-eyebrow{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-bright);margin-bottom:6px;}
 .tour-card h4{font-size:16px;margin-bottom:8px;}
-.tour-card p{font-size:13.5px;line-height:1.55;color:rgba(255,255,255,.68);margin-bottom:16px;}
+.tour-card p{font-size:13.5px;line-height:1.55;color:#6B7280;margin-bottom:16px;}
+.admin-dashboard.dark-mode .tour-card p{color:rgba(255,255,255,.68);}
 .tour-dots{display:flex;gap:5px;align-items:center;}
 .tour-dots span{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.18);transition:background .2s ease,transform .2s ease;}
 .tour-dots span.on{background:var(--accent-bright);transform:scale(1.25);}
@@ -466,13 +471,15 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .manual-head{padding:22px 26px 16px;border-bottom:1px solid var(--glass-border);flex-shrink:0;}
 .manual-head-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .manual-head-top h3{font-size:18px;display:flex;align-items:center;gap:10px;}
-.manual-progress-wrap{display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(255,255,255,.5);margin-bottom:14px;}
+.manual-progress-wrap{display:flex;align-items:center;gap:10px;font-size:12px;color:#9CA3AF;margin-bottom:14px;}
+.admin-dashboard.dark-mode .manual-progress-wrap{color:rgba(255,255,255,.5);}
 .manual-progress-bar{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;}
 .manual-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent-bright),var(--accent));border-radius:4px;transition:width .4s var(--ease);}
 .manual-search{width:100%;padding:10px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;font-size:13.5px;}
 .manual-search:focus{outline:none;border-color:var(--accent-bright);}
 .manual-body{flex:1;overflow-y:auto;padding:10px 16px 20px;}
-.manual-item{border-bottom:1px solid rgba(255,255,255,.06);}
+.manual-item{border-bottom:1px solid #E5E7EB;}
+.admin-dashboard.dark-mode .manual-item{border-bottom-color:rgba(255,255,255,.06);}
 .manual-item summary{list-style:none;cursor:pointer;padding:14px 10px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600;}
 .manual-item summary::-webkit-details-marker{display:none;}
 .manual-item summary .mi-chev{margin-left:auto;flex-shrink:0;transition:transform .2s var(--ease);color:rgba(255,255,255,.4);}
@@ -508,11 +515,14 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .modal-overlay{position:fixed;inset:0;background:rgba(7,12,14,.6);z-index:3500;display:flex;align-items:center;justify-content:center;padding:20px;}
 .modal-panel{background:var(--admin-bg);color:#fff;width:100%;max-width:380px;padding:32px;text-align:center;}
 .modal-panel h3{font-size:20px;margin-bottom:8px;}
-.modal-panel p.hint{color:rgba(255,255,255,.5);font-size:13px;margin-bottom:22px;}
-.modal-panel input{width:100%;padding:13px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:15px;margin-bottom:14px;}
+.modal-panel p.hint{color:#6B7280;font-size:13px;margin-bottom:22px;}
+.admin-dashboard.dark-mode .modal-panel p.hint{color:rgba(255,255,255,.5);}
+.modal-panel input{width:100%;padding:13px 14px;border-radius:9px;border:1px solid #D1D5DB;background:#fff;color:#111827;font-size:15px;margin-bottom:14px;}
+.admin-dashboard.dark-mode .modal-panel input{border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;}
 .modal-panel input:focus{outline:none;border-color:var(--accent-bright);}
 .modal-panel .field{gap:5px;margin-bottom:12px;}
-.modal-panel .field label{color:rgba(255,255,255,.8);}
+.modal-panel .field label{color:#111827;}
+.admin-dashboard.dark-mode .modal-panel .field label{color:rgba(255,255,255,.8);}
 .modal-panel .field input{margin-bottom:0;}
 .modal-panel .field-warn{color:#FBBF24;font-size:12px;margin-top:4px;}
 .modal-actions{display:flex;gap:10px;margin-top:6px;}
@@ -533,7 +543,8 @@ input,textarea,select{font-family:inherit;font-size:15px;}
 .admin-dashboard.dark-mode{--admin-bg:#0F1419;--admin-text:#FFFFFF;--admin-border:rgba(255,255,255,.15);--admin-accent:rgba(255,255,255,.05);}
 .admin-sidebar{width:230px;flex-shrink:0;background:rgba(255,255,255,.03);border-right:1px solid var(--glass-border);padding:20px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
 .admin-sidebar .as-brand{font-family:var(--font-display);font-weight:800;font-size:15px;padding:10px 12px 18px;color:var(--accent-bright);}
-.as-btn{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:9px;color:rgba(255,255,255,.65);font-size:14px;font-weight:600;text-align:left;width:100%;transition:background .2s ease,color .2s ease;}
+.as-btn{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:9px;color:#6B7280;font-size:14px;font-weight:600;text-align:left;width:100%;transition:background .2s ease,color .2s ease;}
+.admin-dashboard.dark-mode .as-btn{color:rgba(255,255,255,.65);}
 .as-btn svg{width:17px;height:17px;flex-shrink:0;}
 .as-btn:hover{background:rgba(255,255,255,.05);color:#fff;}
 .as-btn.active{background:rgba(35,181,200,.15);color:var(--accent-bright);}
