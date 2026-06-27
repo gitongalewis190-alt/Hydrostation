@@ -2718,23 +2718,11 @@ function isAdminGraceActive(){
 }
 
 function openAdminDashboard(){
-  if(!CONFIG.password_hash){
-    selectAdminSection('password');
-    document.getElementById('admin-dashboard').hidden=false;
-    document.body.classList.add('no-scroll');
-    document.getElementById('admin-sidebar').style.opacity='.4';
-    document.getElementById('admin-sidebar').style.pointerEvents='none';
-    toast('⚠ Set a password first, then security questions',false);
-    renderAdminSidebar();
-    return;
-  }
   if(!hasRecoverySetup()){
     selectAdminSection('password');
     document.getElementById('admin-dashboard').hidden=false;
     document.body.classList.add('no-scroll');
-    document.getElementById('admin-sidebar').style.opacity='1';
-    document.getElementById('admin-sidebar').style.pointerEvents='auto';
-    toast('⚠ Security questions required before editing',false);
+    toast('⚠ Set security questions first (required to prevent data loss)',false);
     renderAdminSidebar();
     return;
   }
@@ -3564,8 +3552,8 @@ function panelPassword(){
   const rec=CONFIG.password_recovery||{};
   const recoverySet=hasRecoverySetup();
   return '<div class="admin-panel-section">'
-    +(hasPassword?'':'<div class="admin-card danger-zone"><h4>🔓 Admin Is Currently Unlocked</h4><p class="cap-note" style="color:#F87171;font-weight:600;">No password has been set yet — anyone who long-presses and pulls down the menu icon can open this dashboard. Set a password now to lock it down.</p></div>')
-    +'<div class="admin-card"><h4>'+(hasPassword?'Change Admin Password':'Set Admin Password')+'</h4>'
+    +(hasPassword?'':'<div class="admin-card"><h4>🔓 Admin Password (Optional)</h4><p class="cap-note" style="color:#60a5fa;">No password set yet. Your dashboard is currently open to anyone who knows the hold-and-drag gesture. Set a password to lock it down, but recovery questions below are mandatory for data protection.</p></div>')
+    +'<div class="admin-card"><h4>'+(hasPassword?'Change Admin Password':'Set Admin Password (Optional)')+'</h4>'
     +(hasPassword?'<div class="a-field"><label>Current Password</label><div class="pw-field"><input type="password" id="pw-current" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>':'')
     +'<div class="a-field"><label>New Password</label><div class="pw-field"><input type="password" id="pw-new" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
     +'<div class="a-field"><label>Confirm New Password</label><div class="pw-field"><input type="password" id="pw-confirm" autocomplete="off"><button class="pw-eye" type="button" data-pw-toggle aria-label="Show password"></button></div></div>'
